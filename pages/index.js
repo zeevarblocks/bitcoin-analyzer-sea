@@ -1,3 +1,5 @@
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
