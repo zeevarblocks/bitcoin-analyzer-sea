@@ -22,8 +22,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white rounded-2xl shadow-md space-y-6">
+    <div className="flex flex-col min-h-screen p-6 max-w-3xl mx-auto bg-white rounded-2xl shadow-md space-y-6">
       <h1 className="text-2xl font-bold text-center">Bitcoin Signal Analyzer</h1>
+
       <div className="grid grid-cols-2 gap-4">
         <input type="number" placeholder="All-Time High (ATH)" className="p-2 border rounded" onChange={e => setAth(parseFloat(e.target.value))} />
         <input type="number" placeholder="All-Time Low (ATL)" className="p-2 border rounded" onChange={e => setAtl(parseFloat(e.target.value))} />
@@ -49,12 +50,13 @@ export default function Home() {
           <Line data={chartData} />
         </div>
       )}
+
+      {/* Disclaimer Footer */}
+      <footer className="mt-auto bg-gray-100 text-center text-sm text-gray-600 py-4">
+        <p>
+          <strong>Disclaimer:</strong> This app is for informational purposes only and does not constitute financial advice. Cryptocurrency trading involves risk. Please do your own research before making any investment decisions.
+        </p>
+      </footer>
     </div>
   );
-// ... inside your render return, after all other elements:
-<footer className="mt-10 text-center text-sm text-gray-600">
-  <p>
-    <strong>Disclaimer:</strong> This app is for informational purposes only and does not constitute financial advice. Cryptocurrency trading involves risk. Please do your own research before making any investment decisions.
-  </p>
-</footer>
-      }
+                                                                                                        }
