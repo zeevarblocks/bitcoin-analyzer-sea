@@ -1,6 +1,6 @@
-import React from 'react';
-import '../styles/globals.css'; // Adjust or remove if not using global styles
-import { Analytics } from '@vercel/analytics/react';
+// pages/_app.js
+import '../styles/globals.css';
+import { Analytics } from '@vercel/analytics/next';
 
 function MyApp({ Component, pageProps }) {
   return (
