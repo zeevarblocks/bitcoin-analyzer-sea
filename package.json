@@ -13,6 +13,6 @@
     "react": "18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0",
-    "@vercel/analytics": "next"
+    "@vercel/analytics": "1.1.1"
   }
 }
