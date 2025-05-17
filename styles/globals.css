@@ -1,0 +1,17 @@
+/* styles/globals.css */
+body {
+  margin: 0;
+  padding: 0;
+  background: url('/background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 16px;
+}
