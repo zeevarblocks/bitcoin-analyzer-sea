@@ -51,4 +51,10 @@ export default function Home() {
       )}
     </div>
   );
+// ... inside your render return, after all other elements:
+<footer className="mt-10 text-center text-sm text-gray-600">
+  <p>
+    <strong>Disclaimer:</strong> This app is for informational purposes only and does not constitute financial advice. Cryptocurrency trading involves risk. Please do your own research before making any investment decisions.
+  </p>
+</footer>
       }
