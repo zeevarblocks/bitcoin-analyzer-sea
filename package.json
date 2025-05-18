@@ -1,1 +1,26 @@
-{ "name": "bitcoin-analyzer-sea", "version": "1.0.0", "description": "Bitcoin signal analyzer for SEA traders using ATH, ATL, and EMA70 logic", "main": "index.js", "scripts": { "dev": "next dev", "build": "next build", "start": "next start" }, "author": "zeevarblocks", "license": "MIT", "dependencies": { "chart.js": "^4.4.1", "next": "13.4.12", "react": "18.2.0", "react-chartjs-2": "^5.2.0", "react-dom": "18.2.0", "@vercel/speed-insights": "latest" } }
+{
+  "name": "bitcoin-analyzer-sea",
+  "version": "1.0.0",
+  "description": "Bitcoin signal analyzer for SEA traders using ATH, ATL, and EMA70 logic",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "author": "zeevarblocks",
+  "license": "MIT",
+  "dependencies": {
+    "chart.js": "^4.4.1",
+    "next": "13.4.12",
+    "react": "18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "18.2.0",
+    "@vercel/speed-insights": "latest"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.24",
+    "autoprefixer": "^10.4.14"
+  }
+}
