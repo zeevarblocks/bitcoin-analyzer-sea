@@ -1,14 +1,97 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* globals.css */
 
 body {
-  @apply m-0 p-0 text-white font-sans;
-  background: url('/background.jpg') no-repeat center center fixed;
-  background-size: cover;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff;
+  color: #111;
 }
 
-.container {
-  @apply max-w-[960px] mx-auto p-8 rounded-2xl;
-  background-color: rgba(0, 0, 0, 0.6);
+.navbar {
+  background-color: #111;
+  color: white;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 999;
 }
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 16px;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+}
+
+.footer {
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 16px;
+}
+
+.main-content {
+  padding: 24px;
+  min-height: 80vh;
+}
+
+/* Floating button */
+.floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: gold;
+  color: black;
+  padding: 12px 20px;
+  border-radius: 24px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: background 0.3s;
+  z-index: 999;
+}
+
+.floating-btn:hover {
+  background-color: #ffc107;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+  }
