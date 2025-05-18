@@ -1,15 +1,17 @@
 import '../styles/globals.css';
+import Navbar from '../components/Navbar';
+import FloatingButton from '../components/FloatingButton';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import Navbar from '../components/Navbar';
 
 function MyApp({ Component, pageProps }) {
   return (
     <>
       <Navbar />
-      <div className="pt-20"> {/* push content below navbar */}
+      <main className="p-6 min-h-screen">
         <Component {...pageProps} />
-      </div>
+      </main>
+      <FloatingButton />
       <Analytics />
       <SpeedInsights />
     </>
