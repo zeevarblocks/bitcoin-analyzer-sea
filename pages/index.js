@@ -37,16 +37,18 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
         <p className="text-gray-700 text-center">
-          This tool helps you analyze the Bitcoin market using the relationship between ATH, ATL, and the 70 EMA. It generates a signal—either bullish or bearish—based on your input data. Ideal for swing traders and macro analysts.
+          Analyze Bitcoin market trends using vertical alignment between ATH, ATL, and 70 EMA.
+          Data should be based on the <strong>1W timeframe</strong>. Ideal for macro swing traders.
         </p>
 
         <div className="bg-gray-50 p-4 rounded-lg">
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
           <ul className="list-disc list-inside text-gray-700 space-y-1">
+            <li>Use weekly timeframe (1W) for ATH, ATL, and EMA70.</li>
             <li>Enter the <strong>All-Time High (ATH)</strong>, <strong>All-Time Low (ATL)</strong>, and <strong>70 EMA</strong>.</li>
-            <li>Optionally add the <strong>current price</strong> for your own tracking.</li>
-            <li>The app will compute percentage gaps and provide a trading signal.</li>
-            <li>View the recent Bitcoin chart below for context.</li>
+            <li>Optionally enter current price for personal tracking.</li>
+            <li>The tool computes vertical gaps and provides a bullish/bearish signal.</li>
+            <li>BTC chart and calendar-year ATH/ATL shown below.</li>
           </ul>
         </div>
 
@@ -65,13 +67,13 @@ export default function Home() {
           />
           <input
             type="number"
-            placeholder="EMA70"
+            placeholder="EMA70 (1W)"
             className="p-2 border border-gray-300 rounded"
             onChange={e => setEma70(parseFloat(e.target.value))}
           />
           <input
             type="number"
-            placeholder="Current Price"
+            placeholder="Current Price (optional)"
             className="p-2 border border-gray-300 rounded"
             onChange={e => setCurrentPrice(parseFloat(e.target.value))}
           />
@@ -146,18 +148,34 @@ export default function Home() {
                   point: { radius: 3, backgroundColor: '#3b82f6' },
                 },
               }}
-              style={{
-                backgroundColor: '#ffffff',
-                padding: '20px',
-                borderRadius: '12px',
-              }}
             />
           </div>
         )}
 
+        <div className="bg-white p-4 rounded-lg shadow-md mt-6">
+          <h2 className="text-xl font-semibold text-center text-gray-900 mb-2">
+            Yearly Calendar ATH/ATL
+          </h2>
+          <table className="w-full text-left text-sm border">
+            <thead className="bg-gray-200">
+              <tr>
+                <th className="p-2 border">Year</th>
+                <th className="p-2 border">ATH (USD)</th>
+                <th className="p-2 border">ATL (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td className="p-2 border">2021</td><td className="p-2 border">$69,000</td><td className="p-2 border">$29,000</td></tr>
+              <tr><td className="p-2 border">2022</td><td className="p-2 border">$48,000</td><td className="p-2 border">$15,600</td></tr>
+              <tr><td className="p-2 border">2023</td><td className="p-2 border">$31,600</td><td className="p-2 border">$15,300</td></tr>
+              <tr><td className="p-2 border">2024</td><td className="p-2 border">TBD</td><td className="p-2 border">TBD</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
           <p>
-            <strong>Disclaimer:</strong> This app is for informational purposes only and does not
+            <strong>Disclaimer:</strong> This tool is for informational purposes only and does not
             constitute financial advice. Always do your own research.
           </p>
         </footer>
