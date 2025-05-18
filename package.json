@@ -1,18 +1,20 @@
 {
   "name": "bitcoin-analyzer-sea",
   "version": "1.0.0",
-  "description": "Bitcoin Analyzer SEA: Analyze BTC ATH/ATL vs EMA70 for swing signals.",
+  "description": "Bitcoin signal analyzer for SEA traders using ATH, ATL, and EMA70 logic",
+  "main": "index.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },
+  "author": "zeevarblocks",
+  "license": "MIT",
   "dependencies": {
-    "axios": "^1.6.7",
-    "chart.js": "^4.4.2",
-    "next": "14.2.1",
+    "chart.js": "^4.4.1",
+    "next": "13.4.12",
     "react": "18.2.0",
-    "react-chartjs-2": "^5.3.1",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0"
   }
 }
