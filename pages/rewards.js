@@ -24,6 +24,7 @@ export default function Rewards() {
           textAlign: 'center',
         }}
       >
+        {/* Binance Reward Section */}
         <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>
           Claim Your Binance Mystery Box
         </h1>
@@ -44,8 +45,35 @@ export default function Rewards() {
             fontSize: '1.1rem',
           }}
         >
-          Claim Your Mystery Box
+          Claim Binance Mystery Box
         </a>
+
+        <hr style={{ margin: '3rem 0', borderColor: '#444' }} />
+
+        {/* OKX Reward Section */}
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>
+          Get Rewards with OKX
+        </h2>
+        <p style={{ fontSize: '1.1rem', marginBottom: '2rem' }}>
+          Join OKX and get crypto rewards by signing up using our referral link.
+        </p>
+        <a
+          href="https://okx.com/join/96631749"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            backgroundColor: '#00ab6c',
+            color: '#fff',
+            padding: '1rem 2rem',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+          }}
+        >
+          Join OKX Now
+        </a>
+
         <div style={{ marginTop: '3rem' }}>
           <Link href="/">
             <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Back to Home</a>
@@ -54,4 +82,4 @@ export default function Rewards() {
       </div>
     </div>
   );
-}
+            }
