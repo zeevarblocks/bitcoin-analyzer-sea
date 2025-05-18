@@ -6,36 +6,21 @@ import Link from 'next/link';
 function MyApp({ Component, pageProps }) {
   return (
     <>
-      {/* Header */}
-      <nav className="bg-gray-900 text-white px-6 py-4 shadow-md flex items-center justify-between">
-        <div className="text-xl font-bold tracking-wide">
-          Bitcoin Signal Analyzer
-        </div>
-        <div className="space-x-6 text-sm font-medium">
-          <Link href="/" className="hover:text-yellow-400 transition">
-            Home
-          </Link>
-          <Link href="/rewards" className="hover:text-yellow-400 transition">
-            Rewards
-          </Link>
-        </div>
+      <nav style={{
+        padding: '1rem',
+        backgroundColor: '#000',
+        color: '#fff',
+        display: 'flex',
+        gap: '1rem'
+      }}>
+        <Link href="/" style={{ color: '#fff', textDecoration: 'none' }}>
+          Home
+        </Link>
+        <Link href="/rewards" style={{ color: '#fff', textDecoration: 'none' }}>
+          Rewards
+        </Link>
       </nav>
-
-      {/* Main Content */}
-      <main className="min-h-screen bg-white text-gray-900 px-4 py-6">
-        <Component {...pageProps} />
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white px-6 py-4 mt-10 text-center text-sm">
-        <p>
-          © {new Date().getFullYear()} Bitcoin Signal Analyzer. All rights reserved.
-          <Link href="/rewards" className="ml-2 underline hover:text-yellow-400 transition">
-            Claim Rewards
-          </Link>
-        </p>
-      </footer>
-
+      <Component {...pageProps} />
       <Analytics />
       <SpeedInsights />
     </>
