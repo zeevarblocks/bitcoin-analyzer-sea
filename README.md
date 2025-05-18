@@ -28,35 +28,45 @@ These gaps show potential trend reversals or macro setups.
 
 ## Getting Started
 
+Clone the repo and run locally:
+
 ```bash
 git clone https://github.com/zeevarblocks/bitcoin-analyzer-sea.git
 cd bitcoin-analyzer-sea
 npm install
 npm run dev
-```
 
-Then open: [http://localhost:3000](http://localhost:3000)
+Then open: http://localhost:3000
 
----
-
-## Tech Stack
-
-- Next.js  
-- React  
-- Tailwind CSS  
-- Chart.js  
-- CoinGecko API  
 
 ---
 
-## Disclaimer
+Tech Stack
 
-This tool is for **educational and informational purposes only** and **does not constitute financial advice**.  
-Cryptocurrency investments carry risk. Always **do your own research** and consult a licensed advisor.  
-The developer is **not responsible** for any trading outcomes resulting from use of this app.
+Next.js
+
+React
+
+Tailwind CSS
+
+Chart.js
+
+CoinGecko API
+
+
 
 ---
 
-## License
+Disclaimer
 
-MIT © 2025 [zeevarblocks](https://github.com/zeevarblocks)
+This project is for educational and informational purposes only.
+It does not constitute financial advice.
+Cryptocurrency trading carries risk. Always do your own research.
+The developer is not responsible for any financial decisions made using this tool.
+
+
+---
+
+License
+
+MIT © 2025 zeevarblocks
