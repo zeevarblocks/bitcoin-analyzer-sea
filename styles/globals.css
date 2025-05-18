@@ -1,17 +1,14 @@
-/* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
-  margin: 0;
-  padding: 0;
+  @apply m-0 p-0 text-white font-sans;
   background: url('/background.jpg') no-repeat center center fixed;
   background-size: cover;
-  font-family: Arial, sans-serif;
-  color: white;
 }
 
 .container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 2rem;
+  @apply max-w-[960px] mx-auto p-8 rounded-2xl;
   background-color: rgba(0, 0, 0, 0.6);
-  border-radius: 16px;
 }
