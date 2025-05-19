@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const fetchBTCMarketData = async () => {
+const fetchBTCData = async () => {
   try {
     const res = await axios.get(
       "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=500"
