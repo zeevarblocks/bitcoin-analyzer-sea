@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Chart as ChartJS,
+  Chart,
   TimeScale,
   LinearScale,
   Tooltip,
@@ -15,7 +15,8 @@ import {
 import 'chartjs-adapter-date-fns';
 import { fetchBTCData } from '../utils/fetchBTCData';
 
-ChartJS.register(
+// Register Chart.js components
+Chart.register(
   TimeScale,
   LinearScale,
   Tooltip,
@@ -41,7 +42,7 @@ const BTCChart = () => {
       }
 
       const ctx = chartRef.current.getContext('2d');
-      const newChart = new ChartJS(ctx, {
+      const newChart = new Chart(ctx, {
         type: 'candlestick',
         data: {
           datasets: data.datasets,
@@ -78,7 +79,7 @@ const BTCChart = () => {
     };
   }, []);
 
-  return <canvas ref={chartRef} />;
+  return <canvas ref={chartRef} width={800} height={400} />;
 };
 
 export default BTCChart;
