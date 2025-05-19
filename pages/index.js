@@ -12,7 +12,8 @@ Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Too
 
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
-import { fetchBTCMarketData } from "../utils/fetchBTCData";
+import { fetchBTCData } from '../utils/fetchBTCData';
+
 export default function Home() {
   const [ath, setAth] = useState('');
   const [atl, setAtl] = useState('');
@@ -21,7 +22,7 @@ export default function Home() {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    fetchBTCMarketData().then(data => setChartData(data));
+    fetchBTCData().then(data => setChartData(data));
   }, []);
 
   const computeAthGap = () => {
