@@ -39,25 +39,28 @@ export default function Home() {
     return ((emaNum - atlNum) / atlNum) * 100;
   };
 
-  const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish' : 'Bearish');
-  const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish' : 'Bullish');
+  const getAthSignal = () =>
+    computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+
+  const getAtlSignal = () =>
+    computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal';
 
   return (
     <div className="min-h-screen bg-cover bg-center p-6" style={{ backgroundImage: 'url(/bg.png)' }}>
-      <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-center text-black">Bitcoin Signal Analyzer</h1>
+      <div className="max-w-4xl mx-auto bg-white bg-opacity-90 rounded-xl shadow-xl p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
-        <p className="text-gray-800 text-center">
-          Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish or bearish—based on macro price behavior.
+        <p className="text-gray-700 text-center">
+          Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either continuation or possible reversal—based on macro price behavior.
         </p>
 
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Instructions:</h2>
-          <ul className="list-disc list-inside text-gray-800 space-y-1">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
+          <ul className="list-disc list-inside text-gray-700 space-y-1">
             <li>Use data from the <strong>1W timeframe</strong> only for consistency.</li>
             <li>Enter the <strong>All-Time High (ATH)</strong> and <strong>70 EMA</strong> together to check macro bullish signals.</li>
             <li>Enter the <strong>All-Time Low (ATL)</strong> and <strong>70 EMA</strong> together to analyze bearish potential zones.</li>
-            <li>The tool calculates percentage gaps and suggests a bullish or bearish macro signal.</li>
+            <li>The tool calculates percentage gaps and suggests a continuation or reversal signal.</li>
             <li>Optionally add the <strong>current price</strong> for your own tracking context.</li>
             <li>Check the live BTC chart below for trend confirmation and historical data reference.</li>
           </ul>
@@ -67,46 +70,58 @@ export default function Home() {
           <input
             type="number"
             placeholder="All-Time High (ATH)"
-            className="p-2 border border-gray-400 text-black placeholder-gray-600 rounded"
+            className="p-2 border border-gray-300 rounded"
             onChange={e => setAth(e.target.value)}
           />
           <input
             type="number"
             placeholder="All-Time Low (ATL)"
-            className="p-2 border border-gray-400 text-black placeholder-gray-600 rounded"
+            className="p-2 border border-gray-300 rounded"
             onChange={e => setAtl(e.target.value)}
           />
           <input
             type="number"
             placeholder="EMA70"
-            className="p-2 border border-gray-400 text-black placeholder-gray-600 rounded"
+            className="p-2 border border-gray-300 rounded"
             onChange={e => setEma70(e.target.value)}
           />
           <input
             type="number"
             placeholder="Current Price"
-            className="p-2 border border-gray-400 text-black placeholder-gray-600 rounded"
+            className="p-2 border border-gray-300 rounded"
             onChange={e => setCurrentPrice(e.target.value)}
           />
         </div>
 
-        <div className="space-y-2 text-black">
+        <div className="space-y-2 text-gray-800">
           <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
           <p>Gap: {computeAthGap().toFixed(2)}%</p>
           <p>
             Signal:{' '}
-            <span className={getAthSignal() === 'Bullish' ? 'text-green-700' : 'text-red-700'}>
+            <span
+              className={
+                getAthSignal() === 'Bullish Continuation'
+                  ? 'text-green-600 font-semibold'
+                  : 'text-yellow-600 font-semibold'
+              }
+            >
               {getAthSignal()}
             </span>
           </p>
         </div>
 
-        <div className="space-y-2 text-black">
+        <div className="space-y-2 text-gray-800">
           <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
           <p>Gap: {computeAtlGap().toFixed(2)}%</p>
           <p>
             Signal:{' '}
-            <span className={getAtlSignal() === 'Bullish' ? 'text-green-700' : 'text-red-700'}>
+            <span
+              className={
+                getAtlSignal() === 'Bearish Continuation'
+                  ? 'text-red-600 font-semibold'
+                  : 'text-yellow-600 font-semibold'
+              }
+            >
               {getAtlSignal()}
             </span>
           </p>
@@ -114,7 +129,7 @@ export default function Home() {
 
         {chartData && (
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-center mb-4 text-black">
+            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">
               BTC Price Chart (Recent)
             </h2>
             <Line
@@ -143,13 +158,13 @@ export default function Home() {
                 },
                 scales: {
                   x: {
-                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
-                    ticks: { color: '#1f2937' },
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    ticks: { color: '#6b7280' },
                   },
                   y: {
-                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
                     ticks: {
-                      color: '#1f2937',
+                      color: '#6b7280',
                       callback: value => `$${value}`,
                     },
                   },
@@ -159,11 +174,16 @@ export default function Home() {
                   point: { radius: 3, backgroundColor: '#3b82f6' },
                 },
               }}
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '20px',
+                borderRadius: '12px',
+              }}
             />
           </div>
         )}
 
-        <footer className="text-sm text-center text-gray-700 pt-6 border-t border-gray-300">
+        <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
           <p>
             <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
           </p>
@@ -171,4 +191,4 @@ export default function Home() {
       </div>
     </div>
   );
-}
+  }
