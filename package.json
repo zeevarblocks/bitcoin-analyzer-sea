@@ -11,16 +11,17 @@
   "author": "zeevarblocks",
   "license": "MIT",
   "dependencies": {
+    "@vercel/speed-insights": "latest",
     "chart.js": "^4.4.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "next": "13.4.12",
     "react": "18.2.0",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "18.2.0",
-    "@vercel/speed-insights": "latest"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24",
-    "autoprefixer": "^10.4.14"
+    "tailwindcss": "^3.4.1"
   }
 }
