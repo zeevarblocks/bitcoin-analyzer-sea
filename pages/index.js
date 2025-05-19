@@ -67,36 +67,103 @@ export default function Home() {
     };
   };
   const computeBullishReversalFromAtl = () => {
-  const atlNum = parseFloat(atl);
-  const ema = parseFloat(ema70);
-  if (isNaN(atlNum) || isNaN(ema)) return {};
-  return {
-    entry: atlNum * 1.02, // Entry just above ATL
-    stopLoss: atlNum * 0.97, // SL below ATL
-    takeProfit1: ema * 0.98, // First TP slightly below EMA
-    takeProfit2: ema * 1.05, // Second TP above EMA
-  };
-};
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+import React, { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import { fetchBTCData } from '../utils/fetchBTCData';
 
-const computeBearishReversalFromAth = () => {
-  const athNum = parseFloat(ath);
-  const ema = parseFloat(ema70);
-  if (isNaN(athNum) || isNaN(ema)) return {};
-  return {
-    entry: athNum * 0.98, // Entry just below ATH
-    stopLoss: athNum * 1.03, // SL above ATH
-    takeProfit1: ema * 1.02, // First TP just above EMA
-    takeProfit2: ema * 0.95, // Second TP below EMA
+export default function Home() {
+  const [ath, setAth] = useState('');
+  const [atl, setAtl] = useState('');
+  const [ema70, setEma70] = useState('');
+  const [currentPrice, setCurrentPrice] = useState('');
+  const [chartData, setChartData] = useState(null);
+
+  useEffect(() => {
+    fetchBTCData().then(data => setChartData(data));
+  }, []);
+
+  const computeAthGap = () => {
+    const athNum = parseFloat(ath);
+    const emaNum = parseFloat(ema70);
+    if (isNaN(athNum) || isNaN(emaNum) || emaNum === 0) return 0;
+    return ((athNum - emaNum) / emaNum) * 100;
   };
-};
-  
+
+  const computeAtlGap = () => {
+    const atlNum = parseFloat(atl);
+    const emaNum = parseFloat(ema70);
+    if (isNaN(atlNum) || isNaN(emaNum) || atlNum === 0) return 0;
+    return ((emaNum - atlNum) / atlNum) * 100;
+  };
+
+  const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal');
+  const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal');
+
+  const computeBullishLevels = () => {
+    const ema = parseFloat(ema70);
+    const athNum = parseFloat(ath);
+    if (isNaN(ema) || isNaN(athNum)) return {};
+    return {
+      entry: ema * 1.02,
+      stopLoss: ema * 0.97,
+      takeProfit1: athNum * 0.98,
+      takeProfit2: athNum * 1.05,
+    };
+  };
+
+  const computeBearishLevels = () => {
+    const ema = parseFloat(ema70);
+    const atlNum = parseFloat(atl);
+    if (isNaN(ema) || isNaN(atlNum)) return {};
+    return {
+      entry: ema * 0.98,
+      stopLoss: ema * 1.03,
+      takeProfit1: atlNum * 1.02,
+      takeProfit2: atlNum * 0.95,
+    };
+  };
+
+  const computeBullishReversalFromAtl = () => {
+    const atlNum = parseFloat(atl);
+    const ema = parseFloat(ema70);
+    if (isNaN(atlNum) || isNaN(ema)) return {};
+    return {
+      entry: atlNum * 1.02,
+      stopLoss: atlNum * 0.97,
+      takeProfit1: ema * 0.98,
+      takeProfit2: ema * 1.05,
+    };
+  };
+
+  const computeBearishReversalFromAth = () => {
+    const athNum = parseFloat(ath);
+    const ema = parseFloat(ema70);
+    if (isNaN(athNum) || isNaN(ema)) return {};
+    return {
+      entry: athNum * 0.98,
+      stopLoss: athNum * 1.03,
+      takeProfit1: ema * 1.02,
+      takeProfit2: ema * 0.95,
+    };
+  };
+
   const bullishReversal = computeBullishReversalFromAtl();
-const bearishReversal = computeBearishReversalFromAth();
-
+  const bearishReversal = computeBearishReversalFromAth();
   const bullish = computeBullishLevels();
   const bearish = computeBearishLevels();
-
+  
   return (
     <div className="min-h-screen bg-cover bg-center p-6 text-gray-800" style={{ backgroundImage: 'url(/bg.png)' }}>
       <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
