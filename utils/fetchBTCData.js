@@ -1,12 +1,8 @@
 export async function fetchBTCData() {
   try {
-    const res = await fetch(
-      'https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30'
-    );
+    const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30');
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch BTC candlestick data');
-    }
+    if (!res.ok) throw new Error('Failed to fetch BTC candlestick data');
 
     const rawData = await res.json();
 
@@ -18,29 +14,50 @@ export async function fetchBTCData() {
       c: item[4],
     }));
 
-    const labels = candlesticks.map(c => {
-      const date = new Date(c.x);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
+    const closingPrices = candlesticks.map(c => c.c);
+
+    const calculateEMA = (prices, period) => {
+      const k = 2 / (period + 1);
+      let emaArray = [];
+      let ema = prices[0];
+      for (let i = 0; i < prices.length; i++) {
+        const price = prices[i];
+        ema = i === 0 ? price : price * k + ema * (1 - k);
+        emaArray.push(ema);
+      }
+      return emaArray;
+    };
+
+    const ema70 = calculateEMA(closingPrices, 70);
+    const ema70Data = candlesticks.map((c, i) => ({
+      x: c.x,
+      y: ema70[i] || null,
+    }));
 
     return {
-      labels,
       datasets: [
         {
-          label: 'BTC/USD',
+          label: 'BTC/USDT',
           data: candlesticks,
           type: 'candlestick',
           color: {
-            up: '#22c55e',
-            down: '#ef4444',
-            unchanged: '#999',
+            up: '#16a34a',
+            down: '#dc2626',
+            unchanged: '#737373',
           },
-          borderColor: '#0ea5e9',
+        },
+        {
+          label: 'EMA70',
+          data: ema70Data,
+          type: 'line',
+          borderColor: '#facc15',
+          borderWidth: 1.5,
+          pointRadius: 0,
         },
       ],
     };
   } catch (error) {
-    console.error('Error fetching BTC candlestick data:', error);
+    console.error('Error fetching BTC data:', error);
     return null;
   }
-}
+          }
