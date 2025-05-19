@@ -1,39 +1,41 @@
 export async function fetchBTCData() {
-  try {
-    const res = await fetch(
-      'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=30'
-    );
+try {
+const res = await fetch(
+'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily'
+);
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch BTC candlestick data');
-    }
+if (!res.ok) {  
+  throw new Error('Failed to fetch BTC data');  
+}  
 
-    const rawData = await res.json();
+const data = await res.json();  
 
-    const labels = rawData.map(item => {
-      const date = new Date(item[0]);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
+const labels = data.prices.map(price => {  
+  const date = new Date(price[0]);  
+  return `${date.getMonth() + 1}/${date.getDate()}`;  
+});  
 
-    const candlesticks = rawData.map(item => ({
-      x: new Date(item[0]),
-      o: parseFloat(item[1]),
-      h: parseFloat(item[2]),
-      l: parseFloat(item[3]),
-      c: parseFloat(item[4]),
-    }));
+const prices = data.prices.map(price => price[1]);  
 
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'BTC/USDT',
-          data: candlesticks,
-        },
-      ],
-    };
-  } catch (error) {
-    console.error('Error fetching candlestick data:', error);
-    return null;
-  }
+return {  
+  labels,  
+  datasets: [  
+    {  
+      label: 'BTC/USD',  
+      data: prices,  
+      borderColor: '#3b82f6',  
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',  
+      fill: true,  
+      tension: 0.4,  
+    },  
+  ],  
+};
+
+} catch (error) {
+console.error('Error fetching BTC data:', error);
+return null;
 }
+}
+
+Here's my fetchbtcdata
+
