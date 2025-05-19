@@ -66,27 +66,29 @@ export default function Home() {
     };
   };
   const computeBullishReversalFromAtl = () => {
-  const ema = parseFloat(ema70);
   const atlNum = parseFloat(atl);
-  if (isNaN(ema) || isNaN(atlNum)) return {};
+  const ema = parseFloat(ema70);
+  if (isNaN(atlNum) || isNaN(ema)) return {};
   return {
-    entry: ema * 1.02,
-    stopLoss: ema * 0.97,
-    takeProfit1: atlNum * 1.5,
-    takeProfit2: atlNum * 2,
+    entry: atlNum * 1.02, // Entry just above ATL
+    stopLoss: atlNum * 0.97, // SL below ATL
+    takeProfit1: ema * 0.98, // First TP slightly below EMA
+    takeProfit2: ema * 1.05, // Second TP above EMA
   };
+};
 };
 
 const computeBearishReversalFromAth = () => {
-  const ema = parseFloat(ema70);
   const athNum = parseFloat(ath);
-  if (isNaN(ema) || isNaN(athNum)) return {};
+  const ema = parseFloat(ema70);
+  if (isNaN(athNum) || isNaN(ema)) return {};
   return {
-    entry: ema * 0.98,
-    stopLoss: ema * 1.03,
-    takeProfit1: athNum * 0.9,
-    takeProfit2: athNum * 0.8,
+    entry: athNum * 0.98, // Entry just below ATH
+    stopLoss: athNum * 1.03, // SL above ATH
+    takeProfit1: ema * 1.02, // First TP just above EMA
+    takeProfit2: ema * 0.95, // Second TP below EMA
   };
+};
 };
   const bullishReversal = computeBullishReversalFromAtl();
 const bearishReversal = computeBearishReversalFromAth();
