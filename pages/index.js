@@ -157,14 +157,23 @@ export default function Home() {
               ? 'Price is trending above long-term resistance. Momentum is strong; consider watching for breakout confirmations.'
               : 'Price may be weakening. A pullback or trend reversal could be developing. Monitor weekly candles closely.'}
           </p>
-          {bullish.entry && (
-            <div className="text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 space-y-1">
-              <p className="font-semibold text-blue-800">Suggested Trade Levels (Bullish):</p>
-              <p>Entry Point: <span className="font-medium text-gray-800">${bullish.entry.toFixed(2)}</span></p>
-              <p>Stop Loss: <span className="font-medium text-gray-800">${bullish.stopLoss.toFixed(2)}</span></p>
-              <p>Take Profit: <span className="font-medium text-gray-800">${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</span></p>
-            </div>
-          )}
+          {getAthSignal() === 'Bullish Continuation' && bullish.entry && (
+  <div className="text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 space-y-1">
+    <p className="font-semibold text-blue-800">Suggested Trade Levels (Bullish):</p>
+    <p>Entry Point: <span className="font-medium text-gray-800">${bullish.entry.toFixed(2)}</span></p>
+    <p>Stop Loss: <span className="font-medium text-gray-800">${bullish.stopLoss.toFixed(2)}</span></p>
+    <p>Take Profit: <span className="font-medium text-gray-800">${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</span></p>
+  </div>
+)}
+
+{getAthSignal() === 'Possible Reversal' && bearish.entry && (
+  <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
+    <p className="font-semibold text-yellow-800">Suggested Trade Levels (Bearish - Based on ATH Reversal):</p>
+    <p>Entry Point: <span className="font-medium text-gray-800">${bearish.entry.toFixed(2)}</span></p>
+    <p>Stop Loss: <span className="font-medium text-gray-800">${bearish.stopLoss.toFixed(2)}</span></p>
+    <p>Take Profit: <span className="font-medium text-gray-800">${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</span></p>
+  </div>
+)}
         </div>
 
         {/* ATL Signal Block */}
@@ -182,14 +191,23 @@ export default function Home() {
               ? 'Price remains under long-term pressure. Trend continuation likely unless strong reversal patterns emerge.'
               : 'Price may be rebounding from historic lows. Watch for a higher low structure and rising EMA support.'}
           </p>
-          {bearish.entry && (
-            <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
-              <p className="font-semibold text-red-800">Suggested Trade Levels (Bearish):</p>
-              <p>Entry Point: <span className="font-medium text-gray-800">${bearish.entry.toFixed(2)}</span></p>
-              <p>Stop Loss: <span className="font-medium text-gray-800">${bearish.stopLoss.toFixed(2)}</span></p>
-              <p>Take Profit: <span className="font-medium text-gray-800">${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</span></p>
-            </div>
-          )}
+          {getAtlSignal() === 'Bearish Continuation' && bearish.entry && (
+  <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
+    <p className="font-semibold text-red-800">Suggested Trade Levels (Bearish):</p>
+    <p>Entry Point: <span className="font-medium text-gray-800">${bearish.entry.toFixed(2)}</span></p>
+    <p>Stop Loss: <span className="font-medium text-gray-800">${bearish.stopLoss.toFixed(2)}</span></p>
+    <p>Take Profit: <span className="font-medium text-gray-800">${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</span></p>
+  </div>
+)}
+
+{getAtlSignal() === 'Possible Reversal' && bullish.entry && (
+  <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+    <p className="font-semibold text-green-800">Suggested Trade Levels (Bullish - Based on ATL Reversal):</p>
+    <p>Entry Point: <span className="font-medium text-gray-800">${bullish.entry.toFixed(2)}</span></p>
+    <p>Stop Loss: <span className="font-medium text-gray-800">${bullish.stopLoss.toFixed(2)}</span></p>
+    <p>Take Profit: <span className="font-medium text-gray-800">${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</span></p>
+  </div>
+)}
         </div>
 
         {/* Chart Section */}
