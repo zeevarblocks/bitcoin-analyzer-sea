@@ -325,4 +325,4 @@ const bearishReversal = computeBearishReversalFromAth();
       </div>
     </div>
   );
-      }
+    }
