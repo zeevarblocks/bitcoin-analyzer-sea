@@ -15,7 +15,7 @@ import {
 import 'chartjs-adapter-date-fns';
 import { fetchBTCData } from '../utils/fetchBTCData';
 
-// Register Chart.js components
+// Register Chart.js components (do this only once globally or here)
 Chart.register(
   TimeScale,
   LinearScale,
@@ -29,20 +29,22 @@ Chart.register(
 
 const BTCChart = () => {
   const chartRef = useRef(null);
-  const [chartInstance, setChartInstance] = useState(null);
+  const chartInstanceRef = useRef(null); // useRef is better here than useState
 
   useEffect(() => {
     let isMounted = true;
 
-    fetchBTCData().then(data => {
+    const renderChart = async () => {
+      const data = await fetchBTCData();
       if (!data || !isMounted) return;
 
-      if (chartInstance) {
-        chartInstance.destroy();
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
       }
 
       const ctx = chartRef.current.getContext('2d');
-      const newChart = new Chart(ctx, {
+
+      chartInstanceRef.current = new Chart(ctx, {
         type: 'candlestick',
         data: {
           datasets: data.datasets,
@@ -67,17 +69,17 @@ const BTCChart = () => {
           },
         },
       });
+    };
 
-      setChartInstance(newChart);
-    });
+    renderChart();
 
     return () => {
       isMounted = false;
-      if (chartInstance) {
-        chartInstance.destroy();
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
       }
     };
-  }, []);
+  }, []); // No chartInstance dependency needed now
 
   return <canvas ref={chartRef} width={800} height={400} />;
 };
