@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Chart,
   CategoryScale,
@@ -39,97 +41,100 @@ export default function Home() {
     return ((emaNum - atlNum) / atlNum) * 100;
   };
 
-  const getAthSignal = () =>
-    computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+  const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal');
+  const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-  const getAtlSignal = () =>
-    computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+  const generateEntryData = (type) => {
+    const ema = parseFloat(ema70);
+    const athVal = parseFloat(ath);
+    const atlVal = parseFloat(atl);
+
+    if (isNaN(ema)) return {};
+
+    if (type === 'ATH') {
+      return {
+        entry: (ema * 1.02).toFixed(2),
+        sl: (ema * 0.97).toFixed(2),
+        tp: (athVal * 0.98).toFixed(2),
+      };
+    } else {
+      return {
+        entry: (ema * 0.98).toFixed(2),
+        sl: (ema * 1.03).toFixed(2),
+        tp: (atlVal * 1.02).toFixed(2),
+      };
+    }
+  };
+
+  const athStrategy = generateEntryData('ATH');
+  const atlStrategy = generateEntryData('ATL');
 
   return (
     <div className="min-h-screen bg-cover bg-center p-6" style={{ backgroundImage: 'url(/bg.png)' }}>
-      <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6 text-gray-900">
-        <h1 className="text-3xl font-extrabold text-center">Bitcoin Signal Analyzer</h1>
+      <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
-        <p className="text-center text-base leading-relaxed font-medium">
-          Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either continuation or possible reversal—based on macro price behavior.
+        <p className="text-gray-800 text-center">
+          Analyze Bitcoin's macro trend using ATH, ATL, and 70 EMA (1W). Get directional signals plus suggested entries and targets.
         </p>
 
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-lg font-bold mb-2">Instructions:</h2>
-          <ul className="list-disc list-inside space-y-1 font-medium text-sm">
-            <li>Use data from the <strong>1W timeframe</strong> only for consistency.</li>
-            <li>Enter the <strong>All-Time High (ATH)</strong> and <strong>70 EMA</strong> together to check macro bullish signals.</li>
-            <li>Enter the <strong>All-Time Low (ATL)</strong> and <strong>70 EMA</strong> together to analyze bearish potential zones.</li>
-            <li>The tool calculates percentage gaps and suggests a continuation or reversal signal.</li>
-            <li>Optionally add the <strong>current price</strong> for your own tracking context.</li>
-            <li>Check the live BTC chart below for trend confirmation and historical data reference.</li>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
+          <ul className="list-disc list-inside text-gray-700 space-y-1">
+            <li>Use the <strong>1W timeframe</strong> on BTC charts.</li>
+            <li>Input <strong>ATH</strong>, <strong>ATL</strong>, <strong>EMA70</strong>, and optionally the <strong>Current Price</strong>.</li>
+            <li>Receive macro signal + trade planning guidance (entry, SL, TP).</li>
           </ul>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <input
-            type="number"
-            placeholder="All-Time High (ATH)"
-            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
-            onChange={e => setAth(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="All-Time Low (ATL)"
-            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
-            onChange={e => setAtl(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="EMA70"
-            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
-            onChange={e => setEma70(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Current Price"
-            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
-            onChange={e => setCurrentPrice(e.target.value)}
-          />
+          <input type="number" placeholder="All-Time High (ATH)" className="p-2 border border-gray-300 rounded" onChange={e => setAth(e.target.value)} />
+          <input type="number" placeholder="All-Time Low (ATL)" className="p-2 border border-gray-300 rounded" onChange={e => setAtl(e.target.value)} />
+          <input type="number" placeholder="EMA70" className="p-2 border border-gray-300 rounded" onChange={e => setEma70(e.target.value)} />
+          <input type="number" placeholder="Current Price" className="p-2 border border-gray-300 rounded" onChange={e => setCurrentPrice(e.target.value)} />
         </div>
 
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold">ATH vs EMA70</h2>
-          <p className="text-base font-medium">Gap: {computeAthGap().toFixed(2)}%</p>
-          <p className="text-base font-semibold">
-            Signal:{' '}
-            <span
-              className={
-                getAthSignal() === 'Bullish Continuation'
-                  ? 'text-green-700'
-                  : 'text-yellow-700'
-              }
-            >
-              {getAthSignal()}
-            </span>
-          </p>
-        </div>
+        <div className="space-y-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">ATH vs EMA70</h2>
+            <p className="text-gray-700">Gap: {computeAthGap().toFixed(2)}%</p>
+            <p className="font-semibold">
+              Signal: <span className={getAthSignal().includes('Bullish') ? 'text-green-600' : 'text-yellow-600'}>
+                {getAthSignal()}
+              </span>
+            </p>
+            {ema70 && ath && (
+              <div className="mt-2 text-sm text-gray-700">
+                <p><strong>Entry Point:</strong> ${athStrategy.entry}</p>
+                <p><strong>Stop Loss:</strong> ${athStrategy.sl}</p>
+                <p><strong>Take Profit:</strong> ${athStrategy.tp}</p>
+              </div>
+            )}
+          </div>
 
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold">ATL vs EMA70</h2>
-          <p className="text-base font-medium">Gap: {computeAtlGap().toFixed(2)}%</p>
-          <p className="text-base font-semibold">
-            Signal:{' '}
-            <span
-              className={
-                getAtlSignal() === 'Bearish Continuation'
-                  ? 'text-red-700'
-                  : 'text-yellow-700'
-              }
-            >
-              {getAtlSignal()}
-            </span>
-          </p>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">ATL vs EMA70</h2>
+            <p className="text-gray-700">Gap: {computeAtlGap().toFixed(2)}%</p>
+            <p className="font-semibold">
+              Signal: <span className={getAtlSignal().includes('Bearish') ? 'text-red-600' : 'text-yellow-600'}>
+                {getAtlSignal()}
+              </span>
+            </p>
+            {ema70 && atl && (
+              <div className="mt-2 text-sm text-gray-700">
+                <p><strong>Entry Point:</strong> ${atlStrategy.entry}</p>
+                <p><strong>Stop Loss:</strong> ${atlStrategy.sl}</p>
+                <p><strong>Take Profit:</strong> ${atlStrategy.tp}</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {chartData && (
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold text-center mb-4">BTC Price Chart (Recent)</h2>
+            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">
+              BTC Price Chart (Recent)
+            </h2>
             <Line
               data={chartData}
               options={{
@@ -157,12 +162,12 @@ export default function Home() {
                 scales: {
                   x: {
                     grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                    ticks: { color: '#374151' },
+                    ticks: { color: '#6b7280' },
                   },
                   y: {
                     grid: { color: 'rgba(0, 0, 0, 0.05)' },
                     ticks: {
-                      color: '#374151',
+                      color: '#6b7280',
                       callback: value => `$${value}`,
                     },
                   },
@@ -181,12 +186,12 @@ export default function Home() {
           </div>
         )}
 
-        <footer className="text-sm text-center text-gray-600 pt-6 border-t border-gray-300">
+        <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
           <p>
-            <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
+            <strong>Disclaimer:</strong> Educational use only. Not financial advice. DYOR.
           </p>
         </footer>
       </div>
     </div>
   );
-  }
+}
