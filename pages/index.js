@@ -76,7 +76,7 @@ export default function Home() {
     takeProfit2: ema * 1.05, // Second TP above EMA
   };
 };
-};
+
 
 const computeBearishReversalFromAth = () => {
   const athNum = parseFloat(ath);
@@ -89,7 +89,7 @@ const computeBearishReversalFromAth = () => {
     takeProfit2: ema * 0.95, // Second TP below EMA
   };
 };
-};
+  
   const bullishReversal = computeBullishReversalFromAtl();
 const bearishReversal = computeBearishReversalFromAth();
 
