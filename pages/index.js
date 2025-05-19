@@ -39,31 +39,40 @@ export default function Home() {
     return ((emaNum - atlNum) / atlNum) * 100;
   };
 
-  const getAthSignal = () =>
-    computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal';
-  const getAtlSignal = () =>
-    computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+  const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal');
+  const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-  const suggestedEntry = currentPrice ? parseFloat(currentPrice) : '';
-  const suggestedSL = suggestedEntry ? (suggestedEntry * 0.98).toFixed(2) : '';
-  const suggestedTP = suggestedEntry ? (suggestedEntry * 1.05).toFixed(2) : '';
+  const getEntryPoint = () => {
+    const price = parseFloat(currentPrice);
+    return price ? `Around $${(price * 1.01).toFixed(2)}` : 'N/A';
+  };
+
+  const getStopLoss = () => {
+    const price = parseFloat(currentPrice);
+    return price ? `Around $${(price * 0.97).toFixed(2)}` : 'N/A';
+  };
+
+  const getTakeProfit = () => {
+    const price = parseFloat(currentPrice);
+    return price ? `Target $${(price * 1.15).toFixed(2)}` : 'N/A';
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
+    <div className="min-h-screen bg-cover bg-center p-6" style={{ backgroundImage: 'url(/bg.png)' }}>
+      <div className="max-w-4xl mx-auto bg-white bg-opacity-90 rounded-xl shadow-xl p-6 space-y-6 text-gray-900">
+        <h1 className="text-3xl font-bold text-center">Bitcoin Signal Analyzer</h1>
 
-        <p className="text-gray-800 text-center">
-          Analyze Bitcoin’s macro trend by measuring the vertical gap between ATH, ATL, and EMA70 on the 1W timeframe. This tool gives macro insights and suggests entry points with risk levels.
+        <p className="text-center">
+          Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either continuation or reversal—based on macro price behavior.
         </p>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Instructions:</h2>
-          <ul className="list-disc list-inside text-gray-700 space-y-1">
-            <li>Use <strong>1W timeframe</strong> data only.</li>
-            <li>Input the <strong>ATH</strong>, <strong>ATL</strong>, <strong>EMA70</strong>, and optionally <strong>Current Price</strong>.</li>
-            <li>The app calculates gaps and signals based on price behavior.</li>
-            <li>Suggested entry, stop-loss, and take-profit levels are optional tools.</li>
+        <div className="bg-gray-100 p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-2">Instructions:</h2>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Use data from the <strong>1W timeframe</strong> only for consistency.</li>
+            <li>Enter the <strong>All-Time High (ATH)</strong> and <strong>70 EMA</strong> for bullish signal check.</li>
+            <li>Enter the <strong>All-Time Low (ATL)</strong> and <strong>70 EMA</strong> for bearish zones.</li>
+            <li>Optionally add the <strong>Current Price</strong> for entry and exit strategy estimates.</li>
           </ul>
         </div>
 
@@ -71,70 +80,59 @@ export default function Home() {
           <input
             type="number"
             placeholder="All-Time High (ATH)"
-            className="p-2 border border-gray-300 rounded"
+            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
             onChange={e => setAth(e.target.value)}
           />
           <input
             type="number"
             placeholder="All-Time Low (ATL)"
-            className="p-2 border border-gray-300 rounded"
+            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
             onChange={e => setAtl(e.target.value)}
           />
           <input
             type="number"
             placeholder="EMA70"
-            className="p-2 border border-gray-300 rounded"
+            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
             onChange={e => setEma70(e.target.value)}
           />
           <input
             type="number"
             placeholder="Current Price"
-            className="p-2 border border-gray-300 rounded"
+            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
             onChange={e => setCurrentPrice(e.target.value)}
           />
         </div>
 
-        <div className="space-y-4">
-          <div className="bg-green-50 border border-green-300 rounded-lg p-4">
-            <h2 className="text-xl font-semibold text-green-800">ATH vs EMA70</h2>
-            <p className="text-gray-800">Gap: {computeAthGap().toFixed(2)}%</p>
-            <p className="font-bold text-green-700">
-              Signal: {getAthSignal()}
-            </p>
-            {currentPrice && (
-              <>
-                <p className="text-gray-700 mt-2">
-                  Suggested Entry: <strong>${suggestedEntry}</strong>
-                </p>
-                <p className="text-red-600">Stop Loss: <strong>${suggestedSL}</strong></p>
-                <p className="text-blue-600">Take Profit: <strong>${suggestedTP}</strong></p>
-              </>
-            )}
-          </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
+          <p>Gap: {computeAthGap().toFixed(2)}%</p>
+          <p>
+            Signal: <span className={getAthSignal().includes('Bullish') ? 'text-green-600' : 'text-red-600'}>
+              {getAthSignal()}
+            </span>
+          </p>
+        </div>
 
-          <div className="bg-red-50 border border-red-300 rounded-lg p-4">
-            <h2 className="text-xl font-semibold text-red-800">ATL vs EMA70</h2>
-            <p className="text-gray-800">Gap: {computeAtlGap().toFixed(2)}%</p>
-            <p className="font-bold text-red-700">
-              Signal: {getAtlSignal()}
-            </p>
-            {currentPrice && (
-              <>
-                <p className="text-gray-700 mt-2">
-                  Suggested Entry: <strong>${suggestedEntry}</strong>
-                </p>
-                <p className="text-red-600">Stop Loss: <strong>${suggestedSL}</strong></p>
-                <p className="text-blue-600">Take Profit: <strong>${suggestedTP}</strong></p>
-              </>
-            )}
-          </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
+          <p>Gap: {computeAtlGap().toFixed(2)}%</p>
+          <p>
+            Signal: <span className={getAtlSignal().includes('Bearish') ? 'text-red-600' : 'text-green-600'}>
+              {getAtlSignal()}
+            </span>
+          </p>
+        </div>
+
+        <div className="space-y-2 bg-gray-100 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold">Position Strategy</h2>
+          <p><strong>Entry Point:</strong> {getEntryPoint()}</p>
+          <p><strong>Stop Loss:</strong> {getStopLoss()}</p>
+          <p><strong>Take Profit:</strong> {getTakeProfit()}</p>
         </div>
 
         {chartData && (
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">
-              BTC Price Chart (Recent)
-            </h2>
+            <h2 className="text-xl font-semibold text-center mb-4">BTC Price Chart (Recent)</h2>
             <Line
               data={chartData}
               options={{
@@ -183,10 +181,10 @@ export default function Home() {
 
         <footer className="text-sm text-center text-gray-600 pt-6 border-t border-gray-300">
           <p>
-            <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always do your own research before trading.
+            <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice.
           </p>
         </footer>
       </div>
     </div>
   );
-    }
+  }
