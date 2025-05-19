@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Chart } from 'react-chartjs-2';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Chart as ChartJS,
   TimeScale,
   LinearScale,
   Tooltip,
   Legend,
+  LineElement,
+  PointElement,
 } from 'chart.js';
 import {
   CandlestickController,
@@ -20,30 +21,64 @@ ChartJS.register(
   Tooltip,
   Legend,
   CandlestickController,
-  CandlestickElement
+  CandlestickElement,
+  LineElement,
+  PointElement
 );
 
 const BTCChart = () => {
-  const [chartData, setChartData] = useState(null);
+  const chartRef = useRef(null);
+  const [chartInstance, setChartInstance] = useState(null);
 
   useEffect(() => {
-    fetchBTCData().then(data => setChartData(data));
+    let isMounted = true;
+
+    fetchBTCData().then(data => {
+      if (!data || !isMounted) return;
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      const ctx = chartRef.current.getContext('2d');
+      const newChart = new ChartJS(ctx, {
+        type: 'candlestick',
+        data: {
+          datasets: data.datasets,
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: { mode: 'index', intersect: false },
+          },
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'day',
+              },
+              ticks: { maxRotation: 0 },
+            },
+            y: {
+              beginAtZero: false,
+            },
+          },
+        },
+      });
+
+      setChartInstance(newChart);
+    });
+
+    return () => {
+      isMounted = false;
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+    };
   }, []);
 
-  if (!chartData) return <div>Loading BTC Chart...</div>;
-
-  return (
-    <Chart
-      type="candlestick"
-      data={chartData}
-      options={{
-        responsive: true,
-        scales: {
-          x: { type: 'time' },
-        },
-      }}
-    />
-  );
+  return <canvas ref={chartRef} />;
 };
 
 export default BTCChart;
