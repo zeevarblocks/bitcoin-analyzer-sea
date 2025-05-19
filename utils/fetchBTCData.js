@@ -37,5 +37,3 @@ return null;
 }
 }
 
-Here's my fetchbtcdata
-
