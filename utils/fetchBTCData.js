@@ -14,7 +14,6 @@ export const fetchBTCMarketData = async () => {
       close: parseFloat(d[4]),
     }));
 
-    // Step 1: Calculate EMA70
     const k = 2 / (70 + 1);
     let emaArray = [];
     let sum = 0;
@@ -36,7 +35,6 @@ export const fetchBTCMarketData = async () => {
       }
     }
 
-    // Step 2: Find ATH/ATL
     let ath = { price: 0, index: -1 };
     let atl = { price: Number.MAX_VALUE, index: -1 };
 
@@ -49,7 +47,6 @@ export const fetchBTCMarketData = async () => {
       }
     });
 
-    // Step 3: Find EMA on ATH/ATL candle
     const emaAtATH = emaArray[ath.index];
     const emaAtATL = emaArray[atl.index];
 
