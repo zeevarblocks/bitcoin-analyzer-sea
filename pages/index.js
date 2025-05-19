@@ -42,97 +42,69 @@ export default function Home() {
   const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal');
   const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-  const getEntryPoint = () => {
-    const price = parseFloat(currentPrice);
-    return price ? `Around $${(price * 1.01).toFixed(2)}` : 'N/A';
-  };
-
-  const getStopLoss = () => {
-    const price = parseFloat(currentPrice);
-    return price ? `Around $${(price * 0.97).toFixed(2)}` : 'N/A';
-  };
-
-  const getTakeProfit = () => {
-    const price = parseFloat(currentPrice);
-    return price ? `Target $${(price * 1.15).toFixed(2)}` : 'N/A';
-  };
-
   return (
-    <div className="min-h-screen bg-cover bg-center p-6" style={{ backgroundImage: 'url(/bg.png)' }}>
-      <div className="max-w-4xl mx-auto bg-white bg-opacity-90 rounded-xl shadow-xl p-6 space-y-6 text-gray-900">
-        <h1 className="text-3xl font-bold text-center">Bitcoin Signal Analyzer</h1>
+    <div className="min-h-screen bg-cover bg-center p-6 text-gray-800" style={{ backgroundImage: 'url(/bg.png)' }}>
+      <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
-        <p className="text-center">
-          Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either continuation or reversal—based on macro price behavior.
+        <p className="text-gray-700 text-center">
+          Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
         </p>
 
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">Instructions:</h2>
-          <ul className="list-disc list-inside space-y-1">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
+          <ul className="list-disc list-inside text-gray-700 space-y-1">
             <li>Use data from the <strong>1W timeframe</strong> only for consistency.</li>
-            <li>Enter the <strong>All-Time High (ATH)</strong> and <strong>70 EMA</strong> for bullish signal check.</li>
-            <li>Enter the <strong>All-Time Low (ATL)</strong> and <strong>70 EMA</strong> for bearish zones.</li>
-            <li>Optionally add the <strong>Current Price</strong> for entry and exit strategy estimates.</li>
+            <li>Enter the <strong>All-Time High (ATH)</strong> and <strong>70 EMA</strong> together to check macro bullish signals.</li>
+            <li>Enter the <strong>All-Time Low (ATL)</strong> and <strong>70 EMA</strong> together to analyze bearish potential zones.</li>
+            <li>The tool calculates percentage gaps and suggests a bullish continuation or possible reversal signal.</li>
+            <li>Optionally add the <strong>current price</strong> for your own tracking context.</li>
+            <li>Check the live BTC chart below for trend confirmation and historical data reference.</li>
           </ul>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <input
-            type="number"
-            placeholder="All-Time High (ATH)"
-            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
-            onChange={e => setAth(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="All-Time Low (ATL)"
-            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
-            onChange={e => setAtl(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="EMA70"
-            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
-            onChange={e => setEma70(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Current Price"
-            className="p-3 bg-white text-gray-900 border border-gray-400 rounded shadow-sm"
-            onChange={e => setCurrentPrice(e.target.value)}
-          />
+          <input type="number" placeholder="All-Time High (ATH)" className="p-2 border border-gray-300 rounded" onChange={e => setAth(e.target.value)} />
+          <input type="number" placeholder="All-Time Low (ATL)" className="p-2 border border-gray-300 rounded" onChange={e => setAtl(e.target.value)} />
+          <input type="number" placeholder="EMA70" className="p-2 border border-gray-300 rounded" onChange={e => setEma70(e.target.value)} />
+          <input type="number" placeholder="Current Price" className="p-2 border border-gray-300 rounded" onChange={e => setCurrentPrice(e.target.value)} />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 text-gray-800">
           <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
           <p>Gap: {computeAthGap().toFixed(2)}%</p>
           <p>
-            Signal: <span className={getAthSignal().includes('Bullish') ? 'text-green-600' : 'text-red-600'}>
+            Signal:{' '}
+            <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
               {getAthSignal()}
             </span>
           </p>
-        </div>
-
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
-          <p>Gap: {computeAtlGap().toFixed(2)}%</p>
-          <p>
-            Signal: <span className={getAtlSignal().includes('Bearish') ? 'text-red-600' : 'text-green-600'}>
-              {getAtlSignal()}
-            </span>
+          <p className="text-sm text-gray-700">
+            {getAthSignal() === 'Bullish Continuation'
+              ? 'Price is trending above long-term resistance. Momentum is strong; consider watching for breakout confirmations.'
+              : 'Price may be weakening. A pullback or trend reversal could be developing. Monitor weekly candles closely.'}
           </p>
         </div>
 
-        <div className="space-y-2 bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold">Position Strategy</h2>
-          <p><strong>Entry Point:</strong> {getEntryPoint()}</p>
-          <p><strong>Stop Loss:</strong> {getStopLoss()}</p>
-          <p><strong>Take Profit:</strong> {getTakeProfit()}</p>
+        <div className="space-y-2 text-gray-800">
+          <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
+          <p>Gap: {computeAtlGap().toFixed(2)}%</p>
+          <p>
+            Signal:{' '}
+            <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold'}>
+              {getAtlSignal()}
+            </span>
+          </p>
+          <p className="text-sm text-gray-700">
+            {getAtlSignal() === 'Bearish Continuation'
+              ? 'Price remains under long-term pressure. Trend continuation likely unless strong reversal patterns emerge.'
+              : 'Price may be rebounding from historic lows. Watch for a higher low structure and rising EMA support.'}
+          </p>
         </div>
 
         {chartData && (
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-center mb-4">BTC Price Chart (Recent)</h2>
+            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
             <Line
               data={chartData}
               options={{
@@ -175,13 +147,18 @@ export default function Home() {
                   point: { radius: 3, backgroundColor: '#3b82f6' },
                 },
               }}
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '20px',
+                borderRadius: '12px',
+              }}
             />
           </div>
         )}
 
-        <footer className="text-sm text-center text-gray-600 pt-6 border-t border-gray-300">
+        <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
           <p>
-            <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice.
+            <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
           </p>
         </footer>
       </div>
