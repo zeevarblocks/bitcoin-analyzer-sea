@@ -31,6 +31,7 @@ cd bitcoin-analyzer-sea
 npm install
 npm run dev
 
+
 ---
 
 Disclaimer
@@ -49,3 +50,6 @@ Website: https://zeevarblocks.github.io
 
 MIT License © 2025 Zeevar Blocks
 Feel free to fork, but credit is appreciated.
+
+
+---
