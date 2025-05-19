@@ -2,6 +2,34 @@ import {
   Chart,
   CategoryScale,
   LinearScale,
+  TimeScale,
+  Tooltip,
+  Title,
+  Legend
+} from 'chart.js';
+
+import {
+  CandlestickController,
+  CandlestickElement
+} from 'chartjs-chart-financial';
+
+import 'chartjs-adapter-date-fns';
+
+// Register the necessary components for candlestick charts
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  TimeScale,
+  Tooltip,
+  Title,
+  Legend,
+  CandlestickController,
+  CandlestickElement
+);
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
   PointElement,
   LineElement,
   Title,
