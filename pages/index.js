@@ -47,16 +47,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-cover bg-center p-6" style={{ backgroundImage: 'url(/bg.png)' }}>
-      <div className="max-w-4xl mx-auto bg-white bg-opacity-90 rounded-xl shadow-xl p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
+      <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6 text-gray-900">
+        <h1 className="text-3xl font-extrabold text-center">Bitcoin Signal Analyzer</h1>
 
-        <p className="text-gray-700 text-center">
+        <p className="text-center text-base leading-relaxed font-medium">
           Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either continuation or possible reversal—based on macro price behavior.
         </p>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
-          <ul className="list-disc list-inside text-gray-700 space-y-1">
+        <div className="bg-gray-100 p-4 rounded-lg">
+          <h2 className="text-lg font-bold mb-2">Instructions:</h2>
+          <ul className="list-disc list-inside space-y-1 font-medium text-sm">
             <li>Use data from the <strong>1W timeframe</strong> only for consistency.</li>
             <li>Enter the <strong>All-Time High (ATH)</strong> and <strong>70 EMA</strong> together to check macro bullish signals.</li>
             <li>Enter the <strong>All-Time Low (ATL)</strong> and <strong>70 EMA</strong> together to analyze bearish potential zones.</li>
@@ -70,39 +70,39 @@ export default function Home() {
           <input
             type="number"
             placeholder="All-Time High (ATH)"
-            className="p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
             onChange={e => setAth(e.target.value)}
           />
           <input
             type="number"
             placeholder="All-Time Low (ATL)"
-            className="p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
             onChange={e => setAtl(e.target.value)}
           />
           <input
             type="number"
             placeholder="EMA70"
-            className="p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
             onChange={e => setEma70(e.target.value)}
           />
           <input
             type="number"
             placeholder="Current Price"
-            className="p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-400 bg-white text-gray-800 rounded"
             onChange={e => setCurrentPrice(e.target.value)}
           />
         </div>
 
-        <div className="space-y-2 text-gray-800">
-          <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
-          <p>Gap: {computeAthGap().toFixed(2)}%</p>
-          <p>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold">ATH vs EMA70</h2>
+          <p className="text-base font-medium">Gap: {computeAthGap().toFixed(2)}%</p>
+          <p className="text-base font-semibold">
             Signal:{' '}
             <span
               className={
                 getAthSignal() === 'Bullish Continuation'
-                  ? 'text-green-600 font-semibold'
-                  : 'text-yellow-600 font-semibold'
+                  ? 'text-green-700'
+                  : 'text-yellow-700'
               }
             >
               {getAthSignal()}
@@ -110,16 +110,16 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="space-y-2 text-gray-800">
-          <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
-          <p>Gap: {computeAtlGap().toFixed(2)}%</p>
-          <p>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold">ATL vs EMA70</h2>
+          <p className="text-base font-medium">Gap: {computeAtlGap().toFixed(2)}%</p>
+          <p className="text-base font-semibold">
             Signal:{' '}
             <span
               className={
                 getAtlSignal() === 'Bearish Continuation'
-                  ? 'text-red-600 font-semibold'
-                  : 'text-yellow-600 font-semibold'
+                  ? 'text-red-700'
+                  : 'text-yellow-700'
               }
             >
               {getAtlSignal()}
@@ -129,9 +129,7 @@ export default function Home() {
 
         {chartData && (
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">
-              BTC Price Chart (Recent)
-            </h2>
+            <h2 className="text-xl font-bold text-center mb-4">BTC Price Chart (Recent)</h2>
             <Line
               data={chartData}
               options={{
@@ -159,12 +157,12 @@ export default function Home() {
                 scales: {
                   x: {
                     grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                    ticks: { color: '#6b7280' },
+                    ticks: { color: '#374151' },
                   },
                   y: {
                     grid: { color: 'rgba(0, 0, 0, 0.05)' },
                     ticks: {
-                      color: '#6b7280',
+                      color: '#374151',
                       callback: value => `$${value}`,
                     },
                   },
@@ -183,7 +181,7 @@ export default function Home() {
           </div>
         )}
 
-        <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
+        <footer className="text-sm text-center text-gray-600 pt-6 border-t border-gray-300">
           <p>
             <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
           </p>
