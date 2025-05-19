@@ -88,6 +88,27 @@ export default function Home() {
   const [atl, setAtl] = useState('');
   const [ema70, setEma70] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+import React, { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import { fetchBTCData } from '../utils/fetchBTCData';
+
+export default function Home() {
+  const [ath, setAth] = useState('');
+  const [atl, setAtl] = useState('');
+  const [ema70, setEma70] = useState('');
+  const [currentPrice, setCurrentPrice] = useState('');
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
