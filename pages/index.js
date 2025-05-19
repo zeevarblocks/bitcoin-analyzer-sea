@@ -21,7 +21,7 @@ export default function Home() {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    fetchBTCData().then(data => setChartData(data));
+    fetchBTCMarketData().then(data => setChartData(data));
   }, []);
 
   const computeAthGap = () => {
