@@ -13,7 +13,6 @@ Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Too
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
-import BTCChart from '../components/BTCChart';
 
 export default function Home() {
   const [ath, setAth] = useState('');
@@ -264,8 +263,6 @@ const bearishReversal = computeBearishReversalFromAth();
         </div>
 
         {/* Chart Section */}
-h1>Bitcoin Analyzer</h1>
-      <BTCChart />
         {chartData && (
           <div className="bg-white p-4 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
@@ -328,4 +325,4 @@ h1>Bitcoin Analyzer</h1>
       </div>
     </div>
   );
-      }
+             }
