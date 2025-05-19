@@ -1,9 +1,6 @@
-# Bitcoin Analyzer SEA
+# Bitcoin Signal Analyzer
 
-A simple Bitcoin analyzer built with **Next.js** for Southeast Asian traders.  
-It analyzes the relationship between **ATH**, **ATL**, and **EMA70** on the **1W timeframe** to generate basic bullish or bearish signals.
-
-> Ideal for Bitcoin HODLers, signal watchers, and macro traders who want simplified crypto insights.
+A simple Bitcoin analyzer built with **Next.js** to help traders identify potential long-term bullish or bearish signals based on market cycles. It evaluates the relationship between **ATH**, **ATL**, and **EMA70** on the **1W timeframe**.
 
 ---
 
@@ -11,19 +8,19 @@ It analyzes the relationship between **ATH**, **ATL**, and **EMA70** on the **1W
 
 - Manual input for ATH, ATL, and EMA70
 - Signal logic based on vertical alignment
-- Live BTC chart via CoinGecko API
-- Fully responsive UI (Tailwind CSS)
+- Live BTC chart powered by CoinGecko API
+- Clean, responsive UI using Tailwind CSS
 
 ---
 
 ## Signal Logic
 
-- **Bullish Signal**: ATH > EMA70 by 100%
-- **Bearish Signal**: EMA70 > ATL by 100%
+- **Bullish** if: ATH > EMA70 by 100%
+- **Bearish** if: EMA70 > ATL by 100%
 
 ---
 
-## Getting Started
+## Run Locally
 
 ```bash
 git clone https://github.com/zeevarblocks/bitcoin-analyzer-sea.git
@@ -36,20 +33,14 @@ npm run dev
 
 Disclaimer
 
-This tool is for educational purposes only and does not constitute financial advice.
-Please trade at your own risk.
+This tool is for educational purposes only. It does not constitute financial advice. Use it at your own risk.
 
 
 ---
 
-Author
+License
 
-Created by Var (Zeevar Blocks)
-GitHub: @zeevarblocks
-Website: https://zeevarblocks.github.io
-
-MIT License © 2025 Zeevar Blocks
-Feel free to fork, but credit is appreciated.
-
+MIT License © 2025 zeevarblocks
+See the full LICENSE file for details.
 
 ---
