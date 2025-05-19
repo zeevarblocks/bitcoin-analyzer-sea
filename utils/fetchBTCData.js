@@ -36,4 +36,3 @@ console.error('Error fetching BTC data:', error);
 return null;
 }
 }
-
