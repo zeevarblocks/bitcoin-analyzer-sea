@@ -65,6 +65,31 @@ export default function Home() {
       takeProfit2: atlNum * 0.95,
     };
   };
+  const computeBullishReversalFromAtl = () => {
+  const ema = parseFloat(ema70);
+  const atlNum = parseFloat(atl);
+  if (isNaN(ema) || isNaN(atlNum)) return {};
+  return {
+    entry: ema * 1.02,
+    stopLoss: ema * 0.97,
+    takeProfit1: atlNum * 1.5,
+    takeProfit2: atlNum * 2,
+  };
+};
+
+const computeBearishReversalFromAth = () => {
+  const ema = parseFloat(ema70);
+  const athNum = parseFloat(ath);
+  if (isNaN(ema) || isNaN(athNum)) return {};
+  return {
+    entry: ema * 0.98,
+    stopLoss: ema * 1.03,
+    takeProfit1: athNum * 0.9,
+    takeProfit2: athNum * 0.8,
+  };
+};
+  const bullishReversal = computeBullishReversalFromAtl();
+const bearishReversal = computeBearishReversalFromAth();
 
   const bullish = computeBullishLevels();
   const bearish = computeBearishLevels();
@@ -166,12 +191,12 @@ export default function Home() {
   </div>
 )}
 
-{getAthSignal() === 'Possible Reversal' && bearish.entry && (
+{getAthSignal() === 'Possible Reversal' && bearishReversal.entry && (
   <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
     <p className="font-semibold text-yellow-800">Suggested Trade Levels (Bearish - Based on ATH Reversal):</p>
-    <p>Entry Point: <span className="font-medium text-gray-800">${bearish.entry.toFixed(2)}</span></p>
-    <p>Stop Loss: <span className="font-medium text-gray-800">${bearish.stopLoss.toFixed(2)}</span></p>
-    <p>Take Profit: <span className="font-medium text-gray-800">${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</span></p>
+    <p>Entry Point: <span className="font-medium text-gray-800">${bearishReversal.entry.toFixed(2)}</span></p>
+    <p>Stop Loss: <span className="font-medium text-gray-800">${bearishReversal.stopLoss.toFixed(2)}</span></p>
+    <p>Take Profit: <span className="font-medium text-gray-800">${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</span></p>
   </div>
 )}
         </div>
@@ -200,12 +225,12 @@ export default function Home() {
   </div>
 )}
 
-{getAtlSignal() === 'Possible Reversal' && bullish.entry && (
+{getAtlSignal() === 'Possible Reversal' && bullishReversal.entry && (
   <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
     <p className="font-semibold text-green-800">Suggested Trade Levels (Bullish - Based on ATL Reversal):</p>
-    <p>Entry Point: <span className="font-medium text-gray-800">${bullish.entry.toFixed(2)}</span></p>
-    <p>Stop Loss: <span className="font-medium text-gray-800">${bullish.stopLoss.toFixed(2)}</span></p>
-    <p>Take Profit: <span className="font-medium text-gray-800">${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</span></p>
+    <p>Entry Point: <span className="font-medium text-gray-800">${bullishReversal.entry.toFixed(2)}</span></p>
+    <p>Stop Loss: <span className="font-medium text-gray-800">${bullishReversal.stopLoss.toFixed(2)}</span></p>
+    <p>Take Profit: <span className="font-medium text-gray-800">${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</span></p>
   </div>
 )}
         </div>
