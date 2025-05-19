@@ -1,3 +1,9 @@
+// index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+// --- Chart.js & Financial Chart Setup ---
 import {
   Chart,
   CategoryScale,
@@ -5,17 +11,16 @@ import {
   TimeScale,
   Tooltip,
   Title,
-  Legend
+  Legend,
 } from 'chart.js';
 
 import {
   CandlestickController,
-  CandlestickElement
+  CandlestickElement,
 } from 'chartjs-chart-financial';
 
 import 'chartjs-adapter-date-fns';
 
-// Register the necessary components for candlestick charts
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -26,6 +31,10 @@ Chart.register(
   CandlestickController,
   CandlestickElement
 );
+
+// --- Mount React App ---
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
 import {
   Chart,
   CategoryScale,
