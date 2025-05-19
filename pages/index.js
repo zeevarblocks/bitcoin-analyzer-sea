@@ -22,20 +22,6 @@ export default function Home() {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-  const getData = async () => {
-    const result = await fetchBTCData();
-    if (result) {
-      setAth(result.athPrice);
-      setEma70Ath(result.athEma70);
-      setAtl(result.atlPrice);
-      setEma70Atl(result.atlEma70);
-    }
-  };
-
-  getData();
-}, []);
-
-  useEffect(() => {
     fetchBTCData().then(data => setChartData(data));
   }, []);
 
