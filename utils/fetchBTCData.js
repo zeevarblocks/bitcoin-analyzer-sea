@@ -1,7 +1,7 @@
 export async function fetchBTCData() {
 try {
 const res = await fetch(
-'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily'
+'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=500'
 );
 
 if (!res.ok) {  
