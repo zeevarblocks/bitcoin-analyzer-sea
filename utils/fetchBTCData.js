@@ -1,63 +1,39 @@
-import axios from "axios";
+export async function fetchBTCData() {
+try {
+const res = await fetch(
+'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily'
+);
 
-export const fetchBTCMarketData = async () => {
-  try {
-    const res = await axios.get(
-      "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=500"
-    );
+if (!res.ok) {  
+  throw new Error('Failed to fetch BTC data');  
+}  
 
-    const candles = res.data.map((d) => ({
-      time: d[0],
-      open: parseFloat(d[1]),
-      high: parseFloat(d[2]),
-      low: parseFloat(d[3]),
-      close: parseFloat(d[4]),
-    }));
+const data = await res.json();  
 
-    const k = 2 / (70 + 1);
-    let emaArray = [];
-    let sum = 0;
+const labels = data.prices.map(price => {  
+  const date = new Date(price[0]);  
+  return `${date.getMonth() + 1}/${date.getDate()}`;  
+});  
 
-    for (let i = 0; i < candles.length; i++) {
-      const close = candles[i].close;
+const prices = data.prices.map(price => price[1]);  
 
-      if (i < 70) {
-        sum += close;
-        if (i === 69) {
-          emaArray.push(sum / 70);
-        } else {
-          emaArray.push(null);
-        }
-      } else {
-        const emaPrev = emaArray[i - 1];
-        const ema = close * k + emaPrev * (1 - k);
-        emaArray.push(ema);
-      }
-    }
-
-    let ath = { price: 0, index: -1 };
-    let atl = { price: Number.MAX_VALUE, index: -1 };
-
-    candles.forEach((c, i) => {
-      if (c.high > ath.price) {
-        ath = { price: c.high, index: i };
-      }
-      if (c.low < atl.price) {
-        atl = { price: c.low, index: i };
-      }
-    });
-
-    const emaAtATH = emaArray[ath.index];
-    const emaAtATL = emaArray[atl.index];
-
-    return {
-      athPrice: ath.price,
-      athEma70: emaAtATH,
-      atlPrice: atl.price,
-      atlEma70: emaAtATL,
-    };
-  } catch (error) {
-    console.error("Error fetching BTC data:", error);
-    return null;
-  }
+return {  
+  labels,  
+  datasets: [  
+    {  
+      label: 'BTC/USD',  
+      data: prices,  
+      borderColor: '#3b82f6',  
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',  
+      fill: true,  
+      tension: 0.4,  
+    },  
+  ],  
 };
+
+} catch (error) {
+console.error('Error fetching BTC data:', error);
+return null;
+}
+}
+
