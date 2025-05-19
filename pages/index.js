@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Chart,
   CategoryScale,
@@ -41,91 +39,93 @@ export default function Home() {
     return ((emaNum - atlNum) / atlNum) * 100;
   };
 
-  const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal');
-  const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal');
+  const getAthSignal = () =>
+    computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+  const getAtlSignal = () =>
+    computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal';
 
-  const generateEntryData = (type) => {
-    const ema = parseFloat(ema70);
-    const athVal = parseFloat(ath);
-    const atlVal = parseFloat(atl);
-
-    if (isNaN(ema)) return {};
-
-    if (type === 'ATH') {
-      return {
-        entry: (ema * 1.02).toFixed(2),
-        sl: (ema * 0.97).toFixed(2),
-        tp: (athVal * 0.98).toFixed(2),
-      };
-    } else {
-      return {
-        entry: (ema * 0.98).toFixed(2),
-        sl: (ema * 1.03).toFixed(2),
-        tp: (atlVal * 1.02).toFixed(2),
-      };
-    }
-  };
-
-  const athStrategy = generateEntryData('ATH');
-  const atlStrategy = generateEntryData('ATL');
+  const suggestedEntry = currentPrice ? parseFloat(currentPrice) : '';
+  const suggestedSL = suggestedEntry ? (suggestedEntry * 0.98).toFixed(2) : '';
+  const suggestedTP = suggestedEntry ? (suggestedEntry * 1.05).toFixed(2) : '';
 
   return (
-    <div className="min-h-screen bg-cover bg-center p-6" style={{ backgroundImage: 'url(/bg.png)' }}>
-      <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-6 space-y-6">
         <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
         <p className="text-gray-800 text-center">
-          Analyze Bitcoin's macro trend using ATH, ATL, and 70 EMA (1W). Get directional signals plus suggested entries and targets.
+          Analyze Bitcoin’s macro trend by measuring the vertical gap between ATH, ATL, and EMA70 on the 1W timeframe. This tool gives macro insights and suggests entry points with risk levels.
         </p>
 
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Instructions:</h2>
           <ul className="list-disc list-inside text-gray-700 space-y-1">
-            <li>Use the <strong>1W timeframe</strong> on BTC charts.</li>
-            <li>Input <strong>ATH</strong>, <strong>ATL</strong>, <strong>EMA70</strong>, and optionally the <strong>Current Price</strong>.</li>
-            <li>Receive macro signal + trade planning guidance (entry, SL, TP).</li>
+            <li>Use <strong>1W timeframe</strong> data only.</li>
+            <li>Input the <strong>ATH</strong>, <strong>ATL</strong>, <strong>EMA70</strong>, and optionally <strong>Current Price</strong>.</li>
+            <li>The app calculates gaps and signals based on price behavior.</li>
+            <li>Suggested entry, stop-loss, and take-profit levels are optional tools.</li>
           </ul>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <input type="number" placeholder="All-Time High (ATH)" className="p-2 border border-gray-300 rounded" onChange={e => setAth(e.target.value)} />
-          <input type="number" placeholder="All-Time Low (ATL)" className="p-2 border border-gray-300 rounded" onChange={e => setAtl(e.target.value)} />
-          <input type="number" placeholder="EMA70" className="p-2 border border-gray-300 rounded" onChange={e => setEma70(e.target.value)} />
-          <input type="number" placeholder="Current Price" className="p-2 border border-gray-300 rounded" onChange={e => setCurrentPrice(e.target.value)} />
+          <input
+            type="number"
+            placeholder="All-Time High (ATH)"
+            className="p-2 border border-gray-300 rounded"
+            onChange={e => setAth(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="All-Time Low (ATL)"
+            className="p-2 border border-gray-300 rounded"
+            onChange={e => setAtl(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="EMA70"
+            className="p-2 border border-gray-300 rounded"
+            onChange={e => setEma70(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Current Price"
+            className="p-2 border border-gray-300 rounded"
+            onChange={e => setCurrentPrice(e.target.value)}
+          />
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">ATH vs EMA70</h2>
-            <p className="text-gray-700">Gap: {computeAthGap().toFixed(2)}%</p>
-            <p className="font-semibold">
-              Signal: <span className={getAthSignal().includes('Bullish') ? 'text-green-600' : 'text-yellow-600'}>
-                {getAthSignal()}
-              </span>
+          <div className="bg-green-50 border border-green-300 rounded-lg p-4">
+            <h2 className="text-xl font-semibold text-green-800">ATH vs EMA70</h2>
+            <p className="text-gray-800">Gap: {computeAthGap().toFixed(2)}%</p>
+            <p className="font-bold text-green-700">
+              Signal: {getAthSignal()}
             </p>
-            {ema70 && ath && (
-              <div className="mt-2 text-sm text-gray-700">
-                <p><strong>Entry Point:</strong> ${athStrategy.entry}</p>
-                <p><strong>Stop Loss:</strong> ${athStrategy.sl}</p>
-                <p><strong>Take Profit:</strong> ${athStrategy.tp}</p>
-              </div>
+            {currentPrice && (
+              <>
+                <p className="text-gray-700 mt-2">
+                  Suggested Entry: <strong>${suggestedEntry}</strong>
+                </p>
+                <p className="text-red-600">Stop Loss: <strong>${suggestedSL}</strong></p>
+                <p className="text-blue-600">Take Profit: <strong>${suggestedTP}</strong></p>
+              </>
             )}
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">ATL vs EMA70</h2>
-            <p className="text-gray-700">Gap: {computeAtlGap().toFixed(2)}%</p>
-            <p className="font-semibold">
-              Signal: <span className={getAtlSignal().includes('Bearish') ? 'text-red-600' : 'text-yellow-600'}>
-                {getAtlSignal()}
-              </span>
+          <div className="bg-red-50 border border-red-300 rounded-lg p-4">
+            <h2 className="text-xl font-semibold text-red-800">ATL vs EMA70</h2>
+            <p className="text-gray-800">Gap: {computeAtlGap().toFixed(2)}%</p>
+            <p className="font-bold text-red-700">
+              Signal: {getAtlSignal()}
             </p>
-            {ema70 && atl && (
-              <div className="mt-2 text-sm text-gray-700">
-                <p><strong>Entry Point:</strong> ${atlStrategy.entry}</p>
-                <p><strong>Stop Loss:</strong> ${atlStrategy.sl}</p>
-                <p><strong>Take Profit:</strong> ${atlStrategy.tp}</p>
-              </div>
+            {currentPrice && (
+              <>
+                <p className="text-gray-700 mt-2">
+                  Suggested Entry: <strong>${suggestedEntry}</strong>
+                </p>
+                <p className="text-red-600">Stop Loss: <strong>${suggestedSL}</strong></p>
+                <p className="text-blue-600">Take Profit: <strong>${suggestedTP}</strong></p>
+              </>
             )}
           </div>
         </div>
@@ -177,21 +177,16 @@ export default function Home() {
                   point: { radius: 3, backgroundColor: '#3b82f6' },
                 },
               }}
-              style={{
-                backgroundColor: '#ffffff',
-                padding: '20px',
-                borderRadius: '12px',
-              }}
             />
           </div>
         )}
 
-        <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
+        <footer className="text-sm text-center text-gray-600 pt-6 border-t border-gray-300">
           <p>
-            <strong>Disclaimer:</strong> Educational use only. Not financial advice. DYOR.
+            <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always do your own research before trading.
           </p>
         </footer>
       </div>
     </div>
   );
-}
+    }
