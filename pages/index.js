@@ -7,8 +7,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler
 } from 'chart.js';
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
