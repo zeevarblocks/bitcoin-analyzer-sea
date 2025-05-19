@@ -90,12 +90,57 @@ export default function Home() {
           </ul>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <input type="number" placeholder="All-Time High (ATH)" className="p-2 border border-gray-300 rounded" onChange={e => setAth(e.target.value)} />
-          <input type="number" placeholder="All-Time Low (ATL)" className="p-2 border border-gray-300 rounded" onChange={e => setAtl(e.target.value)} />
-          <input type="number" placeholder="EMA70" className="p-2 border border-gray-300 rounded" onChange={e => setEma70(e.target.value)} />
-          <input type="number" placeholder="Current Price" className="p-2 border border-gray-300 rounded" onChange={e => setCurrentPrice(e.target.value)} />
-        </div>
+        {/* Grouped Input Sections */}
+<div className="space-y-6">
+  {/* ATH (Bullish) Inputs */}
+  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+    <h2 className="text-lg font-semibold text-green-800 mb-2">Bullish Analysis (ATH vs EMA70)</h2>
+    <div className="grid grid-cols-2 gap-4">
+      <input
+        type="number"
+        placeholder="All-Time High (ATH)"
+        className="p-2 border border-gray-300 rounded"
+        onChange={e => setAth(e.target.value)}
+      />
+      <input
+        type="number"
+        placeholder="EMA70"
+        className="p-2 border border-gray-300 rounded"
+        onChange={e => setEma70(e.target.value)}
+      />
+    </div>
+  </div>
+
+  {/* ATL (Bearish) Inputs */}
+  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+    <h2 className="text-lg font-semibold text-red-800 mb-2">Bearish Analysis (ATL vs EMA70)</h2>
+    <div className="grid grid-cols-2 gap-4">
+      <input
+        type="number"
+        placeholder="All-Time Low (ATL)"
+        className="p-2 border border-gray-300 rounded"
+        onChange={e => setAtl(e.target.value)}
+      />
+      <input
+        type="number"
+        placeholder="EMA70"
+        className="p-2 border border-gray-300 rounded"
+        onChange={e => setEma70(e.target.value)}
+      />
+    </div>
+  </div>
+
+  {/* Optional: Current Price Input */}
+  <div className="bg-gray-100 p-4 rounded-lg border border-gray-300">
+    <h2 className="text-lg font-semibold text-gray-800 mb-2">Optional: Current BTC Price</h2>
+    <input
+      type="number"
+      placeholder="Current Price"
+      className="w-full p-2 border border-gray-300 rounded"
+      onChange={e => setCurrentPrice(e.target.value)}
+    />
+  </div>
+</div>
 
         {/* ATH Signal Block */}
         <div className="space-y-2 text-gray-800">
