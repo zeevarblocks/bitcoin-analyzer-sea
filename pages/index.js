@@ -12,8 +12,7 @@ Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Too
 
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
-import { fetchBTCData } from '../utils/fetchBTCData';
-
+import { fetchBTCMarketData } from '../utils/fetchBTCData';
 export default function Home() {
   const [ath, setAth] = useState('');
   const [atl, setAtl] = useState('');
