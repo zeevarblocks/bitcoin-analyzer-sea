@@ -1,46 +1,54 @@
-import React from 'react';
+// components/ChartComponent.jsx
 import {
   Chart as ChartJS,
   TimeScale,
   LinearScale,
+  CategoryScale,
   Tooltip,
   Legend,
 } from 'chart.js';
+import { Chart } from 'react-chartjs-2';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import { Chart as ChartJSReact } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
 
+// Register components
 ChartJS.register(
   TimeScale,
   LinearScale,
+  CategoryScale,
   Tooltip,
   Legend,
   CandlestickController,
   CandlestickElement
 );
 
+// Chart options
+const options = {
+  responsive: true,
+  scales: {
+    x: {
+      type: 'time',
+      time: {
+        unit: 'day',
+      },
+      ticks: {
+        source: 'auto',
+      },
+    },
+    y: {
+      beginAtZero: false,
+    },
+  },
+};
+
 export default function ChartComponent({ datasets }) {
-  if (!datasets || datasets.length === 0) return <p>Loading chart...</p>;
-
-  const data = { datasets };
-
-  const options = {
-    responsive: true,
-    scales: {
-      x: {
-        type: 'time',
-        time: { tooltipFormat: 'MMM dd' },
-      },
-      y: {
-        position: 'right',
-      },
-    },
-    plugins: {
-      legend: {
-        display: true,
-      },
-    },
+  const data = {
+    datasets: datasets || [], // fallback to empty if no data
   };
 
-  return <ChartJSReact type="candlestick" data={data} options={options} />;
-      }
+  return (
+    <div className="p-4 bg-white rounded-xl shadow-md">
+      <Chart type="candlestick" data={data} options={options} />
+    </div>
+  );
+}
