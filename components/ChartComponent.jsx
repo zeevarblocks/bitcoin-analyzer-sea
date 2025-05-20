@@ -1,65 +1,32 @@
-'use client';
+// components/ChartComponent.jsx
 
-import {
-  Chart as ChartJS,
-  TimeScale,
-  LinearScale,
-  CategoryScale,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-} from 'chart.js';
+import { useRef, useEffect } from 'react';
+import { createChart } from 'lightweight-charts';
 
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import 'chartjs-adapter-date-fns';
+export default function ChartComponent({ data }) {
+  const chartRef = useRef(null);
 
-import { Chart } from 'react-chartjs-2';
-import { useEffect, useState } from 'react';
-import { fetchBTCData } from '../utils/fetchBTCData';
+    useEffect(() => {
+        if (!chartRef.current) return;
 
-// Register required chart components
-ChartJS.register(
-  TimeScale,
-  LinearScale,
-  CategoryScale,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  CandlestickController,
-  CandlestickElement
-);
+            const chart = createChart(chartRef.current, {
+                  width: chartRef.current.clientWidth,
+                        height: 400,
+                              layout: {
+                                      background: { color: '#ffffff' },
+                                              textColor: '#000000',
+                                                    },
+                                                          grid: {
+                                                                  vertLines: { visible: false },
+                                                                          horzLines: { visible: false },
+                                                                                },
+                                                                                    });
 
-export default function ChartComponent() {
-  const [chartData, setChartData] = useState(null);
+                                                                                        const candleSeries = chart.addCandlestickSeries();
+                                                                                            candleSeries.setData(data);
 
-  useEffect(() => {
-    async function loadData() {
-      const data = await fetchBTCData();
-      setChartData(data);
-    }
+                                                                                                return () => chart.remove();
+                                                                                                  }, [data]);
 
-    loadData();
-  }, []);
-
-  if (!chartData) return <p>Loading chart...</p>;
-
-  return (
-    <Chart
-      type='candlestick'
-      data={chartData}
-      options={{
-        responsive: true,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'day',
-            },
-          },
-        },
-      }}
-    />
-  );
-}
+                                                                                                    return <div ref={chartRef} style={{ width: '100%', height: '400px' }} />;
+                                                                                                    }
