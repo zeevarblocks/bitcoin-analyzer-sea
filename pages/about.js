@@ -37,9 +37,11 @@ export default function About() {
                     Use the live BTC chart below to explore historical price behavior and visually identify the weekly candle of the ATH/ATL.
                 </li>
             </ul>
-            <Link href="/">
-                <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Home</a>
-            </Link>
+            <div style={{ marginTop: '3rem' }}>
+                <Link href="/">
+                    <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Home</a>
+                </Link>
+            </div>
         </div>
     )
 }
