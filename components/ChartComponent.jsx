@@ -7,7 +7,7 @@ import {
   Legend,
 } from 'chart.js';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import { Chart } from 'react-chartjs-2';
+import { Chart as ChartJSReact } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
 
 ChartJS.register(
@@ -42,5 +42,5 @@ export default function ChartComponent({ datasets }) {
     },
   };
 
-  return <Chart type="candlestick" data={data} options={options} />;
+  return <ChartJSReact type="candlestick" data={data} options={options} />;
       }
