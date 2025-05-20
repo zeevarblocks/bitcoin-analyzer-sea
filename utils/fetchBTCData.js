@@ -1,40 +1,22 @@
+import { ema } from 'react-financial-charts/lib/indicator';
+
 export async function fetchBTCData() {
-  try {
-    const res = await fetch(
-      'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily'
-    );
+  const res = await fetch(
+      'https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=90'
+        );
+          const ohlcData = await res.json();
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch BTC data');
-    }
+            const formatted = ohlcData.map(([timestamp, open, high, low, close]) => ({
+                date: new Date(timestamp),
+                    open, high, low, close
+                      }));
 
-    const data = await res.json();
+                        const ema70Calc = ema()
+                            .options({ windowSize: 70 })
+                                .merge((d, c) => { d.ema70 = c; })
+                                    .accessor(d => d.ema70);
 
-    const labels = data.prices.map(price => {
-      const date = new Date(price[0]);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
+                                      ema70Calc(formatted);
 
-    const prices = data.prices.map(price => price[1]);
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'BTC/USD',
-          data: prices,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          fill: true,
-          tension: 0.4,
-        },
-      ],
-    };
-
-  } catch (error) {
-    console.error('Error fetching BTC data:', error);
-    return null;
-  }
-}
-
-
+                                        return formatted;
+                                        }
