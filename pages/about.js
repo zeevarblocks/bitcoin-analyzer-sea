@@ -38,8 +38,8 @@ export default function About() {
                 </li>
             </ul>
             <Link href="/">
-                        <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Go to Signal Analyzer</a>
-                                  </Link>
+                <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Home</a>
+            </Link>
         </div>
     )
 }
