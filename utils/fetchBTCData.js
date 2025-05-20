@@ -1,22 +1,40 @@
-// lib/fetchBTCData.js
-
 export async function fetchBTCData() {
-  const response = await fetch(
-      'https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=1'
-        );
+try {
+const res = await fetch(
+'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily'
+);
 
-          if (!response.ok) {
-              throw new Error('Failed to fetch Bitcoin data');
-                }
+if (!res.ok) {  
+  throw new Error('Failed to fetch BTC data');  
+}  
 
-                  const rawData = await response.json();
+const data = await res.json();  
 
-                    // Format for lightweight-charts
-                      return rawData.map(([timestamp, open, high, low, close]) => ({
-                          time: Math.floor(timestamp / 1000),
-                              open,
-                                  high,
-                                      low,
-                                          close,
-                                            }));
-                                            }
+const labels = data.prices.map(price => {  
+  const date = new Date(price[0]);  
+  return `${date.getMonth() + 1}/${date.getDate()}`;  
+});  
+
+const prices = data.prices.map(price => price[1]);  
+
+return {  
+  labels,  
+  datasets: [  
+    {  
+      label: 'BTC/USD',  
+      data: prices,  
+      borderColor: '#3b82f6',  
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',  
+      fill: true,  
+      tension: 0.4,  
+    },  
+  ],  
+};
+
+} catch (error) {
+console.error('Error fetching BTC data:', error);
+return null;
+}
+}
+
+  
