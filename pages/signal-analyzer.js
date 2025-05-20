@@ -14,7 +14,7 @@ import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
 
-export default function Home() {
+export default function About() {
   const [ath, setAth] = useState('');
   const [atl, setAtl] = useState('');
   const [ema70, setEma70] = useState('');
