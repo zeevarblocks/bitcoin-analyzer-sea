@@ -1,30 +1,8 @@
+import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  TimeScale,
-  Tooltip,
-  Title,
-  LineElement,
-  PointElement,
-} from 'chart.js';
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import { Chart } from 'react-chartjs-2';
-import 'chartjs-adapter-date-fns';
 import { fetchBTCData } from '../utils/fetchBTCData';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  TimeScale,
-  Tooltip,
-  Title,
-  CandlestickController,
-  CandlestickElement,
-  LineElement,
-  PointElement
-);
+const CandlestickChart = dynamic(() => import('../components/CandlestickChart'), { ssr: false });
 
 export default function Home() {
   const [chartData, setChartData] = useState(null);
@@ -61,7 +39,7 @@ export default function Home() {
 
   function computeEMA(prices, period) {
     const k = 2 / (period + 1);
-    let emaArray = [prices[0]];
+    const emaArray = [prices[0]];
 
     for (let i = 1; i < prices.length; i++) {
       const ema = prices[i] * k + emaArray[i - 1] * (1 - k);
@@ -75,13 +53,9 @@ export default function Home() {
     const athDist = ((ath - price) / ath) * 100;
     const atlDist = ((price - atl) / atl) * 100;
 
-    if (price > ema && athDist < 15) {
-      return 'Bullish - ATH Nearby';
-    } else if (price < ema && atlDist < 15) {
-      return 'Bearish - ATL Nearby';
-    } else {
-      return 'Neutral - No Signal';
-    }
+    if (price > ema && athDist < 15) return 'Bullish - ATH Nearby';
+    if (price < ema && atlDist < 15) return 'Bearish - ATL Nearby';
+    return 'Neutral - No Signal';
   }
 
   function buildChartData(data) {
@@ -94,47 +68,22 @@ export default function Home() {
             o: d.o,
             h: d.h,
             l: d.l,
-            c: d.c
+            c: d.c,
           })),
           type: 'candlestick',
           borderColor: '#888',
           borderWidth: 1,
         },
-      ]
+      ],
     };
   }
-
-  const options = {
-    responsive: true,
-    scales: {
-      x: {
-        type: 'time',
-        time: { unit: 'week' },
-        ticks: { source: 'auto' }
-      },
-      y: {
-        position: 'left',
-        title: { display: true, text: 'Price (USD)' }
-      }
-    },
-    plugins: {
-      title: {
-        display: true,
-        text: 'Bitcoin Weekly Chart with ATH/ATL & EMA70'
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false
-      }
-    }
-  };
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Bitcoin Signal Analyzer</h1>
 
       {chartData ? (
-        <Chart type="candlestick" data={chartData} options={options} />
+        <CandlestickChart data={chartData} />
       ) : (
         <p>Loading chart...</p>
       )}
