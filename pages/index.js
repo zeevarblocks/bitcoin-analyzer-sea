@@ -36,15 +36,6 @@ const ChartComponent = dynamic(() => import('../components/ChartComponent'), {
   ssr: false,
   });
 
-  export default function HomePage() {
-    return (
-        <div>
-              <h1>Bitcoin Signal Analyzer</h1>
-                    <ChartComponent />
-                        </div>
-                          );
-                          }
-
 export default function Home() {
   const [ath, setAth] = useState('');
   const [atl, setAtl] = useState('');
