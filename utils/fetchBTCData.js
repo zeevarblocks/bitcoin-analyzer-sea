@@ -1,68 +1,40 @@
 export async function fetchBTCData() {
   try {
     const res = await fetch(
-      'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=100'
+      'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily'
     );
 
     if (!res.ok) {
-      throw new Error('Failed to fetch BTC data from Binance');
+      throw new Error('Failed to fetch BTC data');
     }
 
-    const rawData = await res.json();
+    const data = await res.json();
 
-    // Extract labels (dates) and OHLC data
-    const labels = rawData.map((item: any) => {
-      const date = new Date(item[0]);
+    const labels = data.prices.map(price => {
+      const date = new Date(price[0]);
       return `${date.getMonth() + 1}/${date.getDate()}`;
     });
 
-    const candleData = rawData.map((item: any) => ({
-      x: new Date(item[0]),
-      o: parseFloat(item[1]),
-      h: parseFloat(item[2]),
-      l: parseFloat(item[3]),
-      c: parseFloat(item[4]),
-    }));
-
-    const closes = candleData.map(candle => candle.c);
-
-    // EMA70 Calculation
-    function calculateEMA(prices: number[], period = 70): number[] {
-      const k = 2 / (period + 1);
-      const ema = [prices[0]];
-      for (let i = 1; i < prices.length; i++) {
-        ema.push(prices[i] * k + ema[i - 1] * (1 - k));
-      }
-      return ema;
-    }
-
-    const ema70 = calculateEMA(closes);
+    const prices = data.prices.map(price => price[1]);
 
     return {
       labels,
       datasets: [
         {
-          label: 'Candlestick',
-          data: candleData,
-          type: 'candlestick',
-        },
-        {
-          label: 'EMA70',
-          data: ema70.map((value, index) => ({
-            x: candleData[index]?.x,
-            y: value,
-          })),
-          borderColor: 'orange',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 0,
-          type: 'line',
+          label: 'BTC/USD',
+          data: prices,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          fill: true,
+          tension: 0.4,
         },
       ],
     };
 
   } catch (error) {
-    console.error('Error fetching BTC candlestick data:', error);
+    console.error('Error fetching BTC data:', error);
     return null;
   }
 }
+
+
