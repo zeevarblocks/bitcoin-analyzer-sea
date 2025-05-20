@@ -13,6 +13,9 @@ export default function Navbar() {
         <ul className={`md:flex gap-6 ${menuOpen ? 'flex flex-col mt-4' : 'hidden'} md:mt-0`}>
           <li><Link href="/" className="hover:underline">Home</Link></li>
           <li><Link href="/rewards" className="hover:underline">Rewards</Link></li>
+           <Link href="/about">
+               <a className="text-blue-600 hover:underline">About This Tool</a>
+                 </Link>
         </ul>
       </div>
     </nav>
