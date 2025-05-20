@@ -1,22 +1,31 @@
-// utils/fetchBTCData.js
 export async function fetchBTCData() {
   try {
-      const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365'); // or your valid API URL
-          if (!res.ok) throw new Error('Failed to fetch');
-              const raw = await res.json();
+    const res = await fetch(
+      'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365'
+    );
+    if (!res.ok) throw new Error('Failed to fetch');
+    const raw = await res.json();
 
-                  // Convert to candlestick format
-                      const ohlc = raw.prices.map((p, i) => ({
-                            time: p[0],
-                                  o: raw.prices[i][1],
-                                        h: raw.prices[i][1],
-                                              l: raw.prices[i][1],
-                                                    c: raw.prices[i][1],
-                                                        }));
+    // Group every 7 days into one candle (to mimic weekly OHLC)
+    const prices = raw.prices;
+    const ohlc = [];
 
-                                                            return ohlc;
-                                                              } catch (e) {
-                                                                  console.error('Failed to fetch BTC data:', e);
-                                                                      return [];
-                                                                        }
-                                                                        }
+    for (let i = 0; i < prices.length; i += 7) {
+      const week = prices.slice(i, i + 7);
+      if (week.length < 2) continue;
+
+      const time = week[0][0];
+      const o = week[0][1];
+      const c = week[week.length - 1][1];
+      const h = Math.max(...week.map(p => p[1]));
+      const l = Math.min(...week.map(p => p[1]));
+
+      ohlc.push({ time, o, h, l, c });
+    }
+
+    return ohlc;
+  } catch (e) {
+    console.error('Failed to fetch BTC data:', e);
+    return [];
+  }
+}
