@@ -29,7 +29,21 @@ ChartJS.register(
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
-import ChartComponent from '../components/ChartComponent';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ChartComponent with SSR disabled
+const ChartComponent = dynamic(() => import('../components/ChartComponent'), {
+  ssr: false,
+  });
+
+  export default function HomePage() {
+    return (
+        <div>
+              <h1>Bitcoin Signal Analyzer</h1>
+                    <ChartComponent />
+                        </div>
+                          );
+                          }
 
 export default function Home() {
   const [ath, setAth] = useState('');

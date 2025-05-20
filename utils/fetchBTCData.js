@@ -4,16 +4,9 @@ export async function fetchBTCData() {
       'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=100'
     );
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch BTC kline data');
-    }
+    if (!res.ok) throw new Error('Failed to fetch BTC kline data');
 
     const rawData = await res.json();
-
-    const labels = rawData.map(item => {
-      const date = new Date(item[0]);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
 
     const ohlc = rawData.map(item => ({
       x: new Date(item[0]),
@@ -23,27 +16,26 @@ export async function fetchBTCData() {
       c: parseFloat(item[4]),
     }));
 
-    // Calculate EMA70
     const closes = rawData.map(item => parseFloat(item[4]));
     const ema70 = calculateEMA(closes, 70);
 
     const emaLine = ema70.map((value, index) => ({
-      x: new Date(rawData[index + 69][0]), // start from 70th point
+      x: new Date(rawData[index + 69][0]),
       y: value,
     }));
 
     return {
       datasets: [
-  {
-    label: 'BTC/USDT',
-    data: ohlc,
-    type: 'candlestick',
-    color: {
-      up: '#26a69a',        // green: price went up
-      down: '#ef5350',      // red: price went down
-      unchanged: '#999999', // gray: price didn't change
-    },
-  },
+        {
+          label: 'BTC/USDT',
+          data: ohlc,
+          type: 'candlestick',
+          color: {
+            up: '#26a69a',
+            down: '#ef5350',
+            unchanged: '#999999',
+          },
+        },
         {
           label: 'EMA70',
           data: emaLine,
@@ -71,4 +63,4 @@ function calculateEMA(prices, period) {
   }
 
   return emaArray;
-    }
+}

@@ -1,4 +1,5 @@
-// components/ChartComponent.jsx
+'use client';
+
 import {
   Chart as ChartJS,
   TimeScale,
@@ -6,49 +7,59 @@ import {
   CategoryScale,
   Tooltip,
   Legend,
+  LineElement,
+  PointElement,
 } from 'chart.js';
-import { Chart } from 'react-chartjs-2';
+
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
 
-// Register components
+import { Chart } from 'react-chartjs-2';
+import { useEffect, useState } from 'react';
+import { fetchBTCData } from '../lib/fetchBTCData';
+
+// Register required chart components
 ChartJS.register(
   TimeScale,
   LinearScale,
   CategoryScale,
   Tooltip,
   Legend,
+  LineElement,
+  PointElement,
   CandlestickController,
   CandlestickElement
 );
 
-// Chart options
-const options = {
-  responsive: true,
-  scales: {
-    x: {
-      type: 'time',
-      time: {
-        unit: 'day',
-      },
-      ticks: {
-        source: 'auto',
-      },
-    },
-    y: {
-      beginAtZero: false,
-    },
-  },
-};
+export default function ChartComponent() {
+  const [chartData, setChartData] = useState(null);
 
-export default function ChartComponent({ datasets }) {
-  const data = {
-    datasets: datasets || [], // fallback to empty if no data
-  };
+  useEffect(() => {
+    async function loadData() {
+      const data = await fetchBTCData();
+      setChartData(data);
+    }
+
+    loadData();
+  }, []);
+
+  if (!chartData) return <p>Loading chart...</p>;
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-md">
-      <Chart type="candlestick" data={data} options={options} />
-    </div>
+    <Chart
+      type='candlestick'
+      data={chartData}
+      options={{
+        responsive: true,
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'day',
+            },
+          },
+        },
+      }}
+    />
   );
 }
