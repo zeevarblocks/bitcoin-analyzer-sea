@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function Navbar() {
         {/* Logo / Title */}
         <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold tracking-wide hover:text-yellow-400 transition">
           {/* Optional Logo */}
-          <img src="/logo.svg" alt="Logo" className="w-6 h-6" />
+          <Image src="/logo.png" alt="Logo" width={40} height={40} />
           Bitcoin Analyzer
         </Link>
 
