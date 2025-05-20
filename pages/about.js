@@ -1,34 +1,46 @@
+import Link from 'next/link';
+
 export default function About() {
-      return (
-          <div className="min-h-screen bg-cover bg-center p-6 text-gray-800" style={{ backgroundImage: 'url(/bg.png)' }}>
-                <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
-                        <h1 className="text-3xl font-bold text-center text-gray-900">About Bitcoin Signal Analyzer</h1>
+  return (
+      <div
+            style={{
+                    padding: '2rem',
+                            minHeight: '100vh',
+                                    background: "url('/background.jpg') no-repeat center center fixed",
+                                            backgroundSize: 'cover',
+                                                    display: 'flex',
+                                                            justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                          }}
+                                                                              >
+                                                                                    <div
+                                                                                            style={{
+                                                                                                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                                                                                                padding: '2rem',
+                                                                                                                          borderRadius: '16px',
+                                                                                                                                    color: 'white',
+                                                                                                                                              maxWidth: '600px',
+                                                                                                                                                        width: '100%',
+                                                                                                                                                                  textAlign: 'center',
+                                                                                                                                                                          }}
+                                                                                                                                                                                >
+                                                                                                                                                                                        <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>About This Tool</h1>
+                                                                                                                                                                                                <p style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>
+                                                                                                                                                                                                          This tool analyzes Bitcoin’s price action using all-time highs (ATH), all-time lows (ATL), and EMA70 gaps to generate bullish or bearish trading signals.
+                                                                                                                                                                                                                  </p>
+                                                                                                                                                                                                                          <p style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>
+                                                                                                                                                                                                                                    It is designed for crypto traders seeking an edge in volatile markets by leveraging visual and data-driven patterns to identify strategic entry points, stop loss zones, and profit targets.
+                                                                                                                                                                                                                                            </p>
+                                                                                                                                                                                                                                                    <p style={{ fontSize: '1.1rem', marginBottom: '2rem' }}>
+                                                                                                                                                                                                                                                              Created by an independent developer using React and Chart.js, this project is community-focused and open for feedback and contributions.
+                                                                                                                                                                                                                                                                      </p>
 
-                                <p className="text-gray-700 text-center">
-                                          This tool analyzes the Bitcoin market using the vertical relationship between All-Time High (ATH), All-Time Low (ATL), and the 70-period Exponential Moving Average (EMA70) on the weekly (1W) timeframe.
-                                                  </p>
-
-                                                          <div className="bg-gray-50 p-4 rounded-lg">
-                                                                    <h2 className="text-lg font-semibold text-gray-800 mb-2">How to Use This Tool:</h2>
-                                                                              <ul className="list-disc list-inside text-gray-700 space-y-2">
-                                                                                          <li><strong>Use the 1W (Weekly) chart timeframe</strong> to maintain consistency with EMA70 calculations.</li>
-                                                                                                      <li>Enter the <strong>ATH value</strong> and the corresponding <strong>EMA70 value</strong> from the same weekly candle.</li>
-                                                                                                                  <li>Similarly, enter the <strong>ATL value</strong> and its corresponding <strong>EMA70 value</strong>.</li>
-                                                                                                                              <li>The app calculates the percentage gap between ATH/ATL and EMA70.</li>
-                                                                                                                                          <li>If ATH is more than <strong>100% above EMA70</strong>, the signal is a <strong>Bullish Continuation</strong>.</li>
-                                                                                                                                                      <li>If ATL is more than <strong>100% below EMA70</strong>, the signal is a <strong>Bearish Continuation</strong>.</li>
-                                                                                                                                                                  <li>Smaller gaps imply potential reversals or consolidation.</li>
-                                                                                                                                                                              <li>Suggested trade levels (entry, stop loss, take profits) are generated accordingly.</li>
-                                                                                                                                                                                          <li>You can optionally enter the <strong>current BTC price</strong> for additional context.</li>
-                                                                                                                                                                                                    </ul>
-                                                                                                                                                                                                            </div>
-
-                                                                                                                                                                                                                    <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
-                                                                                                                                                                                                                              <p>
-                                                                                                                                                                                                                                          <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
-                                                                                                                                                                                                                                                    </p>
-                                                                                                                                                                                                                                                            </footer>
-                                                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                                                      </div>
-                                                                                                                                                                                                                                                                        );
-                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                              <div style={{ marginTop: '2rem' }}>
+                                                                                                                                                                                                                                                                                        <Link href="/">
+                                                                                                                                                                                                                                                                                                    <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Back to Home</a>
+                                                                                                                                                                                                                                                                                                              </Link>
+                                                                                                                                                                                                                                                                                                                      </div>
+                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                  );
+                                                                                                                                                                                                                                                                                                                                  }
