@@ -39,7 +39,9 @@ export default function About() {
             </ul>
             <div style={{ marginTop: '3rem' }}>
                 <Link href="/">
-                    <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Home</a>
+                    <a style={{ color: '#4fc3f7', textDecoration: 'underline', textAlign: 'center', justifyContent: 'center',
+                                alignItems: 'center',
+                     }}>Home</a>
                 </Link>
             </div>
         </div>
