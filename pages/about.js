@@ -31,7 +31,7 @@ export default function About() {
                         Optionally input the <strong>current BTC price</strong> to monitor current position versus historical levels.
                     </li>
                     <li>
-                        Use the live BTC chart below to visually inspect the weekly candles for ATH/ATL events.
+                        Use the live BTC chart to visually inspect the weekly candles for ATH/ATL events.
                     </li>
                 </ul>
 
