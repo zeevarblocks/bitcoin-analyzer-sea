@@ -34,11 +34,16 @@ export async function fetchBTCData() {
 
     return {
       datasets: [
-        {
-          label: 'BTC/USDT',
-          data: ohlc,
-          type: 'candlestick',
-        },
+  {
+    label: 'BTC/USDT',
+    data: ohlc,
+    type: 'candlestick',
+    color: {
+      up: '#26a69a',        // green: price went up
+      down: '#ef5350',      // red: price went down
+      unchanged: '#999999', // gray: price didn't change
+    },
+  },
         {
           label: 'EMA70',
           data: emaLine,
