@@ -1,40 +1,18 @@
 import {
-  Chart as ChartJS,
+  Chart,
   CategoryScale,
   LinearScale,
-  TimeScale,
   PointElement,
   LineElement,
   Title,
   Tooltip,
   Legend,
-  Filler
 } from 'chart.js';
-import { Chart } from 'react-chartjs-2';
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import 'chartjs-adapter-date-fns';
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  TimeScale,
-  PointElement,
-  LineElement,
-  CandlestickController,
-  CandlestickElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
-import dynamic from 'next/dynamic';
-
-// Dynamically import ChartComponent with SSR disabled
-const ChartComponent = dynamic(() => import('../components/ChartComponent'), {
-  ssr: false,
-  });
 
 export default function Home() {
   const [ath, setAth] = useState('');
@@ -285,39 +263,59 @@ const bearishReversal = computeBearishReversalFromAth();
         </div>
 
         {/* Chart Section */}
-{!chartData ? (
-    <p className="text-center text-gray-600 flex items-center justify-center space-x-2">
-        <svg
-              className="animate-spin h-5 w-5 text-gray-500"
-                    xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                                viewBox="0 0 24 24"
-                                    >
-                                          <circle
-                                                  className="opacity-25"
-                                                          cx="12"
-                                                                  cy="12"
-                                                                          r="10"
-                                                                                  stroke="currentColor"
-                                                                                          strokeWidth="4"
-                                                                                                />
-                                                                                                      <path
-                                                                                                              className="opacity-75"
-                                                                                                                      fill="currentColor"
-                                                                                                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                                                                                                                    />
-                                                                                                                                        </svg>
-                                                                                                                                            <span>Loading BTC chart...</span>
-                                                                                                                                              </p>
-                                                                                                                                              ) : (
-                                                                                                                                                <div className="bg-white p-4 rounded-lg shadow-md">
-                                                                                                                                                    <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">
-                                                                                                                                                          BTC Price Chart (Recent)
-                                                                                                                                                              </h2>
-                                                                                                                                                                  <ChartComponent datasets={chartData.datasets} />
-                                                                                                                                                                    </div>
-                                                                                                                                                                    )}
-
+        {chartData && (
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
+            <Line
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#1f2937',
+                    titleColor: '#fff',
+                    bodyColor: '#d1d5db',
+                    borderColor: '#4b5563',
+                    borderWidth: 1,
+                    padding: 12,
+                  },
+                  title: {
+                    display: true,
+                    text: 'BTC Price Over Time',
+                    color: '#111827',
+                    font: { size: 18, weight: 'bold' },
+                    padding: { top: 10, bottom: 30 },
+                  },
+                },
+                scales: {
+                  x: {
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    ticks: { color: '#6b7280' },
+                  },
+                  y: {
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    ticks: {
+                      color: '#6b7280',
+                      callback: value => `$${value}`,
+                    },
+                  },
+                },
+                elements: {
+                  line: { tension: 0.4, borderColor: '#3b82f6', borderWidth: 3 },
+                  point: { radius: 3, backgroundColor: '#3b82f6' },
+                },
+              }}
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '20px',
+                borderRadius: '12px',
+              }}
+            />
+          </div>
+        )}
 
         <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
           <p>
@@ -327,4 +325,4 @@ const bearishReversal = computeBearishReversalFromAth();
       </div>
     </div>
   );
-    }
+      }
