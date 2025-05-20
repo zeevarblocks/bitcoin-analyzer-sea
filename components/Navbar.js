@@ -11,7 +11,7 @@ export default function Navbar() {
         <div className="text-xl font-bold">Bitcoin Analyzer</div>
         <button className="md:hidden text-2xl" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
         <ul className={`md:flex gap-6 ${menuOpen ? 'flex flex-col mt-4' : 'hidden'} md:mt-0`}>
-          <li><Link href="/" className="hover:underline">About</Link></li>
+          <li><Link href="/" className="hover:underline">Signal Analyzer</Link></li>
           <li><Link href="/rewards" className="hover:underline">Rewards</Link></li>
            <Link href="/about">
                <a className="hover:underline">About This Tool</a>
