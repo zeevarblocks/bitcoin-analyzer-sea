@@ -29,6 +29,7 @@ ChartJS.register(
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
+import ChartComponent from '../components/ChartComponent';
 
 export default function Home() {
   const [ath, setAth] = useState('');
@@ -279,46 +280,12 @@ const bearishReversal = computeBearishReversalFromAth();
         </div>
 
         {/* Chart Section */}
-        {chartData && (
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
-            <Chart
-  type="candlestick"
-  data={chartData}
-  options={{
-    responsive: true,
-    plugins: {
-      legend: { display: true },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        backgroundColor: '#1f2937',
-        titleColor: '#fff',
-        bodyColor: '#d1d5db',
-        borderColor: '#4b5563',
-        borderWidth: 1,
-        padding: 12,
-      },
-    },
-    scales: {
-      x: {
-        type: 'time',
-        time: { unit: 'week' },
-        ticks: { color: '#6b7280' },
-        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-      },
-      y: {
-        ticks: {
-          color: '#6b7280',
-          callback: value => `$${value}`,
-        },
-        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-      },
-    },
-  }}
-/>
-          </div>
-        )}
+{chartData && (
+  <div className="bg-white p-4 rounded-lg shadow-md">
+    <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
+    <ChartComponent datasets={chartData.datasets} />
+  </div>
+)}
 
         <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
           <p>
