@@ -75,8 +75,8 @@ export default function Rewards() {
         </a>
 
         <div style={{ marginTop: '3rem' }}>
-          <Link href="/">
-            <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Back to Home</a>
+          <Link href="/signal-analyzer">
+            <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Signal-Analyzer</a>
           </Link>
         </div>
       </div>
