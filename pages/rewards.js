@@ -75,9 +75,12 @@ export default function Rewards() {
         </a>
 
         <div style={{ marginTop: '3rem' }}>
-          <Link href="/">
-            <a style={{ color: '#4fc3f7', textDecoration: 'underline' }}>Home</a>
-          </Link>
+          <Link 
+  href="/" 
+  className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
+>
+  Go Back Home
+</Link>
         </div>
       </div>
     </div>
