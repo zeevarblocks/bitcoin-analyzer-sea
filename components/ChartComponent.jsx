@@ -16,7 +16,7 @@ import 'chartjs-adapter-date-fns';
 
 import { Chart } from 'react-chartjs-2';
 import { useEffect, useState } from 'react';
-import { fetchBTCData } from '../lib/fetchBTCData';
+import { fetchBTCData } from '../utils/fetchBTCData';
 
 // Register required chart components
 ChartJS.register(
