@@ -2,17 +2,6 @@ import Link from 'next/link';
 
 export default function Rewards() {
   return (
-    <div
-      style={{
-        padding: '2rem',
-        minHeight: '100vh',
-        background: "url('/background.jpg') no-repeat center center fixed",
-        backgroundSize: 'cover',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
       <div
         style={{
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -76,11 +65,10 @@ export default function Rewards() {
 
         <div style={{ marginTop: '3rem' }}>
           <Link href="/" style={{ color: '#4fc3f7', textDecoration: 'underline' }}>
-  Home
-</Link>
+            Home
+          </Link>
 
         </div>
       </div>
-    </div>
   );
-            }
+}
