@@ -53,6 +53,30 @@ export default function BreakoutPage() {
     previousAtlDate: '2022-11-08'
   });
 
+  const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+
+    script.onload = () => {
+      new window.TradingView.widget({
+        width: '100%',
+        height: 600,
+        symbol: 'OKX:BTCUSDT',
+        interval: '60',
+        timezone: 'Etc/UTC',
+        theme: 'dark',
+        style: '1',
+        locale: 'en',
+        toolbar_bg: '#1e1e1e',
+        enable_publishing: false,
+        allow_symbol_change: true,
+        container_id: 'tradingview_okxbtc'
+      });
+    };
+
+    document.getElementById('tradingview_okxbtc')?.appendChild(script);
+  }, []);
+
   return (
     <div style={{
       padding: '2rem',
@@ -126,6 +150,8 @@ export default function BreakoutPage() {
           />
         </div>
       )}
+<div id="tradingview_okxbtc" />;
+};
 
       {/* Market Data Section */}
       <div style={{
