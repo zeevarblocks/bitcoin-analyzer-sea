@@ -2,15 +2,30 @@ import {
   Chart,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
-  Title,
   Tooltip,
-  Legend,
+  Title,
+  Legend
 } from 'chart.js';
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-import { Line } from 'react-chartjs-2';
+import {
+  CandlestickController,
+  CandlestickElement
+} from 'chartjs-chart-financial';
+
+import 'chartjs-chart-financial'; // This is important — loads prototype extensions
+
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Title,
+  Legend,
+  CandlestickController,
+  CandlestickElement
+);
+
+
+import { Chart as ChartJS } from 'react-chartjs-2';
 import { fetchBTCData } from '../utils/fetchBTCData';
 
 import {
@@ -76,7 +91,8 @@ export default function BreakoutPage() {
       {chartData && (
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
-          <Line
+          <ChartJS
+            type="candlestick"
             data={chartData}
             options={{
               responsive: true,
@@ -85,38 +101,31 @@ export default function BreakoutPage() {
                 tooltip: {
                   mode: 'index',
                   intersect: false,
-                  backgroundColor: '#1f2937',
-                  titleColor: '#fff',
-                  bodyColor: '#d1d5db',
-                  borderColor: '#4b5563',
-                  borderWidth: 1,
-                  padding: 12,
                 },
                 title: {
                   display: true,
-                  text: 'BTC Price Over Time',
-                  color: '#111827',
-                  font: { size: 18, weight: 'bold' },
-                  padding: { top: 10, bottom: 30 },
+                  text: 'BTC Candlestick Chart',
+                  font: { size: 18 }
                 },
               },
               scales: {
                 x: {
-                  grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                  type: 'time',
+                  time: {
+                    unit: 'day',
+                    tooltipFormat: 'MMM dd',
+                  },
                   ticks: { color: '#6b7280' },
+                  grid: { color: 'rgba(0, 0, 0, 0.05)' }
                 },
                 y: {
-                  grid: { color: 'rgba(0, 0, 0, 0.05)' },
                   ticks: {
-                    color: '#6b7280',
                     callback: value => `$${value}`,
+                    color: '#6b7280',
                   },
-                },
-              },
-              elements: {
-                line: { tension: 0.4, borderColor: '#3b82f6', borderWidth: 3 },
-                point: { radius: 3, backgroundColor: '#3b82f6' },
-              },
+                  grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                }
+              }
             }}
             style={{
               backgroundColor: '#ffffff',
