@@ -1,3 +1,10 @@
+import {
+  computeAthBreakoutSignal,
+  computeAtlBreakoutSignal
+} from '../utils/ath&atlBreakout';
+import { useEffect, useState } from 'react';
+import { fetchMarketData } from '../utils/fetchMarketData';
+
 export default function BreakoutPage() {
   const [marketData, setMarketData] = useState({ currentPrice: null, ema70: null });
 
@@ -25,33 +32,50 @@ export default function BreakoutPage() {
     previousAtlDate: '2022-11-08'
   });
 
-  function formatNumber(num) {
-    return typeof num === 'number' ? `$${num.toLocaleString()}` : 'Loading...';
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-10">
-        <div className="bg-white shadow-md rounded-2xl p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Bitcoin Market Data</h2>
-          <p className="text-lg text-gray-700">Current Price: <span className="font-semibold">{formatNumber(marketData.currentPrice)}</span></p>
-          <p className="text-lg text-gray-700">EMA 70: <span className="font-semibold">{formatNumber(marketData.ema70)}</span></p>
-        </div>
+  <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa' }}>
+    <h1 style={{ textAlign: 'center', color: '#007bff', marginBottom: '2rem' }}>
+      Bitcoin Signal Analyzer
+    </h1>
 
-        <div className="bg-white shadow-md rounded-2xl p-6">
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">ATH Breakout Signal</h2>
-          <p className="text-lg text-gray-700">Signal: <span className="font-semibold">{athResult.signal}</span></p>
-          <p className="text-lg text-gray-700">Weeks Since Previous ATH: <span className="font-semibold">{athResult.weeksSincePreviousAth}</span></p>
-          <p className="text-lg text-gray-700">Exceeds 100 Weeks: <span className="font-semibold">{athResult.exceeds100Weeks ? 'Yes' : 'No'}</span></p>
-        </div>
-
-        <div className="bg-white shadow-md rounded-2xl p-6">
-          <h2 className="text-2xl font-bold text-red-700 mb-4">ATL Breakout Signal</h2>
-          <p className="text-lg text-gray-700">Signal: <span className="font-semibold">{atlResult.signal}</span></p>
-          <p className="text-lg text-gray-700">Weeks Since Previous ATL: <span className="font-semibold">{atlResult.weeksSincePreviousAtl}</span></p>
-          <p className="text-lg text-gray-700">Exceeds 100 Weeks: <span className="font-semibold">{atlResult.exceeds100Weeks ? 'Yes' : 'No'}</span></p>
-        </div>
-      </div>
+    {/* Market Data Section */}
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: '10px',
+      padding: '1.5rem',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+      marginBottom: '2rem'
+    }}>
+      <h2 style={{ color: '#343a40', marginBottom: '1rem' }}>Current Market Data</h2>
+      <p><strong>Current Price:</strong> ${marketData.currentPrice?.toLocaleString() || 'Loading...'}</p>
+      <p><strong>EMA70:</strong> ${marketData.ema70?.toLocaleString() || 'Loading...'}</p>
     </div>
-  );
-    }
+
+    {/* ATH Breakout Section */}
+    <div style={{
+      backgroundColor: '#e3fcec',
+      borderLeft: '5px solid #28a745',
+      borderRadius: '10px',
+      padding: '1.5rem',
+      marginBottom: '2rem'
+    }}>
+      <h2 style={{ color: '#28a745', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
+      <p><strong>Signal:</strong> {athResult.signal}</p>
+      <p><strong>Weeks Since Previous ATH:</strong> {athResult.weeksSincePreviousAth}</p>
+      <p><strong>Exceeds 100 Weeks:</strong> {athResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
+    </div>
+
+    {/* ATL Breakout Section */}
+    <div style={{
+      backgroundColor: '#fcebea',
+      borderLeft: '5px solid #dc3545',
+      borderRadius: '10px',
+      padding: '1.5rem'
+    }}>
+      <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>ATL Breakout Signal</h2>
+      <p><strong>Signal:</strong> {atlResult.signal}</p>
+      <p><strong>Weeks Since Previous ATL:</strong> {atlResult.weeksSincePreviousAtl}</p>
+      <p><strong>Exceeds 100 Weeks:</strong> {atlResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
+    </div>
+  </div>
+);
