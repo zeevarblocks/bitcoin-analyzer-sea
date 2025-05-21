@@ -14,7 +14,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.0.0",
     "axios": "^1.9.0",
-    "chart.js": "3.9.1",
+    "chart.js": "2.9.4",
     "chartjs-adapter-date-fns": "^2.0.1",
     "chartjs-chart-financial": "0.1.1",
     "d3-scale": "^4.0.2",
@@ -22,7 +22,6 @@
     "lightweight-charts": "^5.0.7",
     "next": "13.4.12",
     "react": "18.2.0",
-    "react-chartjs-2": "^4.3.1",
     "react-dom": "18.2.0",
     "react-financial-charts": "^2.0.1"
   },
