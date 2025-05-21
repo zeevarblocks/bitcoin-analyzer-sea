@@ -66,16 +66,41 @@ export default function Home() {
         };
     };
     const computeBullishReversalFromAtl = () => {
-        const atlNum = parseFloat(atl);
-        const ema = parseFloat(ema70);
-        if (isNaN(atlNum) || isNaN(ema)) return {};
-        return {
-            entry: atlNum * 1.02, // Entry just above ATL
-            stopLoss: atlNum * 0.97, // SL below ATL
-            takeProfit1: ema * 0.98, // First TP slightly below EMA
-            takeProfit2: ema * 1.05, // Second TP above EMA
-        };
-    };
+  const atlNum = parseFloat(atl);
+  const ema = parseFloat(ema70);
+  if (isNaN(atlNum) || isNaN(ema)) {
+    return { valid: false, message: "Invalid ATL or EMA70 input." };
+  }
+
+  const entry = atlNum * 1.02;
+  const stopLoss = atlNum * 0.97;
+  const takeProfit1 = entry * 1.03;
+  const takeProfit2 = entry * 1.07;
+
+  // Confidence and Labels
+  let confidenceLevel = "Low";
+  let label = "Caution: EMA is lower than ATL";
+
+  if (ema > entry) {
+    confidenceLevel = "Moderate";
+    label = "Early Reversal Signal";
+  }
+
+  if (ema > takeProfit2) {
+    confidenceLevel = "High";
+    label = "Strong Bullish Reversal Potential";
+  }
+
+  return {
+    valid: true,
+    entry: parseFloat(entry.toFixed(2)),
+    stopLoss: parseFloat(stopLoss.toFixed(2)),
+    takeProfit1: parseFloat(takeProfit1.toFixed(2)),
+    takeProfit2: parseFloat(takeProfit2.toFixed(2)),
+    confidenceLevel,
+    label
+  };
+};
 
 
     const computeBearishReversalFromAth = () => {
