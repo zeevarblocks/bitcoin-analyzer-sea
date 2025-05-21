@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 body {
-  background-color: #0d1117 !important; /* or your preferred color */
-  color: #ffffff;
+  @apply m-0 p-0 text-white font-sans;
+  background: url('/background.jpg') no-repeat center center fixed;
+  background-size: cover;
 }
 
 .container {
