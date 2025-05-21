@@ -33,33 +33,45 @@ export default function BreakoutPage() {
   });
 
   return (
-  <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa' }}>
-    <h1 style={{ textAlign: 'center', color: '#007bff', marginBottom: '2rem' }}>
+  <div style={{
+    padding: '2rem',
+    fontFamily: 'Arial, sans-serif',
+    backgroundColor: '#f4f4f4',
+    color: '#212529',
+    lineHeight: '1.6',
+    fontSize: '1.05rem'
+  }}>
+    <h1 style={{
+      textAlign: 'center',
+      color: '#0d6efd',
+      marginBottom: '2rem',
+      fontSize: '2rem'
+    }}>
       Bitcoin Signal Analyzer
     </h1>
 
     {/* Market Data Section */}
     <div style={{
-      backgroundColor: 'white',
+      backgroundColor: '#ffffff',
       borderRadius: '10px',
       padding: '1.5rem',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
       marginBottom: '2rem'
     }}>
-      <h2 style={{ color: '#343a40', marginBottom: '1rem' }}>Current Market Data</h2>
+      <h2 style={{ color: '#212529', marginBottom: '1rem' }}>Current Market Data</h2>
       <p><strong>Current Price:</strong> ${marketData.currentPrice?.toLocaleString() || 'Loading...'}</p>
       <p><strong>EMA70:</strong> ${marketData.ema70?.toLocaleString() || 'Loading...'}</p>
     </div>
 
     {/* ATH Breakout Section */}
     <div style={{
-      backgroundColor: '#e3fcec',
-      borderLeft: '5px solid #28a745',
+      backgroundColor: '#eafaf1',
+      borderLeft: '5px solid #198754',
       borderRadius: '10px',
       padding: '1.5rem',
       marginBottom: '2rem'
     }}>
-      <h2 style={{ color: '#28a745', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
+      <h2 style={{ color: '#198754', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
       <p><strong>Signal:</strong> {athResult.signal}</p>
       <p><strong>Weeks Since Previous ATH:</strong> {athResult.weeksSincePreviousAth}</p>
       <p><strong>Exceeds 100 Weeks:</strong> {athResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
@@ -67,7 +79,7 @@ export default function BreakoutPage() {
 
     {/* ATL Breakout Section */}
     <div style={{
-      backgroundColor: '#fcebea',
+      backgroundColor: '#fbeaea',
       borderLeft: '5px solid #dc3545',
       borderRadius: '10px',
       padding: '1.5rem'
