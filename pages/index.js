@@ -109,6 +109,7 @@ export default function Home() {
                             onChange={e => setEma70(e.target.value)}
                         />
                     </div>
+                                />
                 </div>
 
                 {/* ATL (Bearish) Inputs */}
