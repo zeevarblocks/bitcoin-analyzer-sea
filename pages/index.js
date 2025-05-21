@@ -7,6 +7,34 @@ export default function Home() {
     const [currentPrice, setCurrentPrice] = useState('');
 
 
+    useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+
+    script.onload = () => {
+      if (window.TradingView) {
+        new window.TradingView.widget({
+          width: '100%',
+          height: 500,
+          symbol: 'OKX:BTCUSDT',
+          interval: '60',
+          timezone: 'Etc/UTC',
+          theme: 'dark',
+          style: '1',
+          locale: 'en',
+          toolbar_bg: '#1e1e1e',
+          enable_publishing: false,
+          allow_symbol_change: true,
+          container_id: 'tradingview_okxbtc'
+        });
+      }
+    };
+
+    document.body.appendChild(script);
+  }, []);
+
+
     const computeAthGap = () => {
         const athNum = parseFloat(ath);
         const emaNum = parseFloat(ema70);
@@ -71,6 +99,7 @@ export default function Home() {
             takeProfit2: athNum * 0.80,   // TP2 20% below ATH
         };
     };
+    
 
     const bullishReversal = computeBullishReversalFromAtl();
     const bearishReversal = computeBearishReversalFromAth();
@@ -86,6 +115,22 @@ export default function Home() {
             <p className="text-gray-700 text-center">
                 Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
             </p>
+    {/* TradingView Widget */}
+      <div style={{ marginTop: '3rem', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+          Live BTC/USDT Chart (OKX)
+        </h2>
+        <div id="tradingview_okxbtc" ref={tvContainer} style={{ borderRadius: '8px', overflow: 'hidden' }} />
+        <p style={{ fontSize: '0.875rem', color: '#6c757d', marginTop: '0.5rem' }}>
+          <em>Chart powered by TradingView. For informational purposes only. Not financial advice.</em>
+        </p>
+      </div>
+
+      {/* Ad-Safe Placement */}
+      <div style={{ margin: '2rem 0', backgroundColor: '#fff', padding: '1rem', borderRadius: '8px' }}>
+        {/* Example ad placeholder — replace with real ad component */}
+        <p style={{ textAlign: 'center', color: '#888' }}>[ Advertisement Space ]</p>
+      </div>
 
             {/* Grouped Input Sections (Dark Mode) */}
             <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
