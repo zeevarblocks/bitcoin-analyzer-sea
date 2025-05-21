@@ -120,7 +120,7 @@ export default function Home() {
         <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>
           Live BTC/USDT Chart (OKX)
         </h2>
-        <div id="tradingview_okxbtc" ref={tvContainer} style={{ borderRadius: '8px', overflow: 'hidden' }} />
+        <div id="tradingview_okxbtc" style={{ borderRadius: '8px', overflow: 'hidden' }} />
         <p style={{ fontSize: '0.875rem', color: '#6c757d', marginTop: '0.5rem' }}>
           <em>Chart powered by TradingView. For informational purposes only. Not financial advice.</em>
         </p>
