@@ -34,14 +34,6 @@ export default function About() {
                         Use the live BTC chart to visually inspect the weekly candles for ATH/ATL events.
                     </li>
                 </ul>
-
-                <div className="mt-10 flex justify-center">
-                    <Link href="/">
-                        <a className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
-                            Go Back Home
-                        </a>
-                    </Link>
-                </div>
             </div>
         </div>
     );
