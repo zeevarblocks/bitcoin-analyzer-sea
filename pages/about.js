@@ -1,39 +1,170 @@
-import Link from "next/link"
+import {
+    Chart,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function About() {
+import { Line } from 'react-chartjs-2';
+import { fetchBTCData } from '../utils/fetchBTCData';
+
+import {
+    computeAthBreakoutSignal,
+    computeAtlBreakoutSignal
+} from '../utils/ath&atlBreakout';
+import { useEffect, useState } from 'react';
+import { fetchMarketData } from '../utils/fetchMarketData';
+
+export default function BreakoutPage() {
+    const [marketData, setMarketData] = useState({ currentPrice: null, ema70: null });
+    const [chartData, setChartData] = useState(null);
+
+
+    useEffect(() => {
+        fetchBTCData().then(data => setChartData(data));
+    }, []);
+
+    useEffect(() => {
+        async function getData() {
+            const data = await fetchMarketData();
+            setMarketData(data);
+        }
+        getData();
+    }, []);
+
+    const athResult = computeAthBreakoutSignal({
+        currentPrice: marketData.currentPrice || 73000,
+        previousAth: 69000,
+        ema70: marketData.ema70 || 71000,
+        athBreakoutDate: '2024-03-11',
+        previousAthDate: '2021-11-08'
+    });
+
+    const atlResult = computeAtlBreakoutSignal({
+        currentPrice: marketData.currentPrice || 15000,
+        previousAtl: 17000,
+        ema70: marketData.ema70 || 19000,
+        atlBreakoutDate: '2023-12-01',
+        previousAtlDate: '2022-11-08'
+    });
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center px-4 py-10">
-            <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-3xl w-full">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">How to Use This Tool</h2>
+        <div style={{
+            padding: '2rem',
+            fontFamily: 'Arial, sans-serif',
+            backgroundColor: '#f4f4f4',
+            color: '#212529',
+            lineHeight: '1.6',
+            fontSize: '1.05rem'
+        }}>
 
-                <ul className="list-disc list-inside text-gray-700 space-y-4 text-base leading-relaxed">
-                    <li>
-                        <strong>Use the 1W (Weekly) chart timeframe</strong> to maintain consistency with EMA70 calculations.
-                    </li>
-                    <li>
-                        When entering the <strong>All-Time High (ATH)</strong> value, include the <strong>EMA70 value from the same weekly candle</strong> as the ATH.
-                    </li>
-                    <li>
-                        Likewise, for <strong>All-Time Low (ATL)</strong>, include the <strong>EMA70 value from the same weekly candle</strong>.
-                    </li>
-                    <li>
-                        The tool calculates the vertical distance (gap) between ATH/ATL and EMA70 as a percentage:
-                        <ul className="list-disc list-inside ml-6 mt-2 space-y-2 text-sm text-gray-600">
-                            <li><strong>+100% above EMA70</strong>: Bullish Continuation</li>
-                            <li><strong>-100% below EMA70</strong>: Bearish Continuation</li>
-                            <li>Smaller gaps: Possible reversal or consolidation zones</li>
-                        </ul>
-                    </li>
-                    <li>
-                        Trade levels (entry, stop loss, take profits) are generated based on macro continuation or reversal analysis.
-                    </li>
-                    <li>
-                        Optionally input the <strong>current BTC price</strong> to monitor current position versus historical levels.
-                    </li>
-                    <li>
-                        Use the live BTC chart to visually inspect the weekly candles for ATH/ATL events.
-                    </li>
-                </ul>
+            <h1 style={{
+                textAlign: 'center',
+                color: '#0d6efd',
+                marginBottom: '2rem',
+                fontSize: '2rem'
+            }}>
+                Bitcoin Signal Analyzer
+            </h1>
+
+            {/* Chart Section */}
+            {chartData && (
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                    <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
+                    <Line
+                        data={chartData}
+                        options={{
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    backgroundColor: '#1f2937',
+                                    titleColor: '#fff',
+                                    bodyColor: '#d1d5db',
+                                    borderColor: '#4b5563',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'BTC Price Over Time',
+                                    color: '#111827',
+                                    font: { size: 18, weight: 'bold' },
+                                    padding: { top: 10, bottom: 30 },
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                    ticks: { color: '#6b7280' },
+                                },
+                                y: {
+                                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                    ticks: {
+                                        color: '#6b7280',
+                                        callback: value => `$${value}`,
+                                    },
+                                },
+                            },
+                            elements: {
+                                line: { tension: 0.4, borderColor: '#3b82f6', borderWidth: 3 },
+                                point: { radius: 3, backgroundColor: '#3b82f6' },
+                            },
+                        }}
+                        style={{
+                            backgroundColor: '#ffffff',
+                            padding: '20px',
+                            borderRadius: '12px',
+                        }}
+                    />
+                </div>
+            )}
+
+            {/* Market Data Section */}
+            <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '10px',
+                padding: '1.5rem',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+                marginBottom: '2rem'
+            }}>
+                <h2 style={{ color: '#212529', marginBottom: '1rem' }}>Current Market Data</h2>
+                <p><strong>Current Price:</strong> ${marketData.currentPrice?.toLocaleString() || 'Loading...'}</p>
+                <p><strong>EMA70:</strong> ${marketData.ema70?.toLocaleString() || 'Loading...'}</p>
+            </div>
+
+            {/* ATH Breakout Section */}
+            <div style={{
+                backgroundColor: '#eafaf1',
+                borderLeft: '5px solid #198754',
+                borderRadius: '10px',
+                padding: '1.5rem',
+                marginBottom: '2rem'
+            }}>
+                <h2 style={{ color: '#198754', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
+                <p><strong>Signal:</strong> {athResult.signal}</p>
+                <p><strong>Weeks Since Previous ATH:</strong> {athResult.weeksSincePreviousAth}</p>
+                <p><strong>Exceeds 100 Weeks:</strong> {athResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
+            </div>
+
+            {/* ATL Breakout Section */}
+            <div style={{
+                backgroundColor: '#fbeaea',
+                borderLeft: '5px solid #dc3545',
+                borderRadius: '10px',
+                padding: '1.5rem'
+            }}>
+                <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>ATL Breakout Signal</h2>
+                <p><strong>Signal:</strong> {atlResult.signal}</p>
+                <p><strong>Weeks Since Previous ATL:</strong> {atlResult.weeksSincePreviousAtl}</p>
+                <p><strong>Exceeds 100 Weeks:</strong> {atlResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
             </div>
         </div>
     );
