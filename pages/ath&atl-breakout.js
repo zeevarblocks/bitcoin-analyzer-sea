@@ -1,4 +1,19 @@
 import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+import { Line } from 'react-chartjs-2';
+import { fetchBTCData } from '../utils/fetchBTCData';
+
+import {
   computeAthBreakoutSignal,
   computeAtlBreakoutSignal
 } from '../utils/ath&atlBreakout';
@@ -7,6 +22,12 @@ import { fetchMarketData } from '../utils/fetchMarketData';
 
 export default function BreakoutPage() {
   const [marketData, setMarketData] = useState({ currentPrice: null, ema70: null });
+  const [chartData, setChartData] = useState(null);
+
+
+  useEffect(() => {
+    fetchBTCData().then(data => setChartData(data));
+  }, []);
 
   useEffect(() => {
     async function getData() {
@@ -33,62 +54,118 @@ export default function BreakoutPage() {
   });
 
   return (
-  <div style={{
-    padding: '2rem',
-    fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#f4f4f4',
-    color: '#212529',
-    lineHeight: '1.6',
-    fontSize: '1.05rem'
-  }}>
-    <h1 style={{
-      textAlign: 'center',
-      color: '#0d6efd',
-      marginBottom: '2rem',
-      fontSize: '2rem'
-    }}>
-      Bitcoin Signal Analyzer
-    </h1>
-
-    {/* Market Data Section */}
     <div style={{
-      backgroundColor: '#ffffff',
-      borderRadius: '10px',
-      padding: '1.5rem',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-      marginBottom: '2rem'
+      padding: '2rem',
+      fontFamily: 'Arial, sans-serif',
+      backgroundColor: '#f4f4f4',
+      color: '#212529',
+      lineHeight: '1.6',
+      fontSize: '1.05rem'
     }}>
-      <h2 style={{ color: '#212529', marginBottom: '1rem' }}>Current Market Data</h2>
-      <p><strong>Current Price:</strong> ${marketData.currentPrice?.toLocaleString() || 'Loading...'}</p>
-      <p><strong>EMA70:</strong> ${marketData.ema70?.toLocaleString() || 'Loading...'}</p>
-    </div>
 
-    {/* ATH Breakout Section */}
-    <div style={{
-      backgroundColor: '#eafaf1',
-      borderLeft: '5px solid #198754',
-      borderRadius: '10px',
-      padding: '1.5rem',
-      marginBottom: '2rem'
-    }}>
-      <h2 style={{ color: '#198754', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
-      <p><strong>Signal:</strong> {athResult.signal}</p>
-      <p><strong>Weeks Since Previous ATH:</strong> {athResult.weeksSincePreviousAth}</p>
-      <p><strong>Exceeds 100 Weeks:</strong> {athResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
-    </div>
+      <h1 style={{
+        textAlign: 'center',
+        color: '#0d6efd',
+        marginBottom: '2rem',
+        fontSize: '2rem'
+      }}>
+        Bitcoin Signal Analyzer
+      </h1>
 
-    {/* ATL Breakout Section */}
-    <div style={{
-      backgroundColor: '#fbeaea',
-      borderLeft: '5px solid #dc3545',
-      borderRadius: '10px',
-      padding: '1.5rem'
-    }}>
-      <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>ATL Breakout Signal</h2>
-      <p><strong>Signal:</strong> {atlResult.signal}</p>
-      <p><strong>Weeks Since Previous ATL:</strong> {atlResult.weeksSincePreviousAtl}</p>
-      <p><strong>Exceeds 100 Weeks:</strong> {atlResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
+      {/* Chart Section */}
+      {chartData && (
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-center mb-4 text-gray-900">BTC Price Chart (Recent)</h2>
+          <Line
+            data={chartData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  backgroundColor: '#1f2937',
+                  titleColor: '#fff',
+                  bodyColor: '#d1d5db',
+                  borderColor: '#4b5563',
+                  borderWidth: 1,
+                  padding: 12,
+                },
+                title: {
+                  display: true,
+                  text: 'BTC Price Over Time',
+                  color: '#111827',
+                  font: { size: 18, weight: 'bold' },
+                  padding: { top: 10, bottom: 30 },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                  ticks: { color: '#6b7280' },
+                },
+                y: {
+                  grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                  ticks: {
+                    color: '#6b7280',
+                    callback: value => `$${value}`,
+                  },
+                },
+              },
+              elements: {
+                line: { tension: 0.4, borderColor: '#3b82f6', borderWidth: 3 },
+                point: { radius: 3, backgroundColor: '#3b82f6' },
+              },
+            }}
+            style={{
+              backgroundColor: '#ffffff',
+              padding: '20px',
+              borderRadius: '12px',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Market Data Section */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '10px',
+        padding: '1.5rem',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+        marginBottom: '2rem'
+      }}>
+        <h2 style={{ color: '#212529', marginBottom: '1rem' }}>Current Market Data</h2>
+        <p><strong>Current Price:</strong> ${marketData.currentPrice?.toLocaleString() || 'Loading...'}</p>
+        <p><strong>EMA70:</strong> ${marketData.ema70?.toLocaleString() || 'Loading...'}</p>
+      </div>
+
+      {/* ATH Breakout Section */}
+      <div style={{
+        backgroundColor: '#eafaf1',
+        borderLeft: '5px solid #198754',
+        borderRadius: '10px',
+        padding: '1.5rem',
+        marginBottom: '2rem'
+      }}>
+        <h2 style={{ color: '#198754', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
+        <p><strong>Signal:</strong> {athResult.signal}</p>
+        <p><strong>Weeks Since Previous ATH:</strong> {athResult.weeksSincePreviousAth}</p>
+        <p><strong>Exceeds 100 Weeks:</strong> {athResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
+      </div>
+
+      {/* ATL Breakout Section */}
+      <div style={{
+        backgroundColor: '#fbeaea',
+        borderLeft: '5px solid #dc3545',
+        borderRadius: '10px',
+        padding: '1.5rem'
+      }}>
+        <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>ATL Breakout Signal</h2>
+        <p><strong>Signal:</strong> {atlResult.signal}</p>
+        <p><strong>Weeks Since Previous ATL:</strong> {atlResult.weeksSincePreviousAtl}</p>
+        <p><strong>Exceeds 100 Weeks:</strong> {atlResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
+      </div>
     </div>
-  </div>
-);
-      }
+  );
+}
