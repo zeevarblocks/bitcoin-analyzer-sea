@@ -4,13 +4,14 @@ import FloatingButton from '../components/FloatingButton';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-
 function MyApp({ Component, pageProps }) {
   return (
     <>
       <Navbar />
-      <main className="p-6 min-h-screen">
-        <Component {...pageProps} />
+      <main className="min-h-screen p-6 flex justify-center items-start">
+        <div className="container bg-black/60 backdrop-blur-md text-white rounded-2xl shadow-lg w-full max-w-4xl">
+          <Component {...pageProps} />
+        </div>
       </main>
       <FloatingButton />
       <Analytics />
