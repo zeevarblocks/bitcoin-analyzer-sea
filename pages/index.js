@@ -68,52 +68,27 @@ export default function Home() {
     const computeBullishReversalFromAtl = () => {
   const atlNum = parseFloat(atl);
   const ema = parseFloat(ema70);
-  if (isNaN(atlNum) || isNaN(ema)) {
-    return { valid: false, message: "Invalid ATL or EMA70 input." };
-  }
-
-  const entry = atlNum * 1.02;
-  const stopLoss = atlNum * 0.97;
-  const takeProfit1 = entry * 1.03;
-  const takeProfit2 = entry * 1.07;
-
-  // Confidence and Labels
-  let confidenceLevel = "Low";
-  let label = "Caution: EMA is lower than ATL";
-
-  if (ema > entry) {
-    confidenceLevel = "Moderate";
-    label = "Early Reversal Signal";
-  }
-
-  if (ema > takeProfit2) {
-    confidenceLevel = "High";
-    label = "Strong Bullish Reversal Potential";
-  }
-
+  if (isNaN(atlNum) || isNaN(ema)) return {};
   return {
-    valid: true,
-    entry: parseFloat(entry.toFixed(2)),
-    stopLoss: parseFloat(stopLoss.toFixed(2)),
-    takeProfit1: parseFloat(takeProfit1.toFixed(2)),
-    takeProfit2: parseFloat(takeProfit2.toFixed(2)),
-    confidenceLevel,
-    label
+    entry: atlNum * 1.02,       // Entry just above ATL
+    stopLoss: atlNum * 0.97,    // SL below ATL
+    takeProfit1: atlNum * 1.10, // TP1: 10% above ATL
+    takeProfit2: atlNum * 1.20, // TP2: 20% above ATL
   };
 };
 
 
     const computeBearishReversalFromAth = () => {
-        const athNum = parseFloat(ath);
-        const ema = parseFloat(ema70);
-        if (isNaN(athNum) || isNaN(ema)) return {};
-        return {
-            entry: athNum * 0.98, // Entry just below ATH
-            stopLoss: athNum * 1.03, // SL above ATH
-            takeProfit1: ema * 1.02, // First TP just above EMA
-            takeProfit2: ema * 0.95, // Second TP below EMA
-        };
-    };
+  const athNum = parseFloat(ath);
+  const ema = parseFloat(ema70);
+  if (isNaN(athNum) || isNaN(ema)) return {};
+  return {
+    entry: athNum * 0.98,         // Entry just below ATH
+    stopLoss: athNum * 1.03,      // SL above ATH
+    takeProfit1: athNum * 0.90,   // TP1 10% below ATH
+    takeProfit2: athNum * 0.80,   // TP2 20% below ATH
+  };
+};
 
     const bullishReversal = computeBullishReversalFromAtl();
     const bearishReversal = computeBearishReversalFromAth();
