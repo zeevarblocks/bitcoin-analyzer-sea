@@ -12,7 +12,7 @@ export default function Navbar() {
     { href: '/', label: 'Home' },
     { href: '/rewards', label: 'Rewards' },
     { href: '/about', label: 'About' },
-    { href: '/ath-breakout', label: 'AthBreakoutPage' },
+    { href: '/ath&atl-breakout', label: 'BreakoutPage' },
   ];
 
   const linkClass = (path) =>
