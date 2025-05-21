@@ -5,7 +5,7 @@ export default function Home() {
     const [atl, setAtl] = useState('');
     const [ema70, setEma70] = useState('');
     const [currentPrice, setCurrentPrice] = useState('');
-
+    
 
     const computeAthGap = () => {
         const athNum = parseFloat(ath);
@@ -109,7 +109,6 @@ export default function Home() {
                             onChange={e => setEma70(e.target.value)}
                         />
                     </div>
-                                />
                 </div>
 
                 {/* ATL (Bearish) Inputs */}
@@ -133,9 +132,7 @@ export default function Home() {
                     </div>
                 </div>
                 </div>
-
             </div>
-
             {/* ATH Signal Block */}
             <div className="space-y-2 text-gray-800">
                 <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
