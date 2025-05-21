@@ -97,6 +97,9 @@ export default function Home() {
     const bearish = computeBearishLevels();
 
     return (
+        <div
+  className="min-h-screen p-6 flex justify-center items-start bg-fixed bg-cover bg-center" style={{ backgroundImage: 'url(/bg.png)' }}>
+        <div className="min-h-screen bg-cover bg-center p-6 text-gray-800" style={{ backgroundImage: 'url(/bg.png)' }}>
             <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
                 <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
@@ -287,4 +290,4 @@ export default function Home() {
             </div>
         </div>
     );
-}
+        }
