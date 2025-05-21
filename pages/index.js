@@ -115,17 +115,7 @@ export default function Home() {
             <p className="text-gray-700 text-center">
                 Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
             </p>
-    {/* TradingView Widget */}
-      <div style={{ marginTop: '3rem', marginBottom: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-          Live BTC/USDT Chart (OKX)
-        </h2>
-        <div id="tradingview_okxbtc" style={{ borderRadius: '8px', overflow: 'hidden' }} />
-        <p style={{ fontSize: '0.875rem', color: '#6c757d', marginTop: '0.5rem' }}>
-          <em>Chart powered by TradingView. For informational purposes only. Not financial advice.</em>
-        </p>
-      </div>
-
+    
       {/* Ad-Safe Placement */}
       <div style={{ margin: '2rem 0', backgroundColor: '#fff', padding: '1rem', borderRadius: '8px' }}>
         {/* Example ad placeholder — replace with real ad component */}
@@ -244,6 +234,16 @@ export default function Home() {
                         <p>Take Profit: <span className="font-medium text-gray-800">${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</span></p>
                     </div>
                 )}
+{/* TradingView Widget */}
+      <div style={{ marginTop: '3rem', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+          Live BTC/USDT Chart (OKX)
+        </h2>
+        <div id="tradingview_okxbtc" style={{ borderRadius: '8px', overflow: 'hidden' }} />
+        <p style={{ fontSize: '0.875rem', color: '#6c757d', marginTop: '0.5rem' }}>
+          <em>Chart powered by TradingView. For informational purposes only. Not financial advice.</em>
+        </p>
+      </div>
             </div>
             <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
                 <p>
