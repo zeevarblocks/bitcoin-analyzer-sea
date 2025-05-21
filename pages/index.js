@@ -131,18 +131,6 @@ export default function Home() {
                         />
                     </div>
                 </div>
-
-                {/* Optional: Current Price Input */}
-                <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
-                    <h2 className="text-lg font-semibold text-blue-400 mb-2">
-                        Optional: Current BTC Price
-                    </h2>
-                    <input
-                        type="number"
-                        placeholder="Current Price"
-                        className="w-full bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        onChange={e => setCurrentPrice(e.target.value)}
-                    />
                 </div>
 
             </div>
