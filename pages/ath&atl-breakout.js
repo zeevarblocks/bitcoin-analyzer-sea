@@ -7,12 +7,6 @@ import { fetchMarketData } from '../utils/fetchMarketData';
 
 export default function BreakoutPage() {
   const [marketData, setMarketData] = useState({ currentPrice: null, ema70: null });
-  const [chartData, setChartData] = useState(null);
-
-
-  useEffect(() => {
-    fetchBTCData().then(data => setChartData(data));
-  }, []);
 
   useEffect(() => {
     async function getData() {
