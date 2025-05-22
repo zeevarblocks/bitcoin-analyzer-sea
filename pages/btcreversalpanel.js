@@ -1,173 +1,164 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
-export default function BTCReversalStrategies() {
-  const [showATH, setShowATH] = useState(false);
-  const [showATL, setShowATL] = useState(false);
-  const [prices, setPrices] = useState([]);
-  const [ema14, setEma14] = useState(null);
-  const [ema70, setEma70] = useState(null);
+export default function Home() {
+  const [ath, setAth] = useState(null);
+  const [atl, setAtl] = useState(null);
+  const [ema70, setEma70] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Fetch ATH/ATL from CoinGecko
   useEffect(() => {
-    async function fetchPrices() {
+    async function fetchMarketData() {
       try {
-        const res = await axios.get(
-          'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart',
-          {
-            params: {
-              vs_currency: 'usd',
-              days: '90',
-              interval: 'daily',
-            },
-          }
-        );
-
-        const closePrices = res.data.prices.map((p) => p[1]);
-        setPrices(closePrices);
-
-        const calculateEMA = (data, period) => {
-          const k = 2 / (period + 1);
-          let ema = data.slice(0, period).reduce((a, b) => a + b, 0) / period;
-          for (let i = period; i < data.length; i++) {
-            ema = data[i] * k + ema * (1 - k);
-          }
-          return ema;
-        };
-
-        setEma14(calculateEMA(closePrices, 14));
-        setEma70(calculateEMA(closePrices, 70));
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin');
+        const data = await res.json();
+        setAth(data.market_data.ath.usd);
+        setAtl(data.market_data.atl.usd);
+      } catch (error) {
+        console.error('Failed to fetch market data:', error);
+      } finally {
         setLoading(false);
-      } catch (err) {
-        console.error('Failed to fetch BTC prices:', err);
       }
     }
 
-    fetchPrices();
+    fetchMarketData();
   }, []);
 
-  // ATH Setup
-  const previousAthDate = new Date('2021-11-08');
-  const recentAthDate = new Date('2025-01-08');
-  const previousAthPrice = 69000;
-  const recentAthPrice = 73500;
-  const ema70AtRecentAth = 43000;
+  // Parsed numbers
+  const athNum = parseFloat(ath);
+  const atlNum = parseFloat(atl);
+  const emaNum = parseFloat(ema70);
 
-  const weeksSincePreviousAth = Math.floor(
-    (recentAthDate.getTime() - previousAthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)
-  );
+  const isValid = !isNaN(emaNum) && emaNum > 0;
 
-  const percentDiffATH = ((recentAthPrice - ema70AtRecentAth) / ema70AtRecentAth) * 100;
-  const trendIsBullish = ema14 && ema70 ? ema14 > ema70 : false;
-  const reversalConfirmedATH =
-    weeksSincePreviousAth > 100 && percentDiffATH < 100 && !trendIsBullish;
+  // Calculations
+  const athGap = isValid ? ((athNum - emaNum) / emaNum) * 100 : 0;
+  const atlGap = isValid ? ((emaNum - atlNum) / atlNum) * 100 : 0;
 
-  const athEntry = recentAthPrice;
-  const athStopLoss = athEntry * 1.01;
-  const athTP1 = athEntry * 0.90;
-  const athTP2 = athEntry * 0.80;
+  const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal');
+  const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-  // ATL Setup
-  const previousAtlDate = new Date('2015-01-14');
-  const recentAtlDate = new Date('2022-11-21');
-  const previousAtlPrice = 152;
-  const recentAtlPrice = 15500;
-  const ema70AtRecentAtl = 25000;
+  const computeBullishLevels = () => ({
+    entry: emaNum * 1.02,
+    stopLoss: emaNum * 0.97,
+    takeProfit1: athNum * 0.98,
+    takeProfit2: athNum * 1.05,
+  });
 
-  const weeksSincePreviousAtl = Math.floor(
-    (recentAtlDate.getTime() - previousAtlDate.getTime()) / (1000 * 60 * 60 * 24 * 7)
-  );
+  const computeBearishLevels = () => ({
+    entry: emaNum * 0.98,
+    stopLoss: emaNum * 1.03,
+    takeProfit1: atlNum * 1.02,
+    takeProfit2: atlNum * 0.95,
+  });
 
-  const percentDiffATL = ((ema70AtRecentAtl - recentAtlPrice) / ema70AtRecentAtl) * 100;
-  const reversalConfirmedATL =
-    weeksSincePreviousAtl > 300 && percentDiffATL > 30 && trendIsBullish;
+  const computeBullishReversalFromAtl = () => ({
+    entry: atlNum * 1.02,
+    stopLoss: atlNum * 0.97,
+    takeProfit1: atlNum * 1.1,
+    takeProfit2: atlNum * 1.2,
+  });
 
-  const atlEntry = recentAtlPrice;
-  const atlStopLoss = atlEntry * 0.95;
-  const atlTP1 = atlEntry * 1.25;
-  const atlTP2 = atlEntry * 1.50;
+  const computeBearishReversalFromAth = () => ({
+    entry: athNum * 0.98,
+    stopLoss: athNum * 1.03,
+    takeProfit1: athNum * 0.9,
+    takeProfit2: athNum * 0.8,
+  });
+
+  const bullish = isValid ? computeBullishLevels() : null;
+  const bearish = isValid ? computeBearishLevels() : null;
+  const bullishReversal = isValid ? computeBullishReversalFromAtl() : null;
+  const bearishReversal = isValid ? computeBearishReversalFromAth() : null;
 
   return (
-    <div className="bg-black text-white p-6 rounded-2xl shadow-lg max-w-4xl mx-auto space-y-10">
-      {/* ATH Setup */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Bitcoin ATH Reversal Strategy</h2>
+    <div className="max-w-4xl mx-auto bg-white bg-opacity-95 rounded-xl shadow-xl p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
-        <button
-          onClick={() => setShowATH(true)}
-          className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded mb-4"
-        >
-          {loading ? 'Loading...' : 'Analyze ATH'}
-        </button>
-
-        {showATH && !loading && ema14 && ema70 && (
-          <div className="space-y-2">
-            <p><strong>Previous ATH:</strong> ${previousAthPrice} on {previousAthDate.toDateString()}</p>
-            <p><strong>Recent ATH:</strong> ${recentAthPrice} on {recentAthDate.toDateString()}</p>
-            <p><strong>EMA70 at Recent ATH:</strong> ${ema70AtRecentAth}</p>
-            <p><strong>Weeks Since Previous ATH:</strong> {weeksSincePreviousAth}</p>
-            <p><strong>% Diff from EMA70:</strong> {percentDiffATH.toFixed(2)}%</p>
-            <p><strong>EMA14:</strong> ${ema14.toFixed(2)} | <strong>EMA70:</strong> ${ema70.toFixed(2)}</p>
-            <p><strong>Trend:</strong> {trendIsBullish ? 'Bullish' : 'Bearish'}</p>
-            <h3 className={`text-lg font-bold ${reversalConfirmedATH ? 'text-green-400' : 'text-red-400'}`}>
-              ATH Reversal Confirmed: {reversalConfirmedATH ? 'YES' : 'NO'}
-            </h3>
-
-            {reversalConfirmedATH && (
-              <div className="mt-4">
-                <h4 className="text-md font-semibold">Trade Setup</h4>
-                <p><strong>Entry:</strong> ${athEntry}</p>
-                <p><strong>Stop Loss:</strong> ${athStopLoss.toFixed(0)}</p>
-                <p><strong>Take Profit 1:</strong> ${athTP1.toFixed(0)}</p>
-                <p><strong>Take Profit 2:</strong> ${athTP2.toFixed(0)}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ATL Setup */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Bitcoin ATL Reversal Strategy</h2>
-
-        <button
-          onClick={() => setShowATL(true)}
-          className="bg-blue-500 hover:bg-blue-400 text-white font-semibold py-2 px-4 rounded mb-4"
-        >
-          {loading ? 'Loading...' : 'Analyze ATL'}
-        </button>
-
-        {showATL && !loading && ema14 && ema70 && (
-          <div className="space-y-2">
-            <p><strong>Previous ATL:</strong> ${previousAtlPrice} on {previousAtlDate.toDateString()}</p>
-            <p><strong>Recent ATL:</strong> ${recentAtlPrice} on {recentAtlDate.toDateString()}</p>
-            <p><strong>EMA70 at Recent ATL:</strong> ${ema70AtRecentAtl}</p>
-            <p><strong>Weeks Since Previous ATL:</strong> {weeksSincePreviousAtl}</p>
-            <p><strong>% Diff to EMA70:</strong> {percentDiffATL.toFixed(2)}%</p>
-            <p><strong>EMA14:</strong> ${ema14.toFixed(2)} | <strong>EMA70:</strong> ${ema70.toFixed(2)}</p>
-            <p><strong>Trend:</strong> {trendIsBullish ? 'Bullish' : 'Bearish'}</p>
-            <h3 className={`text-lg font-bold ${reversalConfirmedATL ? 'text-green-400' : 'text-red-400'}`}>
-              ATL Reversal Confirmed: {reversalConfirmedATL ? 'YES' : 'NO'}
-            </h3>
-
-            {reversalConfirmedATL && (
-              <div className="mt-4">
-                <h4 className="text-md font-semibold">Accumulation Setup</h4>
-                <p><strong>Entry:</strong> ${atlEntry}</p>
-                <p><strong>Stop Loss:</strong> ${atlStopLoss.toFixed(0)}</p>
-                <p><strong>Take Profit 1:</strong> ${atlTP1.toFixed(0)}</p>
-                <p><strong>Take Profit 2:</strong> ${atlTP2.toFixed(0)}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      <p className="text-xs text-gray-400">
-        This dual setup combines historical and technical patterns. Educational purpose only. Not financial advice.
+      <p className="text-gray-700 text-center">
+        Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe.
       </p>
-    </div>
+
+      <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
+        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
+          <h2 className="text-lg font-semibold text-blue-400 mb-2">Mock EMA70 Input</h2>
+          <input
+            type="number"
+            placeholder="EMA70 (Manual Input)"
+            className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            value={ema70}
+            onChange={e => setEma70(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
+
+      {!loading && isValid && (
+        <>
+          {/* ATH Block */}
+          <div className="space-y-2 text-gray-800">
+            <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
+            <p>ATH: ${athNum.toFixed(2)}</p>
+            <p>Gap: {athGap.toFixed(2)}%</p>
+            <p>
+              Market Zone:{' '}
+              <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
+                {getAthSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
+              </span>
+            </p>
+
+            {getAthSignal() === 'Bullish Continuation' && (
+              <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+                <p>Entry: ${bullish.entry.toFixed(2)}</p>
+                <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+                <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+              </div>
+            )}
+
+            {getAthSignal() !== 'Bullish Continuation' && (
+              <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
+                <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
+                <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
+                <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
+                <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
+              </div>
+            )}
+          </div>
+
+          {/* ATL Block */}
+          <div className="space-y-2 text-gray-800">
+            <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
+            <p>ATL: ${atlNum.toFixed(2)}</p>
+            <p>Gap: {atlGap.toFixed(2)}%</p>
+            <p>
+              Market Zone:{' '}
+              <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
+                {getAtlSignal() === 'Bearish Continuation' ? '🔻 Still in the Sell Zone' : '🟢 Opportunity: Buy Zone'}
+              </span>
+            </p>
+
+            {getAtlSignal() === 'Bearish Continuation' && (
+              <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
+                <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
+                <p>Entry: ${bearish.entry.toFixed(2)}</p>
+                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
+              </div>
+            )}
+
+            {getAtlSignal() !== 'Bearish Continuation' && (
+              <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
+              </div>
+            )}
+          </div>
+        </>
+      )};
+    </div> // <-- closing main container div
   );
 }
