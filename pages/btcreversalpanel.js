@@ -10,7 +10,6 @@ export default function BTCReversalSetup() {
     const [ema70, setEma70] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Fetch BTC historical prices (last 90 days)
     useEffect(() => {
         async function fetchPrices() {
             try {
@@ -25,10 +24,9 @@ export default function BTCReversalSetup() {
                     }
                 );
 
-        const closePrices = res.data.prices.map((p) => p[1]);
+                const closePrices = res.data.prices.map((p) => p[1]);
                 setPrices(closePrices);
 
-                // Calculate EMAs
                 const calculateEMA = (data, period) => {
                     const k = 2 / (period + 1);
                     let ema = data.slice(0, period).reduce((a, b) => a + b, 0) / period;
@@ -43,13 +41,13 @@ export default function BTCReversalSetup() {
                 setLoading(false);
             } catch (err) {
                 console.error('Failed to fetch BTC prices:', err);
+                setLoading(false);
             }
         }
 
         fetchPrices();
     }, []);
 
-    // Historical data
     const previousAthDate = new Date('2021-11-08');
     const recentAthDate = new Date('2025-01-08');
     const previousAthPrice = 69000;
@@ -57,7 +55,7 @@ export default function BTCReversalSetup() {
     const recentAthPrice = 73500;
 
     const weeksSincePreviousAth = Math.floor(
-        (recentAthDate.getTime() - previousAthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)
+        (recentAthDate - previousAthDate) / (1000 * 60 * 60 * 24 * 7)
     );
     const percentDiff = ((previousAthPrice - ema70AtPreviousAth) / ema70AtPreviousAth) * 100;
 
@@ -70,12 +68,12 @@ export default function BTCReversalSetup() {
     const takeProfit2 = entry * 0.80;
 
     return (
-        <div className="bg-black text-white p-6 rounded-2xl shadow-lg max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold mb-4">Bitcoin Reversal Strategy</h2>
+        <div className="bg-black text-white p-6 rounded-2xl shadow-lg max-w-xl mx-auto my-10">
+            <h2 className="text-2xl font-bold mb-4 text-center">Bitcoin Reversal Strategy</h2>
 
             <button
                 onClick={() => setShowSetup(true)}
-                className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded mb-6"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded mb-6 w-full"
             >
                 {loading ? 'Loading...' : 'Analyze Market'}
             </button>
