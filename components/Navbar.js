@@ -13,6 +13,7 @@ export default function Navbar() {
     { href: '/rewards', label: 'Rewards' },
     { href: '/about', label: 'About' },
     { href: '/ath&atl-breakout', label: 'BreakoutPage' },
+    { href: '/btcreversalpanel', label: 'BTCReversalPanel' },
   ];
 
   const linkClass = (path) =>
