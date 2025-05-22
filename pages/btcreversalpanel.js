@@ -41,24 +41,24 @@ export default function BTCReversalSetup() {
                 setLoading(false);
             } catch (err) {
                 console.error('Failed to fetch BTC prices:', err);
-                setLoading(false);
             }
         }
 
         fetchPrices();
     }, []);
 
+    // Key reference points
     const previousAthDate = new Date('2021-11-08');
     const recentAthDate = new Date('2025-01-08');
     const previousAthPrice = 69000;
-    const ema70AtPreviousAth = 43000;
     const recentAthPrice = 73500;
+    const ema70AtRecentAth = 43000;
 
     const weeksSincePreviousAth = Math.floor(
-        (recentAthDate - previousAthDate) / (1000 * 60 * 60 * 24 * 7)
+        (recentAthDate.getTime() - previousAthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)
     );
-    const percentDiff = ((previousAthPrice - ema70AtPreviousAth) / ema70AtPreviousAth) * 100;
 
+    const percentDiff = ((recentAthPrice - ema70AtRecentAth) / ema70AtRecentAth) * 100;
     const trendIsBullish = ema14 && ema70 ? ema14 > ema70 : false;
     const reversalConfirmed = weeksSincePreviousAth > 100 && percentDiff < 100 && !trendIsBullish;
 
@@ -68,12 +68,12 @@ export default function BTCReversalSetup() {
     const takeProfit2 = entry * 0.80;
 
     return (
-        <div className="bg-black text-white p-6 rounded-2xl shadow-lg max-w-xl mx-auto my-10">
-            <h2 className="text-2xl font-bold mb-4 text-center">Bitcoin Reversal Strategy</h2>
+        <div className="bg-black text-white p-6 rounded-2xl shadow-lg max-w-xl mx-auto">
+            <h2 className="text-2xl font-bold mb-4">Bitcoin Reversal Strategy</h2>
 
             <button
                 onClick={() => setShowSetup(true)}
-                className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded mb-6 w-full"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 px-4 rounded mb-6"
             >
                 {loading ? 'Loading...' : 'Analyze Market'}
             </button>
@@ -81,11 +81,17 @@ export default function BTCReversalSetup() {
             {showSetup && !loading && ema14 && ema70 && (
                 <>
                     <div className="space-y-2">
-                        <p><strong>Previous ATH:</strong> ${previousAthPrice} on <span className="text-yellow-400">{previousAthDate.toDateString()}</span></p>
-                        <p><strong>EMA70 at Previous ATH:</strong> ${ema70AtPreviousAth}</p>
+                        <p>
+                            <strong>Previous ATH:</strong> ${previousAthPrice} on{' '}
+                            <span className="text-yellow-400">{previousAthDate.toDateString()}</span>
+                        </p>
+                        <p>
+                            <strong>Recent ATH Breakout:</strong> ${recentAthPrice} on{' '}
+                            <span className="text-green-400">{recentAthDate.toDateString()}</span>
+                        </p>
+                        <p><strong>EMA70 at Recent ATH:</strong> ${ema70AtRecentAth}</p>
                         <p><strong>Weeks Since Previous ATH:</strong> {weeksSincePreviousAth} weeks</p>
                         <p><strong>% Difference from EMA70:</strong> {percentDiff.toFixed(2)}%</p>
-                        <p><strong>Recent ATH Breakout:</strong> ${recentAthPrice} on <span className="text-green-400">{recentAthDate.toDateString()}</span></p>
                         <p><strong>Current EMA14:</strong> ${ema14.toFixed(2)}</p>
                         <p><strong>Current EMA70:</strong> ${ema70.toFixed(2)}</p>
                         <p>
