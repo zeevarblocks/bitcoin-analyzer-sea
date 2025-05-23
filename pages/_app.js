@@ -4,6 +4,7 @@ import FloatingButton from '../components/FloatingButton';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
+
 function MyApp({ Component, pageProps }) {
   return (
     <>
@@ -16,6 +17,7 @@ function MyApp({ Component, pageProps }) {
       <FloatingButton />
       <Analytics />
       <SpeedInsights />
+    
     </>
   );
 }
