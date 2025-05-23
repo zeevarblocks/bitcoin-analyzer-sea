@@ -334,28 +334,28 @@ export default function Home() {
 
                                                 <p>ATH: ${athNum.toFixed(2)}</p>
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
-                                                <p>
-  Market Zone:{' '}
-  <span className={`font-bold ${getSignalColor(getAthSignal(athGap))}`}>
-    {getAthSignal(athGap)}
-  </span>
-</p>
+                                                 <p>
+        Market Zone:{' '}
+        <span className={`font-bold ${getSignalColor(athSignal)}`}>
+          {athSignal}
+        </span>
+      </p>
 
-{(getAthSignal(athGap).includes('Bullish') || getAthSignal(athGap).includes('Bearish')) && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal(athGap))}`}>
-    <p className="font-semibold">Trade Setup:</p>
-    {getAthSignal(athGap).includes('Bullish') && (
-      <>
-        <p>Entry: ${bullish.entry.toFixed(2)}</p>
-        <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-        <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
-      </>
-    )}
-    {getAthSignal(athGap).includes('Bearish') && (
-      <>
-        <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-        <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-        <p>TP: ${bearishReversal.takeProfit1.toFixed(2)}</p>
+      {(athSignal.includes('Bullish') || athSignal.includes('Bearish')) && (
+        <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(athSignal)}`}>
+          <p className="font-semibold">Trade Setup:</p>
+          {athSignal.includes('Bullish') && (
+            <>
+              <p>Entry: ${bullish.entry.toFixed(2)}</p>
+              <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+              <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
+            </>
+          )}
+          {athSignal.includes('Bearish') && (
+            <>
+              <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
+              <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
+              <p>TP: ${bearishReversal.takeProfit1.toFixed(2)}</p
       </>
     )}
   </div>
@@ -385,28 +385,30 @@ export default function Home() {
                                                 )}
                                                 <p>ATL: ${atlNum.toFixed(2)}</p>
                                                 <p>Gap: {atlGap.toFixed(2)}%</p>
-                                                <p>
-  Market Zone:{' '}
-  <span className={`font-bold ${getSignalColor(getAtlSignal(atlGap))}`}>
-    {getAtlSignal(atlGap)}
-  </span>
-</p>
+                                                  <p>
+        Market Zone:{' '}
+        <span className={`font-bold ${getSignalColor(atlSignal)}`}>
+          {atlSignal}
+        </span>
+      </p>
 
-{(getAtlSignal(atlGap).includes('Bearish') || getAtlSignal(atlGap).includes('Bullish')) && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal(atlGap))}`}>
-    <p className="font-semibold">Trade Setup:</p>
-    {getAtlSignal(atlGap).includes('Bearish') && (
-      <>
-        <p>Entry: ${bearish.entry.toFixed(2)}</p>
-        <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-        <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
-      </>
-    )}
-    {getAtlSignal(atlGap).includes('Bullish') && (
-      <>
-        <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-        <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-        <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
+      {(atlSignal.includes('Bearish') || atlSignal.includes('Bullish')) && (
+        <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(atlSignal)}`}>
+          <p className="font-semibold">Trade Setup:</p>
+
+          {atlSignal.includes('Bearish') && (
+            <>
+              <p>Entry: ${bearish.entry.toFixed(2)}</p>
+              <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+              <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
+            </>
+          )}
+
+          {atlSignal.includes('Bullish') && (
+            <>
+              <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+              <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+              <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
       </>
     )}
   </div>
