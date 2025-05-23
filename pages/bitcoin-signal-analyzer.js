@@ -225,7 +225,18 @@ const getBoxColor = (signal) => {
   return 'bg-gray-100 border-gray-300 text-gray-800';
 };
 
+const computeStrongBullishLevels = () => {
+  const ema = parseFloat(ema70);
+  const athNum = parseFloat(ath);
+  if (isNaN(ema) || isNaN(athNum)) return {};
 
+  return {
+    entry: ema * 1.03,             // More aggressive entry
+    stopLoss: ema * 0.975,         // Slightly tighter stop
+    takeProfit1: athNum * 1.02,    // First target above ATH
+    takeProfit2: athNum * 1.08     // Extended target
+  };
+};
 
 
         const computeBullishLevels = () => {
@@ -240,6 +251,20 @@ const getBoxColor = (signal) => {
                 };
         };
 
+const computeStrongBearishLevels = () => {
+  const ema = parseFloat(ema70);
+  const atlNum = parseFloat(atl);
+  if (isNaN(ema) || isNaN(atlNum)) return {};
+
+  return {
+    entry: ema * 0.97,             // More aggressive entry
+    stopLoss: ema * 1.025,         // Slightly tighter stop
+    takeProfit1: atlNum * 0.98,    // First target just below ATL
+    takeProfit2: atlNum * 0.92     // Deeper breakdown target
+  };
+};
+
+        
         const computeBearishLevels = () => {
                 const ema = parseFloat(ema70);
                 const atlNum = parseFloat(atl);
@@ -276,7 +301,8 @@ const getBoxColor = (signal) => {
                 };
         };
 
-
+        const strongBullish = computeStrongBullishLevels();
+const strongBearish = computeStrongBearishLevels();
         const bullishReversal = computeBullishReversalFromAtl();
         const bearishReversal = computeBearishReversalFromAth();
 
