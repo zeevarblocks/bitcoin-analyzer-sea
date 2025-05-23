@@ -3,6 +3,7 @@ import { AlertTriangle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../components/Alert";
 
 
+
 export default function Home() {
         const [ath, setAth] = useState(null);
         const [atl, setAtl] = useState(null);
@@ -64,28 +65,58 @@ export default function Home() {
                 return emaArray;
         };
 
-        const findValidATL = (data) => {
+        const findRecentATL = (data) => {
                 if (!data || data.length < 100) return null;
+
                 const last100 = data.slice(-100);
-                const validBearishCandles = last100.filter(candle => candle.ema14 < candle.ema70);
-                if (validBearishCandles.length === 0) return null;
-                let lowest = validBearishCandles[0].low;
-                validBearishCandles.forEach(candle => {
-                        if (candle.low < lowest) lowest = candle.low;
+                const latestCandle = data[data.length - 1];
+
+                // Ensure current trend is bearish
+                if (latestCandle.ema14 >= latestCandle.ema70) return null;
+
+                let atlCandle = last100[0];
+                last100.forEach(candle => {
+                        if (candle.low < atlCandle.low) {
+                                atlCandle = candle;
+                        }
                 });
-                return lowest;
+
+                const atlPrice = atlCandle.low;
+                const atlEMA70 = atlCandle.ema70;
+                const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
+
+                return {
+                        atl: atlPrice,
+                        ema70: atlEMA70,
+                        gapPercent: gapPercent.toFixed(2),
+                };
         };
 
-        const findValidATH = (data) => {
+        const findRecentATH = (data) => {
                 if (!data || data.length < 100) return null;
+
                 const last100 = data.slice(-100);
-                const validBullishCandles = last100.filter(candle => candle.ema14 > candle.ema70);
-                if (validBullishCandles.length === 0) return null;
-                let highest = validBullishCandles[0].high;
-                validBullishCandles.forEach(candle => {
-                        if (candle.high > highest) highest = candle.high;
+                const latestCandle = data[data.length - 1];
+
+                // Ensure current trend is bullish
+                if (latestCandle.ema14 <= latestCandle.ema70) return null;
+
+                let athCandle = last100[0];
+                last100.forEach(candle => {
+                        if (candle.high > athCandle.high) {
+                                athCandle = candle;
+                        }
                 });
-                return highest;
+
+                const athPrice = athCandle.high;
+                const athEMA70 = athCandle.ema70;
+                const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+
+                return {
+                        ath: athPrice,
+                        ema70: athEMA70,
+                        gapPercent: gapPercent.toFixed(2),
+                };
         };
 
         useEffect(() => {
@@ -104,15 +135,29 @@ export default function Home() {
                 fetchMarketData();
         }, []);
 
-  // Parsed numbers
-  const athNum = parseFloat(ath);
-  const atlNum = parseFloat(atl);
-  const emaNum = parseFloat(ema70);
+        const athNum = parseFloat(ath);
+        const atlNum = parseFloat(atl);
+        const emaNum = parseFloat(ema70);
+        const isValid = !isNaN(emaNum) && emaNum > 0;
 
-  const isValid = !isNaN(emaNum) && emaNum > 0;
+        const atlInfo = findRecentATL(weeklyCandles);
+        const athInfo = findRecentATH(weeklyCandles);
 
-        const atlWeeklyNum = findValidATL(weeklyCandles);
-        const athWeeklyNum = findValidATH(weeklyCandles);
+        if (atlInfo) {
+                console.log("Recent ATL:", atlInfo.atl);
+                console.log("EMA70 from ATL:", atlInfo.ema70);
+                console.log("Gap to EMA70 (%):", atlInfo.gapPercent);
+        }
+
+        if (athInfo) {
+                console.log("Recent ATH:", athInfo.ath);
+                console.log("EMA70 from ATH:", athInfo.ema70);
+                console.log("Gap to EMA70 (%):", athInfo.gapPercent);
+        }
+
+        const atlWeeklyNum = atlInfo ? atlInfo.atl : null;
+        const athWeeklyNum = athInfo ? athInfo.ath : null;
+
         const isValidAtl = atlWeeklyNum !== null;
         const isValidAth = athWeeklyNum !== null;
 
@@ -122,12 +167,18 @@ export default function Home() {
         const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal');
         const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-  const computeBullishLevels = () => ({
-    entry: emaNum * 1.02,
-    stopLoss: emaNum * 0.97,
-    takeProfit1: athNum * 0.98,
-    takeProfit2: athNum * 1.05,
-  });
+
+        const computeBullishLevels = () => {
+                const ema = parseFloat(ema70);
+                const athNum = parseFloat(ath);
+                if (isNaN(ema) || isNaN(athNum)) return {};
+                return {
+                        entry: ema * 1.02,
+                        stopLoss: ema * 0.97,
+                        takeProfit1: athNum * 0.98,
+                        takeProfit2: athNum * 1.05,
+                };
+        };
 
         const computeBearishLevels = () => {
                 const ema = parseFloat(ema70);
@@ -172,37 +223,46 @@ export default function Home() {
         const bullish = computeBullishLevels();
         const bearish = computeBearishLevels();
 
-        return (<div className="p-6 space-y-6"> <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1> <p className="text-gray-700 text-center"> Analyze the Bitcoin market using ATH, ATL, and the 70 EMA on the 1W timeframe. </p>
+        return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
+                <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
+                        Bitcoin Signal Analyzer
+                </h1>
+                <p className="text-lg mb-6 text-gray-300">
+                        <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
+                </p>
+                <div className="border-l-4 border-yellow-400 pl-4 text-sm text-yellow-100 italic">
+                        Plan smarter. Trade better.
+                </div>
 
-      <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
-        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
-          <h2 className="text-lg font-semibold text-blue-400 mb-2">Mock EMA70 Input</h2>
-          <input
-            type="number"
-            placeholder="EMA70 (Manual Input)"
-            className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-            value={ema70}
-            onChange={e => setEma70(e.target.value)}
-          />
-        </div>
-      </div>
+                <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
+                        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
+                                <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Input</h2>
+                                <input
+                                        type="number"
+                                        placeholder="EMA70 (Manual Input)"
+                                        className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                                        value={ema70}
+                                        onChange={e => setEma70(e.target.value)}
+                                />
+                        </div>
+                </div>
 
-      {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
+                {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
 
                 {!loading && isValid && (
                         <>
                                 {/* ATH Analysis */}
                                 {athWeeklyNum === null ? (
-                                        <div className="text-yellow-600 bg-yellow-100 p-4 rounded-lg border border-yellow-300">
-                                                <h2 className="font-semibold text-lg mb-1">ATH Signal Unavailable</h2>
-                                                <p>
-                                                        Not enough valid weekly candles to compute ATH. This requires 100 consecutive candles where
-                                                        <span className="font-semibold"> EMA14 &gt; EMA70</span>.
-                                                </p>
-                                        </div>
+                                        <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300 mt-4">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertTitle className="text-sm font-semibold">ATH Signal Unavailable</AlertTitle>
+                                                <AlertDescription className="text-sm italic">
+                                                        Trend is not currently bullish — EMA14 is not above EMA70 in the most recent week.
+                                                </AlertDescription>
+                                        </Alert>
                                 ) : (
                                         <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
+                                                <h2 className="text-xl font-semibold">ATH Heat Check</h2>
                                                 <p>ATH: ${athNum.toFixed(2)}</p>
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
                                                 <p>
@@ -232,16 +292,16 @@ export default function Home() {
 
                                 {/* ATL Analysis */}
                                 {atlWeeklyNum === null ? (
-                                        <div className="text-yellow-600 bg-yellow-100 p-4 rounded-lg border border-yellow-300">
-                                                <h2 className="font-semibold text-lg mb-1">ATL Signal Unavailable</h2>
-                                                <p>
-                                                        Not enough valid weekly candles to compute ATL. This requires 100 consecutive candles where
-                                                        <span className="font-semibold"> EMA14 &lt; EMA70</span>.
-                                                </p>
-                                        </div>
+                                        <Alert variant="default" className="bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300 mt-4">
+                                                <AlertTriangle className="h-4 w-4" />
+                                                <AlertTitle className="text-sm font-semibold">ATL Signal Unavailable</AlertTitle>
+                                                <AlertDescription className="text-sm italic">
+                                                        Trend is not currently bearish — EMA14 is not below EMA70 in the most recent week.
+                                                </AlertDescription>
+                                        </Alert>
                                 ) : (
                                         <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
+                                                <h2 className="text-xl font-semibold">ATL Heat Check</h2>
                                                 <p>ATL: ${atlNum.toFixed(2)}</p>
                                                 <p>Gap: {atlGap.toFixed(2)}%</p>
                                                 <p>
@@ -251,26 +311,27 @@ export default function Home() {
                                                         </span>
                                                 </p>
 
-            {getAtlSignal() === 'Bearish Continuation' && (
-              <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
-                <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
-                <p>Entry: ${bearish.entry.toFixed(2)}</p>
-                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
-              </div>
-            )}
+                                                {getAtlSignal() === 'Bearish Continuation' ? (
+                                                        <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
+                                                                <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
+                                                                <p>Entry: ${bearish.entry.toFixed(2)}</p>
+                                                                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+                                                                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
+                                                        </div>
+                                                ) : (
+                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+                                                                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+                                                                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+                                                                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
+                                                        </div>
+                                                )}
+                                        </div>
+                                )}
+                        </>
+                )}
+        </div>
 
-            {getAtlSignal() !== 'Bearish Continuation' && (
-              <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
-              </div>
-            )}
-          </div>
-        </>
-      )};
-    </div> // <-- closing main container div
-  );
+        );
 }
+
