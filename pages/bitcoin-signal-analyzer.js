@@ -181,11 +181,11 @@ const previousATHInfo = getPreviousATH(weeklyCandles);
                 console.log("Gap to EMA70 (%):", athInfo.gapPercent);
         }
 
-if (prevAtl) {
-  console.log("Previous ATL:", prevAtl.price, "on", prevAtl.time);
+if (previousATLInfo) {
+  console.log("Previous ATL:", previousATLInfo.price, "on", previousATLInfo.time);
 }
-if (prevAth) {
-  console.log("Previous ATH:", prevAth.price, "on", prevAth.time);
+if (previousATHInfo) {
+  console.log("Previous ATH:", previousATHInfo.price, "on", previousATHInfo.time);
 }
 
 
@@ -413,4 +413,5 @@ const getBoxColor = (signal) => {
 
         );
         }
-                    
+
+                
