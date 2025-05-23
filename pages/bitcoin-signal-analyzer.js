@@ -388,7 +388,7 @@ const getBoxColor = (signal) => {
     {getAtlSignal()}
   </span>
 </p>
-                                                </p>
+                                                
 
                                                 {getAtlSignal() === 'Bearish Continuation' ? (
                                                         <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
