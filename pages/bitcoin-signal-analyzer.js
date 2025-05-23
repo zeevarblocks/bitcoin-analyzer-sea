@@ -276,7 +276,7 @@ export default function Home() {
                 };
         };
 
-
+const athSignal = getAthSignal(athGap);
         const bullishReversal = computeBullishReversalFromAtl();
         const bearishReversal = computeBearishReversalFromAth();
 
