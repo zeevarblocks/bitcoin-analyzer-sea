@@ -341,7 +341,7 @@ export default function Home() {
   </span>
 </p>
 
-{(getAthSignal(athGap).includes('Bullish') || getAthSignal(athGap).includes('Bearish')) && (
+{(getAthSignal(athGap).includes('Bearish') || getAthSignal(athGap).includes('Bearish')) && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal(athGap))}`}>
     <p className="font-semibold">Trade Setup:</p>
     {getAthSignal(athGap).includes('Bullish') && (
