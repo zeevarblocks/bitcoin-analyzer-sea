@@ -65,6 +65,18 @@ export default function Home() {
                 return emaArray;
         };
 
+        const getPreviousATL = (candles) => {
+                if (candles.length < 2) return null;
+                const candlesExcludingLast = candles.slice(0, -1);
+                const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+                        curr.low < min.low ? curr : min
+                );
+                return {
+                        price: prevAtlCandle.low,
+                        time: new Date(prevAtlCandle.time).toLocaleDateString(),
+                };
+        };
+
         const findRecentATL = (data) => {
                 if (!data || data.length < 100) return null;
 
@@ -91,6 +103,18 @@ export default function Home() {
                         gapPercent: gapPercent.toFixed(2),
                 };
         };
+        const getPreviousATH = (candles) => {
+                if (candles.length < 2) return null;
+                const candlesExcludingLast = candles.slice(0, -1);
+                const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
+                        curr.high > max.high ? curr : max
+                );
+                return {
+                        price: prevAthCandle.high,
+                        time: new Date(prevAthCandle.time).toLocaleDateString(),
+                };
+        };
+
 
         const findRecentATH = (data) => {
                 if (!data || data.length < 100) return null;
@@ -140,6 +164,8 @@ export default function Home() {
         const emaNum = parseFloat(ema70);
         const isValid = !isNaN(emaNum) && emaNum > 0;
 
+        const previousATLInfo = getPreviousATL(weeklyCandles);
+        const previousATHInfo = getPreviousATH(weeklyCandles);
         const atlInfo = findRecentATL(weeklyCandles);
         const athInfo = findRecentATH(weeklyCandles);
 
@@ -155,6 +181,14 @@ export default function Home() {
                 console.log("Gap to EMA70 (%):", athInfo.gapPercent);
         }
 
+        if (previousATLInfo) {
+                console.log("Previous ATL:", previousATLInfo.price, "on", previousATLInfo.time);
+        }
+        if (previousATHInfo) {
+                console.log("Previous ATH:", previousATHInfo.price, "on", previousATHInfo.time);
+        }
+
+
         const atlWeeklyNum = atlInfo ? atlInfo.atl : null;
         const athWeeklyNum = athInfo ? athInfo.ath : null;
 
@@ -164,8 +198,34 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal');
-        const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
+        const getAthSignal = () => {
+                if (athGap > 120) return 'Strong Bullish Continuation';
+                if (athGap > 100) return 'Bullish Continuation';
+                if (athGap > 80) return 'Neutral Zone';
+                return 'Sell Zone (Possible Reversal)';
+        };
+        const getAtlSignal = () => {
+                if (atlGap < -120) return 'Strong Bearish Breakdown';
+                if (atlGap < -100) return 'Bearish Breakdown';
+                if (atlGap < -80) return 'Neutral Zone';
+                return 'Buy Zone (Possible Reversal)';
+        };
+
+        const getSignalColor = (signal) => {
+                if (signal.includes('Bullish')) return 'text-green-700';
+                if (signal.includes('Bearish')) return 'text-red-700';
+                if (signal.includes('Neutral')) return 'text-yellow-600';
+                return 'text-gray-600';
+        };
+
+        const getBoxColor = (signal) => {
+                if (signal.includes('Bullish')) return 'bg-green-50 border-green-200 text-green-800';
+                if (signal.includes('Bearish')) return 'bg-red-50 border-red-200 text-red-800';
+                if (signal.includes('Neutral')) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+                return 'bg-gray-100 border-gray-300 text-gray-800';
+        };
+
+
 
 
         const computeBullishLevels = () => {
@@ -263,30 +323,43 @@ export default function Home() {
                                 ) : (
                                         <div className="space-y-2 text-gray-800">
                                                 <h2 className="text-xl font-semibold">ATH Heat Check</h2>
+
+                                                {previousATHInfo && (
+                                                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
+                                                                <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
+                                                                <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
+                                                                <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
+                                                        </div>
+                                                )}
+
                                                 <p>ATH: ${athNum.toFixed(2)}</p>
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
                                                 <p>
-                                                        Market Zone:{' '}
-                                                        <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
-                                                                {getAthSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
-                                                        </span>
-                                                </p>
+  Market Zone:{' '}
+  <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
+    {getAthSignal()}
+  </span>
+</p>
 
-                                                {getAthSignal() === 'Bullish Continuation' ? (
-                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
-                                                        </div>
-                                                ) : (
-                                                        <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
-                                                                <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
-                                                        </div>
-                                                )}
+{(getAthSignal().includes('Bullish') || getAthSignal().includes('Bearish')) && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+    <p className="font-semibold">Trade Setup:</p>
+    {getAthSignal().includes('Bullish') && (
+      <>
+        <p>Entry: ${bullish.entry.toFixed(2)}</p>
+        <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
+      </>
+    )}
+    {getAthSignal().includes('Bearish') && (
+      <>
+        <p>Entry: ${bearish.entry.toFixed(2)}</p>
+        <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bearish.takeProfit1.toFixed(2)}</p>
+      </>
+    )}
+  </div>
+)}
                                         </div>
                                 )}
 
@@ -302,36 +375,49 @@ export default function Home() {
                                 ) : (
                                         <div className="space-y-2 text-gray-800">
                                                 <h2 className="text-xl font-semibold">ATL Heat Check</h2>
+
+                                                {previousATLInfo && (
+                                                        <div className="text-sm bg-gray-800 p-3 rounded-lg border border-gray-700 text-gray-300 space-y-1">
+                                                                <p className="font-semibold text-gray-100">Previous ATL (Historical):</p>
+                                                                <p>Price: ${previousATLInfo.price.toFixed(2)}</p>
+                                                                <p>Date: {previousATLInfo.time}</p>
+                                                        </div>
+                                                )}
                                                 <p>ATL: ${atlNum.toFixed(2)}</p>
                                                 <p>Gap: {atlGap.toFixed(2)}%</p>
                                                 <p>
-                                                        Market Zone:{' '}
-                                                        <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
-                                                                {getAtlSignal() === 'Bearish Continuation' ? '🔻 Still in the Sell Zone' : '🟢 Opportunity: Buy Zone'}
-                                                        </span>
-                                                </p>
+  Market Zone:{' '}
+  <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
+    {getAtlSignal()}
+  </span>
+</p>
 
-                                                {getAtlSignal() === 'Bearish Continuation' ? (
-                                                        <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
-                                                                <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
-                                                        </div>
-                                                ) : (
-                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
-                                                        </div>
-                                                )}
-                                        </div>
-                                )}
-                        </>
-                )}
-        </div>
+{(getAtlSignal().includes('Bullish') || getAtlSignal().includes('Bearish')) && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
+    <p className="font-semibold">Trade Setup:</p>
+    {getAtlSignal().includes('Bearish') && (
+      <>
+        <p>Entry: ${bearish.entry.toFixed(2)}</p>
+        <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
+      </>
+    )}
+    {getAtlSignal().includes('Bullish') && (
+      <>
+        <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+        <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
+      </>
+    )}
+  </div>
+)}
+                        </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    )}
+        </>
+        )
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div >
 
-        );
-        }
-                    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            );
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+                        
