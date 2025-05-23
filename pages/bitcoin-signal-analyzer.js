@@ -355,7 +355,7 @@ export default function Home() {
             <>
               <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
               <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bearishReversal.takeProfit1.toFixed(2)}</p
+              <p>TP: ${bearishReversal.takeProfit1.toFixed(2)}</p>
       </>
     )}
   </div>
