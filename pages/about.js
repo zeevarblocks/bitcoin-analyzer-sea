@@ -1,38 +1,41 @@
 export default function About() {
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center px-4 py-10">
-            <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-3xl w-full">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">How to Use This Tool</h2>
+  return (
+    <div className="min-h-screen bg-gray-900 text-white px-6 py-12">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-6 text-center text-yellow-400">About Bitcoin Signal Analyzer</h1>
+        
+        <div className="bg-gray-800 rounded-2xl p-8 shadow-lg space-y-6">
+          <p className="text-lg leading-relaxed text-gray-200">
+            <span className="font-semibold text-white">Bitcoin Signal Analyzer</span> is a smart trading companion designed to help you make data-driven decisions in the Bitcoin market. This app fetches real-time Bitcoin weekly candle data and analyzes key market metrics including:
+          </p>
 
-                <ul className="list-disc list-inside text-gray-700 space-y-4 text-base leading-relaxed">
-                    <li>
-                        <strong>Use the 1W (Weekly) chart timeframe</strong> to maintain consistency with EMA70 calculations.
-                    </li>
-                    <li>
-                        When entering the <strong>All-Time High (ATH)</strong> value, include the <strong>EMA70 value from the same weekly candle</strong> as the ATH.
-                    </li>
-                    <li>
-                        Likewise, for <strong>All-Time Low (ATL)</strong>, include the <strong>EMA70 value from the same weekly candle</strong>.
-                    </li>
-                    <li>
-                        The tool calculates the vertical distance (gap) between ATH/ATL and EMA70 as a percentage:
-                        <ul className="list-disc list-inside ml-6 mt-2 space-y-2 text-sm text-gray-600">
-                            <li><strong>+100% above EMA70</strong>: Bullish Continuation</li>
-                            <li><strong>-100% below EMA70</strong>: Bearish Continuation</li>
-                            <li>Smaller gaps: Possible reversal or consolidation zones</li>
-                        </ul>
-                    </li>
-                    <li>
-                        Trade levels (entry, stop loss, take profits) are generated based on macro continuation or reversal analysis.
-                    </li>
-                    <li>
-                        Optionally input the <strong>current BTC price</strong> to monitor current position versus historical levels.
-                    </li>
-                    <li>
-                        Use the live BTC chart to visually inspect the weekly candles for ATH/ATL events.
-                    </li>
-                </ul>
-            </div>
+          <ul className="list-disc list-inside text-gray-300 space-y-1">
+            <li><span className="font-semibold text-white">All-Time High (ATH)</span></li>
+            <li><span className="font-semibold text-white">All-Time Low (ATL)</span></li>
+            <li><span className="font-semibold text-white">Exponential Moving Averages (EMA70 & EMA14)</span></li>
+          </ul>
+
+          <p className="text-lg leading-relaxed text-gray-200">
+            Based on these indicators, the analyzer determines whether the market is in a <span className="text-green-400 font-semibold">bullish</span> or <span className="text-red-400 font-semibold">bearish</span> trend and provides <span className="text-yellow-300 font-semibold">clear trading signals</span> — complete with:
+          </p>
+
+          <ul className="list-disc list-inside text-gray-300 space-y-1">
+            <li>Recommended Entry Points</li>
+            <li>Stop-Loss Suggestions</li>
+            <li>Take-Profit Targets</li>
+          </ul>
+
+          <p className="text-lg leading-relaxed text-gray-200">
+            Whether you're a seasoned trader or just starting out, <span className="text-white font-semibold">Bitcoin Signal Analyzer</span> empowers you with the tools and insights you need to navigate the market confidently.
+          </p>
+
+          <div className="border-t border-gray-700 pt-4">
+            <p className="text-sm text-gray-400 text-center">
+              Built with React, Tailwind CSS, Chart.js, Binance API, and CoinGecko API.
+            </p>
+          </div>
         </div>
-    );
-}
+      </div>
+    </div>
+  );
+      }
