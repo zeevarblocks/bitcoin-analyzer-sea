@@ -336,22 +336,22 @@ export default function Home() {
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
                                                 <p>
   Market Zone:{' '}
-  <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
-    {getAthSignal()}
+  <span className={`font-bold ${getSignalColor(getAthSignal(athGap))}`}>
+    {getAthSignal(athGap)}
   </span>
 </p>
 
-{(getAthSignal().includes('Bullish') || getAthSignal().includes('Bearish')) && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+{(getAthSignal(athGap).includes('Bullish') || getAthSignal(athGap).includes('Bearish')) && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal(athGap))}`}>
     <p className="font-semibold">Trade Setup:</p>
-    {getAthSignal().includes('Bullish') && (
+    {getAthSignal(athGap).includes('Bullish') && (
       <>
         <p>Entry: ${bullish.entry.toFixed(2)}</p>
         <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
         <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
       </>
     )}
-    {getAthSignal().includes('Bearish') && (
+    {getAthSignal(athGap).includes('Bearish') && (
       <>
         <p>Entry: ${bearish.entry.toFixed(2)}</p>
         <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
@@ -387,22 +387,22 @@ export default function Home() {
                                                 <p>Gap: {atlGap.toFixed(2)}%</p>
                                                 <p>
   Market Zone:{' '}
-  <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
-    {getAtlSignal()}
+  <span className={`font-bold ${getSignalColor(getAtlSignal(atlGap))}`}>
+    {getAtlSignal(atlGap)}
   </span>
 </p>
 
-{(getAtlSignal().includes('Bullish') || getAtlSignal().includes('Bearish')) && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
+{(getAtlSignal(atlGap).includes('Bullish') || getAtlSignal(atlGap).includes('Bearish')) && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal(atlGap))}`}>
     <p className="font-semibold">Trade Setup:</p>
-    {getAtlSignal().includes('Bearish') && (
+    {getAtlSignal(atlGap).includes('Bearish') && (
       <>
         <p>Entry: ${bearish.entry.toFixed(2)}</p>
         <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
         <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
       </>
     )}
-    {getAtlSignal().includes('Bullish') && (
+    {getAtlSignal(atlGap).includes('Bullish') && (
       <>
         <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
         <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
