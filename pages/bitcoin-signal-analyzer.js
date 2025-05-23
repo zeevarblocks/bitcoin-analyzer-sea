@@ -341,7 +341,7 @@ export default function Home() {
   </span>
 </p>
 
-{(getAthSignal(athGap).includes('Bearish') || getAthSignal(athGap).includes('Bearish')) && (
+{(getAthSignal(athGap).includes('Bullish') || getAthSignal(athGap).includes('Bearish')) && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal(athGap))}`}>
     <p className="font-semibold">Trade Setup:</p>
     {getAthSignal(athGap).includes('Bullish') && (
@@ -392,7 +392,7 @@ export default function Home() {
   </span>
 </p>
 
-{(getAtlSignal(atlGap).includes('Bullish') || getAtlSignal(atlGap).includes('Bearish')) && (
+{(getAtlSignal(atlGap).includes('Bearish') || getAtlSignal(atlGap).includes('Bullish')) && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal(atlGap))}`}>
     <p className="font-semibold">Trade Setup:</p>
     {getAtlSignal(atlGap).includes('Bearish') && (
