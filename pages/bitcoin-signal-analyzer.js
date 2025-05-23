@@ -351,7 +351,7 @@ const athSignal = getAthSignal(athGap);
               <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
             </>
           )}
-          {athSignal.includes('Bearish') && (
+          {athSignal.includes('Bearish') &&  bearishReversal &&
             <>
               <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
               <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
@@ -404,7 +404,7 @@ const athSignal = getAthSignal(athGap);
             </>
           )}
 
-          {atlSignal.includes('Bullish') && (
+          {atlSignal.includes('Bullish') && bullishReversal && ( 
             <>
               <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
               <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
