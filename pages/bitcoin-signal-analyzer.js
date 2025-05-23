@@ -276,7 +276,7 @@ export default function Home() {
                 };
         };
 
-const athSignal = getAthSignal(athGap);
+
         const bullishReversal = computeBullishReversalFromAtl();
         const bearishReversal = computeBearishReversalFromAth();
 
@@ -334,28 +334,28 @@ const athSignal = getAthSignal(athGap);
 
                                                 <p>ATH: ${athNum.toFixed(2)}</p>
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
-                                                 <p>
-        Market Zone:{' '}
-        <span className={`font-bold ${getSignalColor(athSignal)}`}>
-          {athSignal}
-        </span>
-      </p>
+                                                <p>
+  Market Zone:{' '}
+  <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
+    {getAthSignal()}
+  </span>
+</p>
 
-      {(athSignal.includes('Bullish') || athSignal.includes('Bearish')) && (
-        <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(athSignal)}`}>
-          <p className="font-semibold">Trade Setup:</p>
-          {athSignal.includes('Bullish') && (
-            <>
-              <p>Entry: ${bullish.entry.toFixed(2)}</p>
-              <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
-            </>
-          )}
-          {athSignal.includes('Bearish') &&  bearishReversal &&
-            <>
-              <p>Entry: {bearishReversal.entry.toFixed(2)}</p>
-              <p>SL: {bearishReversal.stopLoss.toFixed(2)}</p>
-              <p>TP: {bearishReversal.takeProfit1.toFixed(2)}</p>
+{(getAthSignal().includes('Bullish') || getAthSignal().includes('Bearish')) && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+    <p className="font-semibold">Trade Setup:</p>
+    {getAthSignal().includes('Bullish') && (
+      <>
+        <p>Entry: ${bullish.entry.toFixed(2)}</p>
+        <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bullish.takeProfit1.toFixed(2)}</p>
+      </>
+    )}
+    {getAthSignal().includes('Bearish') && (
+      <>
+        <p>Entry: ${bearish.entry.toFixed(2)}</p>
+        <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bearish.takeProfit1.toFixed(2)}</p>
       </>
     )}
   </div>
@@ -385,30 +385,28 @@ const athSignal = getAthSignal(athGap);
                                                 )}
                                                 <p>ATL: ${atlNum.toFixed(2)}</p>
                                                 <p>Gap: {atlGap.toFixed(2)}%</p>
-                                                  <p>
-        Market Zone:{' '}
-        <span className={`font-bold ${getSignalColor(atlSignal)}`}>
-          {atlSignal}
-        </span>
-      </p>
+                                                <p>
+  Market Zone:{' '}
+  <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
+    {getAtlSignal()}
+  </span>
+</p>
 
-      {(atlSignal.includes('Bearish') || atlSignal.includes('Bullish')) && (
-        <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(atlSignal)}`}>
-          <p className="font-semibold">Trade Setup:</p>
-
-          {atlSignal.includes('Bearish') && (
-            <>
-              <p>Entry: ${bearish.entry.toFixed(2)}</p>
-              <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
-            </>
-          )}
-
-          {atlSignal.includes('Bullish') && bullishReversal && ( 
-            <>
-              <p>Entry: {bullishReversal.entry.toFixed(2)}</p>
-              <p>SL: {bullishReversal.stopLoss.toFixed(2)}</p>
-              <p>TP: {bullishReversal.takeProfit2.toFixed(2)}</p>
+{(getAtlSignal().includes('Bullish') || getAtlSignal().includes('Bearish')) && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
+    <p className="font-semibold">Trade Setup:</p>
+    {getAtlSignal().includes('Bearish') && (
+      <>
+        <p>Entry: ${bearish.entry.toFixed(2)}</p>
+        <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
+      </>
+    )}
+    {getAtlSignal().includes('Bullish') && (
+      <>
+        <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+        <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+        <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
       </>
     )}
   </div>
@@ -422,4 +420,4 @@ const athSignal = getAthSignal(athGap);
 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             );
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         }
-                        
+                                
