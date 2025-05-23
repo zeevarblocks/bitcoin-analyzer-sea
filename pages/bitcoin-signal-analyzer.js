@@ -341,20 +341,34 @@ const getBoxColor = (signal) => {
   </span>
 </p>
 
-{['Bullish Continuation', 'Strong Bullish Continuation'].includes(getAthSignal()) ? (
+{getAthSignal() === 'Strong Bullish Continuation' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+    <p className="font-semibold">Trade Setup (Strong Bullish):</p>
+    <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
+    <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
+    <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
+  </div>
+)}
+
+{getAthSignal() === 'Bullish Continuation' && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+    <p className="font-semibold">Trade Setup (Bullish Continuation):</p>
     <p>Entry: ${bullish.entry.toFixed(2)}</p>
     <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
     <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
   </div>
-) : getAthSignal() === 'Sell Zone (Possible Reversal)' ? (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Bearish Reversal')}`}>
-    <p className="font-semibold">Trade Setup (Sell Zone)</p>
+)}
+
+{getAthSignal() === 'Sell Zone (Possible Reversal)' && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+    <p className="font-semibold">Trade Setup (Bearish Reversal):</p>
     <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
     <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
     <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
   </div>
-) : (
+)}
+
+{getAthSignal() === 'Neutral Zone' && (
   <div className={`text-sm p-4 rounded-lg border shadow-sm space-y-1 ${getBoxColor('Neutral Zone')}`}>
     <p className="font-semibold">Neutral Zone</p>
     <p>Wait for a bounce from EMA70 before entering a trade.</p>
@@ -392,21 +406,34 @@ const getBoxColor = (signal) => {
   </span>
 </p>
 
-{['Strong Bearish Breakdown', 'Bearish Breakdown'].includes(getAtlSignal()) ? (
+{getAtlSignal() === 'Strong Bearish Breakdown' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
-    <p className="font-semibold">Trade Setup (Bearish):</p>
+    <p className="font-semibold">Trade Setup (Strong Bearish):</p>
+    <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
+    <p>SL: ${strongBearish.stopLoss.toFixed(2)}</p>
+    <p>TP: ${strongBearish.takeProfit2.toFixed(2)}</p>
+  </div>
+)}
+
+{getAtlSignal() === 'Bearish Breakdown' && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
+    <p className="font-semibold">Trade Setup (Bearish Breakdown):</p>
     <p>Entry: ${bearish.entry.toFixed(2)}</p>
     <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
     <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
   </div>
-) : getAtlSignal() === 'Buy Zone (Possible Reversal)' ? (
+)}
+
+{getAtlSignal() === 'Buy Zone (Possible Reversal)' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
     <p className="font-semibold">Trade Setup (Bullish Reversal):</p>
     <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
     <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
     <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
   </div>
-) : (
+)}
+
+{getAtlSignal() === 'Neutral Zone' && (
   <div className={`text-sm p-4 rounded-lg border shadow-sm space-y-1 ${getBoxColor('Neutral Zone')}`}>
     <p className="font-semibold">Neutral Zone</p>
     <p>Wait for a bounce from EMA70 before entering a trade.</p>
