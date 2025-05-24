@@ -331,7 +331,7 @@ if (previousATHInfo && currentATHInfo) {
         
 
 // Detect Strong Bearish Continuation
-const isStrongBearishContinuation = (input) => {
+const isStrongBearishBreakdown = (input) => {
   if (!input) return false;
 
   const {
