@@ -298,7 +298,7 @@ const computeStrongBearishSetup = (breakdownATL) => {
 const currentATH = findRecentATH(weeklyCandles);
 const previousATH = previousATHInfo?.price;
 const ema70AtPreviousATH = previousATHInfo?.ema70;
-const currentATH = currentATH?.high
+const currentATH = currentATHCandle?.high
 
 const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 
@@ -315,7 +315,7 @@ const finalAthSignal = upgradedToStrong ? 'Strong Bullish Continuation' : athSig
        const currentATL = findRecentATL(weeklyCandles);
 const previousATL = previousATLInfo?.price;
 const ema70AtPreviousATL = previousATLInfo?.ema70;
-const currentATL = currentATL?.low;
+const currentATL = currentATLCandle?.low;
 
 const atlSignalRaw = getAtlSignal(currentATLCandle, ema70AtPreviousATL);
 
