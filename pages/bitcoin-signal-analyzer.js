@@ -429,8 +429,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {athGap.toFixed(2)}%</p>
                                         <p>
                                                 Market Zone (ATH):{' '}
-                                                <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
-                                                        {getAthSignal()}
+                                                <span className={`font-bold ${getSignalColor(getAthSignal(findRecentATH, ema70AtPreviousATH))}`}>
+                                                        {getAthSignal(findRecentATH, ema70AtPreviousATH)}
                                                 </span>
                                         </p>
 
@@ -494,8 +494,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {atlGap.toFixed(2)}%</p>
                                         <p>
                                                 Market Zone (ATL):{' '}
-                                                <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
-                                                        {getAtlSignal()}
+                                                <span className={`font-bold ${getSignalColor(getAtlSignal(findRecentATL, ema70AtPreviousATH))}`}>
+                                                        {getAtlSignal(findRecentATL, ema70AtPreviousATH)}
                                                 </span>
                                         </p>
 
