@@ -198,18 +198,99 @@ if (previousATHInfo) {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        const getAthSignal = () => {
-  if (athGap > 120) return 'Strong Bullish Continuation';
-  if (athGap > 100) return 'Bullish Continuation';
-  if (athGap > 80) return 'Neutral Zone';
-  return 'Sell Zone (Possible Reversal)';
+        
+        const athSignal = athGap > 120
+  ? 'Strong Bullish Continuation'
+  : athGap > 100
+    ? 'Bullish Continuation'
+    : athGap > 80
+      ? 'Neutral Zone'
+      : 'Sell Zone (Possible Reversal)';
+
+const atlSignal = atlGap > 120
+  ? 'Strong Bearish Breakdown'
+  : atlGap > 100
+    ? 'Bearish Breakdown'
+    : atlGap > 80
+      ? 'Neutral Zone'
+      : 'Buy Zone (Possible Reversal)';
+
+        
+        
+        
+        // Detect Strong Bullish Continuation
+const isStrongBullishContinuation = (
+  weeklyData,
+  previousATH,
+  ema70AtPreviousATH,
+  currentATH,
+  athSignal
+) => {
+  // 1st & 2nd Signs: must be Bullish Continuation
+  if (athSignal !== 'Bullish Continuation') return false;
+
+  // 3rd Sign: bounce near EMA70 within last 100 weeks
+  const bounceNearEMA = weeklyData.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.low - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+  if (!bounceNearEMA) return false;
+
+  // 4th Sign: breakout above previous ATH into reversal zone
+  const currentGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+  const breakoutZone = currentGap > 80 ? 'Sell Zone (Possible Reversal)' : 'Neutral Zone';
+
+  return currentATH > previousATH && breakoutZone === 'Sell Zone (Possible Reversal)';
 };
-        const getAtlSignal = () => {
-  if (atlGap < -120) return 'Strong Bearish Breakdown';
-  if (atlGap < -100) return 'Bearish Breakdown';
-  if (atlGap < -80) return 'Neutral Zone';
-  return 'Buy Zone (Possible Reversal)';
+
+// Trade setup generator
+const computeStrongBullishSetup = (breakoutATH) => {
+  const entry = breakoutATH * 0.995;
+  const stopLoss = entry * 0.97;
+  const takeProfit1 = entry * 1.10;
+  const takeProfit2 = entry * 1.20;
+
+  return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
+        
+
+        // Detect Strong Bearish Continuation
+const isStrongBearishContinuation = (
+  weeklyData,
+  previousATL,
+  ema70AtPreviousATL,
+  currentATL,
+  atlSignal
+) => {
+  // 1st & 2nd Signs: must be Bearish Breakdown
+  if (atlSignal !== 'Bearish Breakdown') return false;
+
+  // 3rd Sign: bounce near EMA70 in last 100 weeks (price touched resistance)
+  const rejectionNearEMA = weeklyData.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.high - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+  if (!rejectionNearEMA) return false;
+
+  // 4th Sign: breakdown below previous ATL into reversal zone
+  const currentGap = ((ema70AtPreviousATL - currentATL) / currentATL) * 100;
+  const breakdownZone = currentGap > 80 ? 'Buy Zone (Possible Reversal)' : 'Neutral Zone';
+
+  return currentATL < previousATL && breakdownZone === 'Buy Zone (Possible Reversal)';
+};
+
+// Trade setup generator for bearish
+const computeStrongBearishSetup = (breakdownATL) => {
+  const entry = breakdownATL * 1.005;
+  const stopLoss = entry * 1.03;
+  const takeProfit1 = entry * 0.90;
+  const takeProfit2 = entry * 0.80;
+
+  return { entry, stopLoss, takeProfit1, takeProfit2 };
+};
+        
 
 const getSignalColor = (signal) => {
   if (signal.includes('Bullish')) return 'text-green-700';
@@ -225,18 +306,7 @@ const getBoxColor = (signal) => {
   return 'bg-gray-100 border-gray-300 text-gray-800';
 };
 
-const computeStrongBullishLevels = () => {
-  const ema = parseFloat(ema70);
-  const athNum = parseFloat(ath);
-  if (isNaN(ema) || isNaN(athNum)) return {};
 
-  return {
-    entry: ema * 1.03,             // More aggressive entry
-    stopLoss: ema * 0.975,         // Slightly tighter stop
-    takeProfit1: athNum * 1.02,    // First target above ATH
-    takeProfit2: athNum * 1.08     // Extended target
-  };
-};
 
 
         const computeBullishLevels = () => {
@@ -301,8 +371,9 @@ const computeStrongBearishLevels = () => {
                 };
         };
 
-        const strongBullish = computeStrongBullishLevels();
-const strongBearish = computeStrongBearishLevels();
+        const strongBullish = computeStrongBullishSetup(currentATH);
+        
+const strongBearish = computeStrongBearishSetup(currentATL);
         const bullishReversal = computeBullishReversalFromAtl();
         const bearishReversal = computeBearishReversalFromAth();
 
@@ -367,15 +438,15 @@ const strongBearish = computeStrongBearishLevels();
   </span>
 </p>
 
-{getAthSignal() === 'Strong Bullish Continuation' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
-    <p className="font-semibold">Trade Setup (Strong Bullish):</p>
-    <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
-    <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
-  </div>
-)}
-
+                 {getAthSignal () === 'Strong Bullish Continuation' && (
+  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
+      <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
+      <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
+      <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
+      <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
+    </div>
+                 )}
+                 
 {getAthSignal() === 'Bullish Continuation' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
     <p className="font-semibold">Trade Setup (Bullish Continuation):</p>
@@ -432,13 +503,13 @@ const strongBearish = computeStrongBearishLevels();
   </span>
 </p>
 
-{getAtlSignal() === 'Strong Bearish Breakdown' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
-    <p className="font-semibold">Trade Setup (Strong Bearish):</p>
-    <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
-    <p>SL: ${strongBearish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${strongBearish.takeProfit2.toFixed(2)}</p>
-  </div>
+{getAtlSignal () === 'Strong Bullish Continuation' && (
+ <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bearish Breakdown')}`}>
+      <p className="font-semibold">Trade Setup (Strong Bearish Continuation):</p>
+      <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
+      <p>SL: ${strongBearish.stopLoss.toFixed(2)}</p>
+      <p>TP: ${strongBearish.takeProfit1.toFixed(2)} to ${strongBearish.takeProfit2.toFixed(2)}</p>
+    </div>
 )}
 
 {getAtlSignal() === 'Bearish Breakdown' && (
