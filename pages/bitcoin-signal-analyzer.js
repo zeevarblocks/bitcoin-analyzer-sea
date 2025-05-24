@@ -66,16 +66,36 @@ export default function Home() {
         };
 
         const getPreviousATL = (candles) => {
-                if (candles.length < 2) return null;
-                const candlesExcludingLast = candles.slice(0, -1);
-                const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
-                        curr.low < min.low ? curr : min
-                );
-                return {
-                        price: prevAtlCandle.low,
-                        time: new Date(prevAtlCandle.time).toLocaleDateString(),
-                };
-        };
+  if (candles.length < 2) return null;
+
+  const candlesExcludingLast = candles.slice(0, -1);
+
+  const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+    curr.low < min.low ? curr : min
+  );
+
+  const price = prevAtlCandle.low;
+  const ema70 = prevAtlCandle.ema70;
+  const atlGap = ((ema70 - price) / ema70) * 100;
+
+  // Use your classification logic
+  const classification =
+    atlGap > 120
+      ? 'Strong Bearish Continuation'
+      : atlGap > 100
+      ? 'Bearish Breakdown'
+      : atlGap > 80
+      ? 'Neutral Zone'
+      : 'Buy Zone (Possible Reversal)';
+
+  return {
+    price,
+    ema70,
+    gapPercent: atlGap.toFixed(2),
+    classification,
+    time: new Date(prevAtlCandle.time).toLocaleDateString(),
+  };
+};
 
         const findRecentATL = (data) => {
                 if (!data || data.length < 100) return null;
@@ -104,16 +124,36 @@ export default function Home() {
                 };
         };
         const getPreviousATH = (candles) => {
-                if (candles.length < 2) return null;
-                const candlesExcludingLast = candles.slice(0, -1);
-                const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
-                        curr.high > max.high ? curr : max
-                );
-                return {
-                        price: prevAthCandle.high,
-                        time: new Date(prevAthCandle.time).toLocaleDateString(),
-                };
-        };
+  if (candles.length < 2) return null;
+
+  const candlesExcludingLast = candles.slice(0, -1);
+
+  const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
+    curr.high > max.high ? curr : max
+  );
+
+  const price = prevAthCandle.high;
+  const ema70 = prevAthCandle.ema70;
+  const athGap = ((price - ema70) / ema70) * 100;
+
+  // Classification logic for ATH
+  const classification =
+    athGap > 120
+      ? 'Strong Bullish Continuation'
+      : athGap > 100
+      ? 'Overheated (Watch Closely)'
+      : athGap > 80
+      ? 'Sell Zone (Possible Reversal)'
+      : 'Bullish Accumulation Zone';
+
+  return {
+    price,
+    ema70,
+    gapPercent: athGap.toFixed(2),
+    classification,
+    time: new Date(prevAthCandle.time).toLocaleDateString(),
+  };
+};
 
 
         const findRecentATH = (data) => {
@@ -231,7 +271,6 @@ const getAtlSignal = (currentATL, ema70AtPreviousATL) => {
 
 // Detect Strong Bullish Continuation
 const isStrongBullishContinuation = (
-  
   previousATH,
   ema70AtPreviousATH,
   currentATH,
@@ -264,7 +303,6 @@ const computeStrongBullishSetup = (breakoutATH) => {
 
 // Detect Strong Bearish Continuation
 const isStrongBearishBreakdown = (
-  
   previousATL,
   ema70AtPreviousATL,
   currentATL,
