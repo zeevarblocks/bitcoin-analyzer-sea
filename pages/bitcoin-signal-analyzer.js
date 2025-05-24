@@ -200,7 +200,7 @@ export default function Home() {
 
         
 const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
-  if (!ema70AtPreviousATH || !currentATHCandle) return 'N/A';
+  if (!ema70AtPreviousATH || !currentATHCandle) return 'blue';
 
   const athGap = ((currentATHCandle.high - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
