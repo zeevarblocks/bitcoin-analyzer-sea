@@ -200,6 +200,14 @@ export default function Home() {
         const previousATHInfo = getPreviousATH(weeklyCandles);
         const atlInfo = findRecentATL(weeklyCandles);
         const athInfo = findRecentATH(weeklyCandles);
+        const currentATH = findRecentATH();
+        const currentATHInfo = findRecentATH(weeklyData);
+const previousATH = previousATHInfo?.price;
+const ema70AtPreviousATH = previousATHInfo?.ema70;
+        const currentATL = findRecentATL();
+        const currentATLInfo = findRecentATL(weeklyData);
+const previousATL = previousATLInfo?.price;
+const ema70AtPreviousATL = previousATLInfo?.ema70;
 
         if (atlInfo) {
                 console.log("Recent ATL:", atlInfo.atl);
@@ -397,13 +405,6 @@ if (previousATLInfo && currentATLInfo) {
   });
 }
 
-        
-               
-const currentATH = findRecentATH();
-        const currentATHInfo = findRecentATH(weeklyData);
-const previousATH = previousATHInfo?.price;
-const ema70AtPreviousATH = previousATHInfo?.ema70;
-
 
 const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 
@@ -416,11 +417,6 @@ const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 );
 
 const finalAthSignal = upgradedToStrong ? 'Strong Bullish Continuation' : athSignalRaw;
-
-       const currentATL = findRecentATL();
-        const currentATLInfo = findRecentATL(weeklyData);
-const previousATL = previousATLInfo?.price;
-const ema70AtPreviousATL = previousATLInfo?.ema70;
 
 
 const atlSignalRaw = getAtlSignal(currentATL, ema70AtPreviousATL);
