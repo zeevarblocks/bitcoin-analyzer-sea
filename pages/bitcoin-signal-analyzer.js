@@ -272,34 +272,31 @@ export default function Home() {
                 return { entry, stopLoss, takeProfit1, takeProfit2 };
         };
 
-        const getAthSignal = (previousATH, ema70AtPreviousATH) => {
-                if (!ema70AtPreviousATH || !previousATH) return 'N/A';
-                const athGap = ((previousATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+        const getAthSignal = () => {
+  if (!ema70AtPreviousATH || !previousATH) return 'N/A';
+  const athGap = ((previousATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
-                return athGap > 120
-                        ? 'Strong Bullish Continuation'
-                        : athGap > 100
-                                ? 'Bullish Continuation'
-                                : athGap > 80
-                                        ? 'Neutral Zone'
-                                        : 'Sell Zone (Possible Reversal)';
-        };
+  return athGap > 120
+    ? 'Strong Bullish Continuation'
+    : athGap > 100
+    ? 'Bullish Continuation'
+    : athGap > 80
+    ? 'Neutral Zone'
+    : 'Sell Zone (Possible Reversal)';
+};
 
-        const getAtlSignal = (previousATL, ema70AtPreviousATL) => {
-                if (!ema70AtPreviousATL || !previousATL) return 'N/A';
-                const atlGap = ((ema70AtPreviousATL - previousATL) / previousATL) * 100;
+        const getAtlSignal = () => {
+  if (!ema70AtPreviousATL || !previousATL) return 'N/A';
+  const atlGap = ((ema70AtPreviousATL - previousATL) / previousATL) * 100;
 
-                return atlGap > 120
-                        ? 'Strong Bearish Continuation'
-                        : atlGap > 100
-                                ? 'Bearish Continuation'
-                                : atlGap > 80
-                                        ? 'Neutral Zone'
-                                        : 'Buy Zone (Possible Reversal)';
-        };
-
-
-
+  return atlGap > 120
+    ? 'Strong Bearish Continuation'
+    : atlGap > 100
+    ? 'Bearish Continuation'
+    : atlGap > 80
+    ? 'Neutral Zone'
+    : 'Buy Zone (Possible Reversal)';
+};
 
 
 
@@ -429,8 +426,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {athGap.toFixed(2)}%</p>
                                         <p>
                                                 Market Zone (ATH):{' '}
-                                                <span className={`font-bold ${getSignalColor(getAthSignal(findRecentATH, ema70AtPreviousATH))}`}>
-                                                        {getAthSignal(findRecentATH, ema70AtPreviousATH)}
+                                                <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
+                                                        {getAthSignal()}
                                                 </span>
                                         </p>
 
@@ -494,8 +491,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {atlGap.toFixed(2)}%</p>
                                         <p>
                                                 Market Zone (ATL):{' '}
-                                                <span className={`font-bold ${getSignalColor(getAtlSignal(findRecentATL, ema70AtPreviousATH))}`}>
-                                                        {getAtlSignal(findRecentATL, ema70AtPreviousATH)}
+                                                <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
+                                                        {getAtlSignal()}
                                                 </span>
                                         </p>
 
