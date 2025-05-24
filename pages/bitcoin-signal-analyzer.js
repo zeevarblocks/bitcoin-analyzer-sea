@@ -200,9 +200,19 @@ export default function Home() {
 
         
 const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
+  if (!currentATHCandle) {
+    console.log("getAthSignal: Missing currentATHCandle");
+  }
+
+  if (!ema70AtPreviousATH) {
+    console.log("getAthSignal: Missing ema70AtPreviousATH");
+  }
+
   if (!ema70AtPreviousATH || !currentATHCandle) return 'N/A';
 
   const athGap = ((currentATHCandle.high - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+
+  console.log(`ATH Gap: ${athGap.toFixed(2)}%`);
 
   return athGap > 120
     ? 'Strong Bullish Continuation'
@@ -237,7 +247,7 @@ const isStrongBullishContinuation = (
 ) => {
   if (athSignal !== 'Bullish Continuation') return false;
 
-  const bounceNearEMA = weeklyData.some(candle => {
+  const bounceNearEMA = weeklyCandles.some(candle => {
     if (!candle.ema70) return false;
     const diff = Math.abs(candle.low - candle.ema70);
     return diff / candle.ema70 <= 0.03;
@@ -270,7 +280,7 @@ const isStrongBearishBreakdown = (
 ) => {
   if (atlSignal !== 'Bearish Breakdown') return false;
 
-  const bounceNearEMA = weeklyData.some(candle => {
+  const bounceNearEMA = weeklyCandles.some(candle => {
     if (!candle.ema70) return false;
     const diff = Math.abs(candle.high - candle.ema70);
     return diff / candle.ema70 <= 0.03;
