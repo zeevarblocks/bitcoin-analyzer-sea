@@ -239,7 +239,7 @@ const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
 
 // Detect Strong Bullish Continuation
 const isStrongBullishContinuation = (
-  weeklyCandles,
+  weeklyData,
   previousATH,
   ema70AtPreviousATH,
   currentATH,
@@ -247,7 +247,7 @@ const isStrongBullishContinuation = (
 ) => {
   if (athSignal !== 'Bullish Continuation') return false;
 
-  const bounceNearEMA = weeklyCandles.some(candle => {
+  const bounceNearEMA = weeklyData.some(candle => {
     if (!candle.ema70) return false;
     const diff = Math.abs(candle.low - candle.ema70);
     return diff / candle.ema70 <= 0.03;
@@ -272,7 +272,7 @@ const computeStrongBullishSetup = (breakoutATH) => {
 
 // Detect Strong Bearish Continuation
 const isStrongBearishBreakdown = (
-  weeklyCandles,
+  weeklyData,
   previousATL,
   ema70AtPreviousATL,
   currentATL,
@@ -280,7 +280,7 @@ const isStrongBearishBreakdown = (
 ) => {
   if (atlSignal !== 'Bearish Breakdown') return false;
 
-  const bounceNearEMA = weeklyCandles.some(candle => {
+  const bounceNearEMA = weeklyData.some(candle => {
     if (!candle.ema70) return false;
     const diff = Math.abs(candle.high - candle.ema70);
     return diff / candle.ema70 <= 0.03;
@@ -311,7 +311,7 @@ const currentATH = currentATHCandle?.high;
 const athSignalRaw = getAthSignal(currentATHCandle, ema70AtPreviousATH);
 
         const upgradedToStrong = isStrongBullishContinuation(
-  weeklyCandles,
+  weeklyData,
   previousATH,
   ema70AtPreviousATH,
   currentATH,
@@ -328,7 +328,7 @@ const currentATL = currentATLCandle?.low;
 const atlSignalRaw = getAtlSignal(currentATLCandle, ema70AtPreviousATL);
 
         const upgradedToStrongBearish = isStrongBearishBreakdown(
-  weeklyCandles,
+  weeklyData,
   previousATL,
   ema70AtPreviousATL,
   currentATL,
