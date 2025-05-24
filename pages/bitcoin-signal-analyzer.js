@@ -66,9 +66,10 @@ export default function Home() {
         };
 
         const getPreviousATL = (candles) => {
-  if (candles.length < 2) return null;
+  if (!candles || candles.length < 2) return null;
 
-  const candlesExcludingLast = candles.slice(0, -1);
+  const candlesExcludingLast = candles.slice(0, -1).filter(c => c.low != null && c.ema70 != null);
+  if (candlesExcludingLast.length === 0) return null;
 
   const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
     curr.low < min.low ? curr : min
@@ -76,9 +77,11 @@ export default function Home() {
 
   const price = prevAtlCandle.low;
   const ema70 = prevAtlCandle.ema70;
+
+  if (ema70 === 0) return null; // Prevent division by zero
+
   const atlGap = ((ema70 - price) / ema70) * 100;
 
-  // Only two classifications
   const classification = atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal';
 
   return {
@@ -118,9 +121,10 @@ export default function Home() {
         };
         
         const getPreviousATH = (candles) => {
-  if (candles.length < 2) return null;
+  if (!candles || candles.length < 2) return null;
 
-  const candlesExcludingLast = candles.slice(0, -1);
+  const candlesExcludingLast = candles.slice(0, -1).filter(c => c.high != null && c.ema70 != null);
+  if (candlesExcludingLast.length === 0) return null;
 
   const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
     curr.high > max.high ? curr : max
@@ -128,9 +132,11 @@ export default function Home() {
 
   const price = prevAthCandle.high;
   const ema70 = prevAthCandle.ema70;
+
+  if (ema70 === 0) return null; // Prevent division by zero
+
   const athGap = ((price - ema70) / ema70) * 100;
 
-  // Only two classifications
   const classification = athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal';
 
   return {
@@ -295,13 +301,18 @@ const computeStrongBullishSetup = (breakoutATH) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
         
-const bullishConfirmed = isStrongBullishContinuation({
-  previousATH: previousATHInfo.price,
-  ema70AtPreviousATH: previousATHInfo.ema70,
-  currentATH: currentATHInfo.price,
-  athSignal: currentATHInfo.classification,
-  previousATHClassification: previousATHInfo.classification
-});
+let bullishConfirmed = false;
+
+if (previousATHInfo && currentATHInfo) {
+  console.warn('ATH info missing; skipping bullish continuation check.');
+  bullishConfirmed = isStrongBullishContinuation({
+    previousATH: previousATHInfo.price,
+    ema70AtPreviousATH: previousATHInfo.ema70,
+    currentATH: currentATHInfo.price,
+    athSignal: currentATHInfo.classification,
+    previousATHClassification: previousATHInfo.classification
+  });
+}
         
         
 
@@ -345,13 +356,18 @@ const computeStrongBearishSetup = (breakdownATL) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
         
-const bearishConfirmed = isStrongBearishContinuation({
-  previousATL: previousATLInfo.price,
-  ema70AtPreviousATL: previousATLInfo.ema70,
-  currentATL: currentATLInfo.price,
-  atlSignal: currentATLInfo.classification,
-  previousATLClassification: previousATLInfo.classification
-});
+let bearishConfirmed = false;
+
+if (previousATLInfo && currentATLInfo) {
+        console.warn('ATL info missing; skipping bearish continuation check.');
+  bearishConfirmed = isStrongBearishContinuation({
+    previousATL: previousATLInfo.price,
+    ema70AtPreviousATL: previousATLInfo.ema70,
+    currentATL: currentATLInfo.price,
+    atlSignal: currentATLInfo.classification,
+    previousATLClassification: previousATLInfo.classification
+  });
+}
 
         
                
