@@ -65,17 +65,17 @@ export default function Home() {
                 return emaArray;
         };
 
-const getPreviousATL = (candles) => {
-  if (candles.length < 2) return null;
-  const candlesExcludingLast = candles.slice(0, -1);
-  const prevAtlCandle = candlesExcludingLast.reduce((min, curr) => 
-    curr.low < min.low ? curr : min
-  );
-  return {
-    price: prevAtlCandle.low,
-    time: new Date(prevAtlCandle.time).toLocaleDateString(),
-  };
-};
+        const getPreviousATL = (candles) => {
+                if (candles.length < 2) return null;
+                const candlesExcludingLast = candles.slice(0, -1);
+                const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+                        curr.low < min.low ? curr : min
+                );
+                return {
+                        price: prevAtlCandle.low,
+                        time: new Date(prevAtlCandle.time).toLocaleDateString(),
+                };
+        };
 
         const findRecentATL = (data) => {
                 if (!data || data.length < 100) return null;
@@ -103,17 +103,17 @@ const getPreviousATL = (candles) => {
                         gapPercent: gapPercent.toFixed(2),
                 };
         };
-const getPreviousATH = (candles) => {
-  if (candles.length < 2) return null;
-  const candlesExcludingLast = candles.slice(0, -1);
-  const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
-    curr.high > max.high ? curr : max
-  );
-  return {
-    price: prevAthCandle.high,
-    time: new Date(prevAthCandle.time).toLocaleDateString(),
-  };
-};
+        const getPreviousATH = (candles) => {
+                if (candles.length < 2) return null;
+                const candlesExcludingLast = candles.slice(0, -1);
+                const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
+                        curr.high > max.high ? curr : max
+                );
+                return {
+                        price: prevAthCandle.high,
+                        time: new Date(prevAthCandle.time).toLocaleDateString(),
+                };
+        };
 
 
         const findRecentATH = (data) => {
@@ -164,8 +164,8 @@ const getPreviousATH = (candles) => {
         const emaNum = parseFloat(ema70);
         const isValid = !isNaN(emaNum) && emaNum > 0;
 
-const previousATLInfo = getPreviousATL(weeklyCandles);
-const previousATHInfo = getPreviousATH(weeklyCandles);
+        const previousATLInfo = getPreviousATL(weeklyCandles);
+        const previousATHInfo = getPreviousATH(weeklyCandles);
         const atlInfo = findRecentATL(weeklyCandles);
         const athInfo = findRecentATH(weeklyCandles);
 
@@ -181,12 +181,12 @@ const previousATHInfo = getPreviousATH(weeklyCandles);
                 console.log("Gap to EMA70 (%):", athInfo.gapPercent);
         }
 
-if (previousATLInfo) {
-  console.log("Previous ATL:", previousATLInfo.price, "on", previousATLInfo.time);
-}
-if (previousATHInfo) {
-  console.log("Previous ATH:", previousATHInfo.price, "on", previousATHInfo.time);
-}
+        if (previousATLInfo) {
+                console.log("Previous ATL:", previousATLInfo.price, "on", previousATLInfo.time);
+        }
+        if (previousATHInfo) {
+                console.log("Previous ATH:", previousATHInfo.price, "on", previousATHInfo.time);
+        }
 
 
         const atlWeeklyNum = atlInfo ? atlInfo.atl : null;
@@ -198,351 +198,348 @@ if (previousATHInfo) {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        
-        const athSignal = athGap > 120
-  ? 'Strong Bullish Continuation'
-  : athGap > 100
-    ? 'Bullish Continuation'
-    : athGap > 80
-      ? 'Neutral Zone'
-      : 'Sell Zone (Possible Reversal)';
 
-const atlSignal = atlGap > 120
-  ? 'Strong Bearish Breakdown'
-  : atlGap > 100
-    ? 'Bearish Breakdown'
-    : atlGap > 80
-      ? 'Neutral Zone'
-      : 'Buy Zone (Possible Reversal)';
-
-        
-        
-        
         // Detect Strong Bullish Continuation
-const isStrongBullishContinuation = (
-  weeklyData,
-  previousATH,
-  ema70AtPreviousATH,
-  currentATH,
-  athSignal
-) => {
-  // 1st & 2nd Signs: must be Bullish Continuation
-  if (athSignal !== 'Bullish Continuation') return false;
+        const isStrongBullishContinuation = (
+                weeklyData,
+                previousATH,
+                ema70AtPreviousATH,
+                findRecentATH,
+                getAthSignal
+        ) => {
+                // 1st & 2nd Signs: must be Bullish Continuation
+                if (getAthSignal !== 'Bullish Continuation') return false;
 
-  // 3rd Sign: bounce near EMA70 within last 100 weeks
-  const bounceNearEMA = weeklyData.some(candle => {
-    if (!candle.ema70) return false;
-    const diff = Math.abs(candle.low - candle.ema70);
-    return diff / candle.ema70 <= 0.03;
-  });
-  if (!bounceNearEMA) return false;
+                // 3rd Sign: bounce near EMA70 within last 100 weeks
+                const bounceNearEMA = weeklyData.some(candle => {
+                        if (!candle.ema70) return false;
+                        const diff = Math.abs(candle.low - candle.ema70);
+                        return diff / candle.ema70 <= 0.03;
+                });
+                if (!bounceNearEMA) return false;
 
-  // 4th Sign: breakout above previous ATH into reversal zone
-  const currentGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
-  const breakoutZone = currentGap > 80 ? 'Sell Zone (Possible Reversal)' : 'Neutral Zone';
+                // 4th Sign: breakout above previous ATH into reversal zone
+                const currentGap = ((findRecentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+                const breakoutZone = currentGap > 80 ? 'Sell Zone (Possible Reversal)' : 'Neutral Zone';
 
-  return currentATH > previousATH && breakoutZone === 'Sell Zone (Possible Reversal)';
-};
+                return findRecentATH > previousATH && breakoutZone === 'Sell Zone (Possible Reversal)';
+        };
 
-// Trade setup generator
-const computeStrongBullishSetup = (breakoutATH) => {
-  const entry = breakoutATH * 0.995;
-  const stopLoss = entry * 0.97;
-  const takeProfit1 = entry * 1.10;
-  const takeProfit2 = entry * 1.20;
+        // Trade setup generator
+        const computeStrongBullishSetup = (breakoutATH) => {
+                const entry = breakoutATH * 0.995;
+                const stopLoss = entry * 0.97;
+                const takeProfit1 = entry * 1.10;
+                const takeProfit2 = entry * 1.20;
 
-  return { entry, stopLoss, takeProfit1, takeProfit2 };
-};
-        
+                return { entry, stopLoss, takeProfit1, takeProfit2 };
+        };
+
 
         // Detect Strong Bearish Continuation
-const isStrongBearishContinuation = (
-  weeklyData,
-  previousATL,
-  ema70AtPreviousATL,
-  currentATL,
-  atlSignal
-) => {
-  // 1st & 2nd Signs: must be Bearish Breakdown
-  if (atlSignal !== 'Bearish Breakdown') return false;
+        const isStrongBearishContinuation = (
+                weeklyData,
+                previousATL,
+                ema70AtPreviousATL,
+                findRecentATL,
+                getAtlSignal
+        ) => {
+                // 1st & 2nd Signs: must be Bearish Breakdown
+                if (getAtlSignal !== 'Bearish Breakdown') return false;
 
-  // 3rd Sign: bounce near EMA70 in last 100 weeks (price touched resistance)
-  const rejectionNearEMA = weeklyData.some(candle => {
-    if (!candle.ema70) return false;
-    const diff = Math.abs(candle.high - candle.ema70);
-    return diff / candle.ema70 <= 0.03;
-  });
-  if (!rejectionNearEMA) return false;
+                // 3rd Sign: bounce near EMA70 in last 100 weeks (price touched resistance)
+                const rejectionNearEMA = weeklyData.some(candle => {
+                        if (!candle.ema70) return false;
+                        const diff = Math.abs(candle.high - candle.ema70);
+                        return diff / candle.ema70 <= 0.03;
+                });
+                if (!rejectionNearEMA) return false;
 
-  // 4th Sign: breakdown below previous ATL into reversal zone
-  const currentGap = ((ema70AtPreviousATL - currentATL) / currentATL) * 100;
-  const breakdownZone = currentGap > 80 ? 'Buy Zone (Possible Reversal)' : 'Neutral Zone';
+                // 4th Sign: breakdown below previous ATL into reversal zone
+                const currentGap = ((ema70AtPreviousATL - findRecentATL) / findRecentATL) * 100;
+                const breakdownZone = currentGap > 80 ? 'Buy Zone (Possible Reversal)' : 'Neutral Zone';
 
-  return currentATL < previousATL && breakdownZone === 'Buy Zone (Possible Reversal)';
-};
+                return findRecentATL < previousATL && breakdownZone === 'Buy Zone (Possible Reversal)';
+        };
 
-// Trade setup generator for bearish
-const computeStrongBearishSetup = (breakdownATL) => {
-  const entry = breakdownATL * 1.005;
-  const stopLoss = entry * 1.03;
-  const takeProfit1 = entry * 0.90;
-  const takeProfit2 = entry * 0.80;
+        // Trade setup generator for bearish
+        const computeStrongBearishSetup = (breakdownATL) => {
+                const entry = breakdownATL * 1.005;
+                const stopLoss = entry * 1.03;
+                const takeProfit1 = entry * 0.90;
+                const takeProfit2 = entry * 0.80;
 
-  return { entry, stopLoss, takeProfit1, takeProfit2 };
-};
-        
+                return { entry, stopLoss, takeProfit1, takeProfit2 };
+        };
+
+        const getAthSignal = (previousATH, ema70AtPreviousATH) => {
+                if (!ema70AtPreviousATH || !previousATH) return 'N/A';
+                const athGap = ((previousATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+
+                return athGap > 120
+                        ? 'Strong Bullish Continuation'
+                        : athGap > 100
+                                ? 'Bullish Continuation'
+                                : athGap > 80
+                                        ? 'Neutral Zone'
+                                        : 'Sell Zone (Possible Reversal)';
+        };
+
+        const getAtlSignal = (previousATL, ema70AtPreviousATL) => {
+                if (!ema70AtPreviousATL || !previousATL) return 'N/A';
+                const atlGap = ((ema70AtPreviousATL - previousATL) / previousATL) * 100;
+
+                return atlGap > 120
+                        ? 'Strong Bearish Continuation'
+                        : atlGap > 100
+                                ? 'Bearish Continuation'
+                                : atlGap > 80
+                                        ? 'Neutral Zone'
+                                        : 'Buy Zone (Possible Reversal)';
+        };
+
+
+
+
+
 
 const getSignalColor = (signal) => {
-  if (signal.includes('Bullish')) return 'text-green-700';
-  if (signal.includes('Bearish')) return 'text-red-700';
-  if (signal.includes('Neutral')) return 'text-yellow-600';
-  return 'text-gray-600';
+        if (signal.includes('Bullish')) return 'text-green-700';
+        if (signal.includes('Bearish')) return 'text-red-700';
+        if (signal.includes('Neutral')) return 'text-yellow-600';
+        return 'text-gray-600';
 };
 
 const getBoxColor = (signal) => {
-  if (signal.includes('Bullish')) return 'bg-green-50 border-green-200 text-green-800';
-  if (signal.includes('Bearish')) return 'bg-red-50 border-red-200 text-red-800';
-  if (signal.includes('Neutral')) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-  return 'bg-gray-100 border-gray-300 text-gray-800';
+        if (signal.includes('Bullish')) return 'bg-green-50 border-green-200 text-green-800';
+        if (signal.includes('Bearish')) return 'bg-red-50 border-red-200 text-red-800';
+        if (signal.includes('Neutral')) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+        return 'bg-gray-100 border-gray-300 text-gray-800';
 };
 
 
 
 
-        const computeBullishLevels = () => {
-                const ema = parseFloat(ema70);
-                const athNum = parseFloat(ath);
-                if (isNaN(ema) || isNaN(athNum)) return {};
-                return {
-                        entry: ema * 1.02,
-                        stopLoss: ema * 0.97,
-                        takeProfit1: athNum * 0.98,
-                        takeProfit2: athNum * 1.05,
-                };
+const computeBullishLevels = () => {
+        const ema = parseFloat(ema70);
+        const athNum = parseFloat(ath);
+        if (isNaN(ema) || isNaN(athNum)) return {};
+        return {
+                entry: ema * 1.02,
+                stopLoss: ema * 0.97,
+                takeProfit1: athNum * 0.98,
+                takeProfit2: athNum * 1.05,
         };
-
-const computeStrongBearishLevels = () => {
-  const ema = parseFloat(ema70);
-  const atlNum = parseFloat(atl);
-  if (isNaN(ema) || isNaN(atlNum)) return {};
-
-  return {
-    entry: ema * 0.97,             // More aggressive entry
-    stopLoss: ema * 1.025,         // Slightly tighter stop
-    takeProfit1: atlNum * 0.98,    // First target just below ATL
-    takeProfit2: atlNum * 0.92     // Deeper breakdown target
-  };
 };
 
-        
-        const computeBearishLevels = () => {
-                const ema = parseFloat(ema70);
-                const atlNum = parseFloat(atl);
-                if (isNaN(ema) || isNaN(atlNum)) return {};
-                return {
-                        entry: ema * 0.98,
-                        stopLoss: ema * 1.03,
-                        takeProfit1: atlNum * 1.02,
-                        takeProfit2: atlNum * 0.95,
-                };
+
+const computeBearishLevels = () => {
+        const ema = parseFloat(ema70);
+        const atlNum = parseFloat(atl);
+        if (isNaN(ema) || isNaN(atlNum)) return {};
+        return {
+                entry: ema * 0.98,
+                stopLoss: ema * 1.03,
+                takeProfit1: atlNum * 1.02,
+                takeProfit2: atlNum * 0.95,
         };
-        const computeBullishReversalFromAtl = () => {
-                const atlNum = parseFloat(atl);
-                const ema = parseFloat(ema70);
-                if (isNaN(atlNum) || isNaN(ema)) return {};
-                return {
-                        entry: atlNum * 1.02,       // Entry just above ATL
-                        stopLoss: atlNum * 0.97,    // SL below ATL
-                        takeProfit1: atlNum * 1.10, // TP1: 10% above ATL
-                        takeProfit2: atlNum * 1.20, // TP2: 20% above ATL
-                };
+};
+const computeBullishReversalFromAtl = () => {
+        const atlNum = parseFloat(atl);
+        const ema = parseFloat(ema70);
+        if (isNaN(atlNum) || isNaN(ema)) return {};
+        return {
+                entry: atlNum * 1.02,       // Entry just above ATL
+                stopLoss: atlNum * 0.97,    // SL below ATL
+                takeProfit1: atlNum * 1.10, // TP1: 10% above ATL
+                takeProfit2: atlNum * 1.20, // TP2: 20% above ATL
         };
+};
 
 
-        const computeBearishReversalFromAth = () => {
-                const athNum = parseFloat(ath);
-                const ema = parseFloat(ema70);
-                if (isNaN(athNum) || isNaN(ema)) return {};
-                return {
-                        entry: athNum * 0.98,         // Entry just below ATH
-                        stopLoss: athNum * 1.03,      // SL above ATH
-                        takeProfit1: athNum * 0.90,   // TP1 10% below ATH
-                        takeProfit2: athNum * 0.80,   // TP2 20% below ATH
-                };
+const computeBearishReversalFromAth = () => {
+        const athNum = parseFloat(ath);
+        const ema = parseFloat(ema70);
+        if (isNaN(athNum) || isNaN(ema)) return {};
+        return {
+                entry: athNum * 0.98,         // Entry just below ATH
+                stopLoss: athNum * 1.03,      // SL above ATH
+                takeProfit1: athNum * 0.90,   // TP1 10% below ATH
+                takeProfit2: athNum * 0.80,   // TP2 20% below ATH
         };
+};
 
-        const strongBullish = computeStrongBullishSetup(currentATH);
-        
-const strongBearish = computeStrongBearishSetup(currentATL);
-        const bullishReversal = computeBullishReversalFromAtl();
-        const bearishReversal = computeBearishReversalFromAth();
+const strongBullish = computeStrongBullishSetup(findRecentATH);
+const strongBearish = computeStrongBearishSetup(findRecentATL);
+const bullishReversal = computeBullishReversalFromAtl();
+const bearishReversal = computeBearishReversalFromAth();
+const bullish = computeBullishLevels();
+const bearish = computeBearishLevels();
 
-        const bullish = computeBullishLevels();
-        const bearish = computeBearishLevels();
-
-        return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
-                <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
-                        Bitcoin Signal Analyzer
-                </h1>
-                <p className="text-lg mb-6 text-gray-300">
-                        <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
-                </p>
-                <div className="border-l-4 border-yellow-400 pl-4 text-sm text-yellow-100 italic">
-                        Plan smarter. Trade better.
-                </div>
-
-                <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
-                        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
-                                <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Input</h2>
-                                <input
-                                        type="number"
-                                        placeholder="EMA70 (Manual Input)"
-                                        className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                        value={ema70}
-                                        onChange={e => setEma70(e.target.value)}
-                                />
-                        </div>
-                </div>
-
-                {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
-
-                {!loading && isValid && (
-                        <>
-                                {/* ATH Analysis */}
-                                {athWeeklyNum === null ? (
-                                        <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300 mt-4">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertTitle className="text-sm font-semibold">ATH Signal Unavailable</AlertTitle>
-                                                <AlertDescription className="text-sm italic">
-                                                        Trend is not currently bullish — EMA14 is not above EMA70 in the most recent week.
-                                                </AlertDescription>
-                                        </Alert>
-                                ) : (
-                                        <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATH Heat Check</h2>
-
-{previousATHInfo && (
-  <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
-    <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
-    <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
-    <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
-  </div>
-)}
-
-                                                <p>ATH: ${athNum.toFixed(2)}</p>
-                                                <p>Gap: {athGap.toFixed(2)}%</p>
-                                                <p>
-  Market Zone:{' '}
-  <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
-    {getAthSignal()}
-  </span>
-</p>
-
-                 {getAthSignal () === 'Strong Bullish Continuation' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
-      <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
-      <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
-      <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
-      <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
-    </div>
-                 )}
-                 
-{getAthSignal() === 'Bullish Continuation' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
-    <p className="font-semibold">Trade Setup (Bullish Continuation):</p>
-    <p>Entry: ${bullish.entry.toFixed(2)}</p>
-    <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
-  </div>
-)}
-
-{getAthSignal() === 'Sell Zone (Possible Reversal)' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
-    <p className="font-semibold">Trade Setup (Bearish Reversal):</p>
-    <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-    <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-    <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
-  </div>
-)}
-
-{getAthSignal() === 'Neutral Zone' && (
-  <div className={`text-sm p-4 rounded-lg border shadow-sm space-y-1 ${getBoxColor('Neutral Zone')}`}>
-    <p className="font-semibold">Neutral Zone</p>
-    <p>Wait for a bounce from EMA70 before entering a trade.</p>
-  </div>
-)}
-                                        </div>
-                                )}
-
-                                {/* ATL Analysis */}
-                                {atlWeeklyNum === null ? (
-                                        <Alert variant="default" className="bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300 mt-4">
-                                                <AlertTriangle className="h-4 w-4" />
-                                                <AlertTitle className="text-sm font-semibold">ATL Signal Unavailable</AlertTitle>
-                                                <AlertDescription className="text-sm italic">
-                                                        Trend is not currently bearish — EMA14 is not below EMA70 in the most recent week.
-                                                </AlertDescription>
-                                        </Alert>
-                                ) : (
-                                        <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATL Heat Check</h2>
-
-{previousATLInfo && (
-  <div className="text-sm bg-gray-800 p-3 rounded-lg border border-gray-700 text-gray-300 space-y-1">
-    <p className="font-semibold text-gray-100">Previous ATL (Historical):</p>
-    <p>Price: ${previousATLInfo.price.toFixed(2)}</p>
-    <p>Date: {previousATLInfo.time}</p>
-  </div>
-)}
-                                                <p>ATL: ${atlNum.toFixed(2)}</p>
-                                                <p>Gap: {atlGap.toFixed(2)}%</p>
-                                                <p>
-  Market Zone:{' '}
-  <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
-    {getAtlSignal()}
-  </span>
-</p>
-
-{getAtlSignal () === 'Strong Bullish Continuation' && (
- <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bearish Breakdown')}`}>
-      <p className="font-semibold">Trade Setup (Strong Bearish Continuation):</p>
-      <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
-      <p>SL: ${strongBearish.stopLoss.toFixed(2)}</p>
-      <p>TP: ${strongBearish.takeProfit1.toFixed(2)} to ${strongBearish.takeProfit2.toFixed(2)}</p>
-    </div>
-)}
-
-{getAtlSignal() === 'Bearish Breakdown' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
-    <p className="font-semibold">Trade Setup (Bearish Breakdown):</p>
-    <p>Entry: ${bearish.entry.toFixed(2)}</p>
-    <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
-  </div>
-)}
-
-{getAtlSignal() === 'Buy Zone (Possible Reversal)' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
-    <p className="font-semibold">Trade Setup (Bullish Reversal):</p>
-    <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-    <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-    <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
-  </div>
-)}
-
-{getAtlSignal() === 'Neutral Zone' && (
-  <div className={`text-sm p-4 rounded-lg border shadow-sm space-y-1 ${getBoxColor('Neutral Zone')}`}>
-    <p className="font-semibold">Neutral Zone</p>
-    <p>Wait for a bounce from EMA70 before entering a trade.</p>
-  </div>
-)}
-                                        </div>
-                                )}
-                        </>
-                )}
+return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
+        <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
+                Bitcoin Signal Analyzer
+        </h1>
+        <p className="text-lg mb-6 text-gray-300">
+                <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
+        </p>
+        <div className="border-l-4 border-yellow-400 pl-4 text-sm text-yellow-100 italic">
+                Plan smarter. Trade better.
         </div>
 
-        );
-        }
+        <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
+                <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
+                        <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Input</h2>
+                        <input
+                                type="number"
+                                placeholder="EMA70 (Manual Input)"
+                                className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                                value={ema70}
+                                onChange={e => setEma70(e.target.value)}
+                        />
+                </div>
+        </div>
 
-                
+        {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
+
+        {!loading && isValid && (
+                <>
+                        {/* ATH Analysis */}
+                        {athWeeklyNum === null ? (
+                                <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300 mt-4">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertTitle className="text-sm font-semibold">ATH Signal Unavailable</AlertTitle>
+                                        <AlertDescription className="text-sm italic">
+                                                Trend is not currently bullish — EMA14 is not above EMA70 in the most recent week.
+                                        </AlertDescription>
+                                </Alert>
+                        ) : (
+                                <div className="space-y-2 text-gray-800">
+                                        <h2 className="text-xl font-semibold">ATH Heat Check</h2>
+
+                                        {previousATHInfo && (
+                                                <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
+                                                        <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
+                                                        <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
+                                                        <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
+                                                </div>
+                                        )}
+
+                                        <p>ATH: ${athNum.toFixed(2)}</p>
+                                        <p>Gap: {athGap.toFixed(2)}%</p>
+                                        <p>
+                                                Market Zone (ATH):{' '}
+                                                <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
+                                                        {getAthSignal()}
+                                                </span>
+                                        </p>
+
+                                        {getAthSignal() === 'Strong Bullish Continuation' && (
+                                                <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
+                                                        <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
+                                                        <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
+                                                        <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
+                                                        <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
+                                                </div>
+                                        )}
+
+                                        {getAthSignal() === 'Bullish Continuation' && (
+                                                <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+                                                        <p className="font-semibold">Trade Setup (Bullish Continuation):</p>
+                                                        <p>Entry: ${bullish.entry.toFixed(2)}</p>
+                                                        <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+                                                        <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+                                                </div>
+                                        )}
+
+                                        {getAthSignal() === 'Sell Zone (Possible Reversal)' && (
+                                                <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAthSignal())}`}>
+                                                        <p className="font-semibold">Trade Setup (Bearish Reversal):</p>
+                                                        <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
+                                                        <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
+                                                        <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
+                                                </div>
+                                        )}
+
+                                        {getAthSignal() === 'Neutral Zone' && (
+                                                <div className={`text-sm p-4 rounded-lg border shadow-sm space-y-1 ${getBoxColor('Neutral Zone')}`}>
+                                                        <p className="font-semibold">Neutral Zone</p>
+                                                        <p>Wait for a bounce from EMA70 before entering a trade.</p>
+                                                </div>
+                                        )}
+                                </div>
+                        )}
+
+                        {/* ATL Analysis */}
+                        {atlWeeklyNum === null ? (
+                                <Alert variant="default" className="bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300 mt-4">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle className="text-sm font-semibold">ATL Signal Unavailable</AlertTitle>
+                                        <AlertDescription className="text-sm italic">
+                                                Trend is not currently bearish — EMA14 is not below EMA70 in the most recent week.
+                                        </AlertDescription>
+                                </Alert>
+                        ) : (
+                                <div className="space-y-2 text-gray-800">
+                                        <h2 className="text-xl font-semibold">ATL Heat Check</h2>
+
+                                        {previousATLInfo && (
+                                                <div className="text-sm bg-gray-800 p-3 rounded-lg border border-gray-700 text-gray-300 space-y-1">
+                                                        <p className="font-semibold text-gray-100">Previous ATL (Historical):</p>
+                                                        <p>Price: ${previousATLInfo.price.toFixed(2)}</p>
+                                                        <p>Date: {previousATLInfo.time}</p>
+                                                </div>
+                                        )}
+                                        <p>ATL: ${atlNum.toFixed(2)}</p>
+                                        <p>Gap: {atlGap.toFixed(2)}%</p>
+                                        <p>
+                                                Market Zone (ATL):{' '}
+                                                <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
+                                                        {getAtlSignal()}
+                                                </span>
+                                        </p>
+
+                                        {getAtlSignal() === 'Strong Bullish Continuation' && (
+                                                <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bearish Breakdown')}`}>
+                                                        <p className="font-semibold">Trade Setup (Strong Bearish Continuation):</p>
+                                                        <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
+                                                        <p>SL: ${strongBearish.stopLoss.toFixed(2)}</p>
+                                                        <p>TP: ${strongBearish.takeProfit1.toFixed(2)} to ${strongBearish.takeProfit2.toFixed(2)}</p>
+                                                </div>
+                                        )}
+
+                                        {getAtlSignal() === 'Bearish Breakdown' && (
+                                                <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
+                                                        <p className="font-semibold">Trade Setup (Bearish Breakdown):</p>
+                                                        <p>Entry: ${bearish.entry.toFixed(2)}</p>
+                                                        <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+                                                        <p>TP: ${bearish.takeProfit2.toFixed(2)}</p>
+                                                </div>
+                                        )}
+
+                                        {getAtlSignal() === 'Buy Zone (Possible Reversal)' && (
+                                                <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor(getAtlSignal())}`}>
+                                                        <p className="font-semibold">Trade Setup (Bullish Reversal):</p>
+                                                        <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+                                                        <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+                                                        <p>TP: ${bullishReversal.takeProfit2.toFixed(2)}</p>
+                                                </div>
+                                        )}
+
+                                        {getAtlSignal() === 'Neutral Zone' && (
+                                                <div className={`text-sm p-4 rounded-lg border shadow-sm space-y-1 ${getBoxColor('Neutral Zone')}`}>
+                                                        <p className="font-semibold">Neutral Zone</p>
+                                                        <p>Wait for a bounce from EMA70 before entering a trade.</p>
+                                                </div>
+                                        )}
+                                </div>
+                        )}
+                </>
+        )}
+</div>
+
+);
+}
+
+
+                                
