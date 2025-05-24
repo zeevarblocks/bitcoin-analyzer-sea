@@ -262,13 +262,27 @@ const getAtlSignal = (currentATL, ema70AtPreviousATL) => {
 };
 
 // Detect Strong Bullish Continuation
-const isStrongBullishContinuation = ({
-  previousATH,
-  ema70AtPreviousATH,
-  currentATH,
-  athSignal,
-  previousATHClassification
-}) => {
+const isStrongBullishContinuation = (input) => {
+  if (!input) return false;
+
+  const {
+    previousATH,
+    ema70AtPreviousATH,
+    currentATH,
+    athSignal,
+    previousATHClassification
+  } = input;
+
+  if (
+    !previousATH ||
+    !ema70AtPreviousATH ||
+    !currentATH ||
+    !athSignal ||
+    !previousATHClassification
+  ) {
+    return false;
+  }
+
   // 1. Require current signal to be 'Bullish Continuation'
   if (athSignal !== 'Bullish Continuation') return false;
 
@@ -317,28 +331,42 @@ if (previousATHInfo && currentATHInfo) {
         
 
 // Detect Strong Bearish Continuation
-const isStrongBearishContinuation = ({
-  previousATL,
-  ema70AtPreviousATL,
-  currentATL,
-  atlSignal,
-  previousATLClassification
-}) => {
+const isStrongBearishContinuation = (input) => {
+  if (!input) return false;
+
+  const {
+    previousATL,
+    ema70AtPreviousATL,
+    currentATL,
+    atlSignal,
+    previousATLClassification
+  } = input;
+
+  if (
+    !previousATL ||
+    !ema70AtPreviousATL ||
+    !currentATL ||
+    !atlSignal ||
+    !previousATLClassification
+  ) {
+    return false;
+  }
+
   // 1. Require current signal to be 'Bearish Continuation'
   if (atlSignal !== 'Bearish Continuation') return false;
 
   // 2. Require previous ATL classification to also be 'Bearish Continuation'
   if (previousATLClassification !== 'Bearish Continuation') return false;
 
-  // 3. Check for bounce near EMA70 (on top side) — within 3% from high
-  const bounceNearEMA = weeklyData.some(candle => {
+  // 3. Check for rejection near EMA70 (within 3%)
+  const rejectionNearEMA = weeklyData.some(candle => {
     if (!candle.ema70) return false;
     const diff = Math.abs(candle.high - candle.ema70);
     return diff / candle.ema70 <= 0.03;
   });
-  if (!bounceNearEMA) return false;
+  if (!rejectionNearEMA) return false;
 
-  // 4. Check breakdown gap
+  // 4. Check for breakdown gap
   const currentGap = ((ema70AtPreviousATL - currentATL) / ema70AtPreviousATL) * 100;
   const breakdownZone = currentGap > 80 ? 'Buy Zone (Possible Reversal)' : 'Neutral Zone';
 
