@@ -400,6 +400,7 @@ if (previousATLInfo && currentATLInfo) {
         
                
 const currentATH = findRecentATH();
+        const currentATHInfo = findRecentATH(weeklyData);
 const previousATH = previousATHInfo?.price;
 const ema70AtPreviousATH = previousATHInfo?.ema70;
 
@@ -417,6 +418,7 @@ const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 const finalAthSignal = upgradedToStrong ? 'Strong Bullish Continuation' : athSignalRaw;
 
        const currentATL = findRecentATL();
+        const currentATLInfo = findRecentATL(weeklyData);
 const previousATL = previousATLInfo?.price;
 const ema70AtPreviousATL = previousATLInfo?.ema70;
 
