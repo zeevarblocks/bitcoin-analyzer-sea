@@ -198,19 +198,7 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        const currentATH = Math.max(...weeklyData.map(c => c.close));
-const sortedCloses = weeklyData.map(c => c.close).sort((a, b) => b - a);
-const previousATH = sortedCloses[1] || sortedCloses[0];
-const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
-const ema70AtPreviousATH = weeklyData[indexOfPrevATH]?.ema70 || 0;
-
-
-        const currentATL = Math.min(...weeklyData.map(c => c.close));
-const sortedClosesLowToHigh = weeklyData.map(c => c.close).sort((a, b) => a - b);
-const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
-const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
-const ema70AtPreviousATL = weeklyData[indexOfPrevATL]?.ema70 || 0;
-
+        
         
 
         // Detect Strong Bullish Continuation
