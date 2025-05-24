@@ -198,7 +198,7 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-            
+        
 // Signal classifier for ATH
 const getAthSignal = (currentATH, ema70AtPreviousATH) => {
   if (!ema70AtPreviousATH || !currentATH) return 'N/A';
@@ -295,10 +295,10 @@ const computeStrongBearishSetup = (breakdownATL) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
                
-const currentATHCandle = findRecentATH(weeklyCandles);
+const currentATH = findRecentATH();
 const previousATH = previousATHInfo?.price;
 const ema70AtPreviousATH = previousATHInfo?.ema70;
-const currentATH = currentATHCandle?.high
+
 
 const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 
@@ -312,10 +312,10 @@ const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 
 const finalAthSignal = upgradedToStrong ? 'Strong Bullish Continuation' : athSignalRaw;
 
-       const currentATLCandle = findRecentATL(weeklyCandles);
+       const currentATL = findRecentATL();
 const previousATL = previousATLInfo?.price;
 const ema70AtPreviousATL = previousATLInfo?.ema70;
-const currentATL = currentATLCandle?.low;
+
 
 const atlSignalRaw = getAtlSignal(currentATLCandle, ema70AtPreviousATL);
 
