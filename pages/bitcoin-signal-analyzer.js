@@ -198,6 +198,45 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
+// Fetch weekly data and compute key levels
+const computeKeyLevels = async () => {
+  const weeklyData = await fetchData();
+
+  if (!weeklyData || weeklyData.length === 0) {
+    return null;
+  }
+
+  const closes = weeklyData.map(c => c.close);
+
+  // ATH calculations
+  const currentATH = Math.max(...closes);
+  const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
+  const previousATH = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
+  const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
+  const ema70AtPreviousATH = weeklyData[indexOfPrevATH]?.ema70 || 0;
+
+  // ATL calculations
+  const currentATL = Math.min(...closes);
+  const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
+  const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
+  const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
+  const ema70AtPreviousATL = weeklyData[indexOfPrevATL]?.ema70 || 0;
+
+  return {
+    weeklyData,
+    currentATH,
+    previousATH,
+    ema70AtPreviousATH,
+    currentATL,
+    previousATL,
+    ema70AtPreviousATL,
+  };
+};
+
+
+
+
+        
         
 const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
   if (!currentATHCandle) {
