@@ -198,13 +198,27 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
+        const currentATH = Math.max(...weeklyData.map(c => c.close));
+const sortedCloses = weeklyData.map(c => c.close).sort((a, b) => b - a);
+const previousATH = sortedCloses[1] || sortedCloses[0];
+const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
+const ema70AtPreviousATH = weeklyData[indexOfPrevATH]?.ema70 || 0;
+
+
+        const currentATL = Math.min(...weeklyData.map(c => c.close));
+const sortedClosesLowToHigh = weeklyData.map(c => c.close).sort((a, b) => a - b);
+const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
+const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
+const ema70AtPreviousATL = weeklyData[indexOfPrevATL]?.ema70 || 0;
+
+        
 
         // Detect Strong Bullish Continuation
         const isStrongBullishContinuation = (
                 weeklyData,
                 previousATH,
                 ema70AtPreviousATH,
-                findRecentATH,
+                currentATH,
                 getAthSignal
         ) => {
                 // 1st & 2nd Signs: must be Bullish Continuation
@@ -219,10 +233,10 @@ export default function Home() {
                 if (!bounceNearEMA) return false;
 
                 // 4th Sign: breakout above previous ATH into reversal zone
-                const currentGap = ((findRecentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+                const currentGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
                 const breakoutZone = currentGap > 80 ? 'Sell Zone (Possible Reversal)' : 'Neutral Zone';
 
-                return findRecentATH > previousATH && breakoutZone === 'Sell Zone (Possible Reversal)';
+                return currentATH > previousATH && breakoutZone === 'Sell Zone (Possible Reversal)';
         };
 
         // Trade setup generator
@@ -241,7 +255,7 @@ export default function Home() {
                 weeklyData,
                 previousATL,
                 ema70AtPreviousATL,
-                findRecentATL,
+                currentATL,
                 getAtlSignal
         ) => {
                 // 1st & 2nd Signs: must be Bearish Breakdown
@@ -256,10 +270,10 @@ export default function Home() {
                 if (!rejectionNearEMA) return false;
 
                 // 4th Sign: breakdown below previous ATL into reversal zone
-                const currentGap = ((ema70AtPreviousATL - findRecentATL) / findRecentATL) * 100;
+                const currentGap = ((ema70AtPreviousATL - currentATL) / currentATL) * 100;
                 const breakdownZone = currentGap > 80 ? 'Buy Zone (Possible Reversal)' : 'Neutral Zone';
 
-                return findRecentATL < previousATL && breakdownZone === 'Buy Zone (Possible Reversal)';
+                return currentATL < previousATL && breakdownZone === 'Buy Zone (Possible Reversal)';
         };
 
         // Trade setup generator for bearish
@@ -272,9 +286,10 @@ export default function Home() {
                 return { entry, stopLoss, takeProfit1, takeProfit2 };
         };
 
-        const getAthSignal = () => {
-  if (!ema70AtPreviousATH || !previousATH) return 'N/A';
-  const athGap = ((previousATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+        const getAthSignal = (currentATH, ema70AtPreviousATH) => {
+  if (!ema70AtPreviousATH || !currentATH) return 'N/A';
+
+  const athGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
   return athGap > 120
     ? 'Strong Bullish Continuation'
@@ -285,9 +300,10 @@ export default function Home() {
     : 'Sell Zone (Possible Reversal)';
 };
 
-        const getAtlSignal = () => {
-  if (!ema70AtPreviousATL || !previousATL) return 'N/A';
-  const atlGap = ((ema70AtPreviousATL - previousATL) / previousATL) * 100;
+const getAtlSignal = (currentATL, ema70AtPreviousATL) => {
+  if (!ema70AtPreviousATL || !currentATL) return 'N/A';
+
+  const atlGap = ((ema70AtPreviousATL - currentATL) / ema70AtPreviousATL) * 100;
 
   return atlGap > 120
     ? 'Strong Bearish Continuation'
@@ -366,8 +382,8 @@ const computeBearishReversalFromAth = () => {
         };
 };
 
-const strongBullish = computeStrongBullishSetup(findRecentATH);
-const strongBearish = computeStrongBearishSetup(findRecentATL);
+const strongBullish = computeStrongBullishSetup(currentATH);
+const strongBearish = computeStrongBearishSetup(currentATL);
 const bullishReversal = computeBullishReversalFromAtl();
 const bearishReversal = computeBearishReversalFromAth();
 const bullish = computeBullishLevels();
@@ -426,9 +442,9 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {athGap.toFixed(2)}%</p>
                                         <p>
                                                 Market Zone (ATH):{' '}
-                                                <span className={`font-bold ${getSignalColor(getAthSignal())}`}>
-                                                        {getAthSignal()}
-                                                </span>
+                                                <span className={`font-bold ${getSignalColor(getAthSignal(currentATH, ema70AtPreviousATH))}`}>
+  {getAthSignal(currentATH, ema70AtPreviousATH)}
+</span>
                                         </p>
 
                                         {getAthSignal() === 'Strong Bullish Continuation' && (
@@ -491,9 +507,9 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {atlGap.toFixed(2)}%</p>
                                         <p>
                                                 Market Zone (ATL):{' '}
-                                                <span className={`font-bold ${getSignalColor(getAtlSignal())}`}>
-                                                        {getAtlSignal()}
-                                                </span>
+                                                <span className={`font-bold ${getSignalColor(getAtlSignal(currentATL, ema70AtPreviousATL))}`}>
+  {getAtlSignal(currentATL, ema70AtPreviousATL)}
+</span>
                                         </p>
 
                                         {getAtlSignal() === 'Strong Bullish Continuation' && (
