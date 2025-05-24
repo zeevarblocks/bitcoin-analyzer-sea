@@ -317,7 +317,7 @@ const previousATL = previousATLInfo?.price;
 const ema70AtPreviousATL = previousATLInfo?.ema70;
 
 
-const atlSignalRaw = getAtlSignal(currentATLCandle, ema70AtPreviousATL);
+const atlSignalRaw = getAtlSignal(currentATL, ema70AtPreviousATL);
 
         const upgradedToStrongBearish = isStrongBearishBreakdown(
   
