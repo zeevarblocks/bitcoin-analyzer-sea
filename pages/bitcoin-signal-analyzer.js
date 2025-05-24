@@ -295,7 +295,7 @@ const computeStrongBullishSetup = (breakoutATH) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
         
-const confirmed = isStrongBullishContinuation({
+const bullishConfirmed = isStrongBullishContinuation({
   previousATH: previousATHInfo.price,
   ema70AtPreviousATH: previousATHInfo.ema70,
   currentATH: currentATHInfo.price,
@@ -345,7 +345,7 @@ const computeStrongBearishSetup = (breakdownATL) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
         
-const confirmed = isStrongBearishContinuation({
+const bearishConfirmed = isStrongBearishContinuation({
   previousATL: previousATLInfo.price,
   ema70AtPreviousATL: previousATLInfo.ema70,
   currentATL: currentATLInfo.price,
