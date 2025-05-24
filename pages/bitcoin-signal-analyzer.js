@@ -198,60 +198,12 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-// Fetch weekly data and compute key levels
-const computeKeyLevels = async () => {
-  const weeklyData = await fetchData();
+            
+// Signal classifier for ATH
+const getAthSignal = (currentATH, ema70AtPreviousATH) => {
+  if (!ema70AtPreviousATH || !currentATH) return 'N/A';
 
-  if (!weeklyData || weeklyData.length === 0) {
-    return null;
-  }
-
-  const closes = weeklyData.map(c => c.close);
-
-  // ATH calculations
-  const currentATH = Math.max(...closes);
-  const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
-  const previousATH = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
-  const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
-  const ema70AtPreviousATH = weeklyData[indexOfPrevATH]?.ema70 || 0;
-
-  // ATL calculations
-  const currentATL = Math.min(...closes);
-  const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
-  const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
-  const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
-  const ema70AtPreviousATL = weeklyData[indexOfPrevATL]?.ema70 || 0;
-
-  return {
-    weeklyData,
-    currentATH,
-    previousATH,
-    ema70AtPreviousATH,
-    currentATL,
-    previousATL,
-    ema70AtPreviousATL,
-  };
-};
-
-
-
-
-        
-        
-const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
-  if (!currentATHCandle) {
-    console.log("getAthSignal: Missing currentATHCandle");
-  }
-
-  if (!ema70AtPreviousATH) {
-    console.log("getAthSignal: Missing ema70AtPreviousATH");
-  }
-
-  if (!ema70AtPreviousATH || !currentATHCandle) return 'N/A';
-
-  const athGap = ((currentATHCandle.high - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
-
-  console.log(`ATH Gap: ${athGap.toFixed(2)}%`);
+  const athGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
   return athGap > 120
     ? 'Strong Bullish Continuation'
@@ -262,10 +214,11 @@ const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
     : 'Sell Zone (Possible Reversal)';
 };
 
-   const getAtlSignal = (currentATLCandle, ema70AtPreviousATL) => {
-  if (!ema70AtPreviousATL || !currentATLCandle) return 'N/A';
+// Signal classifier for ATL
+const getAtlSignal = (currentATL, ema70AtPreviousATL) => {
+  if (!ema70AtPreviousATL || !currentATL) return 'N/A';
 
-  const atlGap = ((ema70AtPreviousATL - currentATLCandle.low) / ema70AtPreviousATL) * 100;
+  const atlGap = ((ema70AtPreviousATL - currentATL) / ema70AtPreviousATL) * 100;
 
   return atlGap > 120
     ? 'Strong Bearish Continuation'
@@ -274,7 +227,7 @@ const getAthSignal = (currentATHCandle, ema70AtPreviousATH) => {
     : atlGap > 80
     ? 'Neutral Zone'
     : 'Buy Zone (Possible Reversal)';
-};  
+};
 
 // Detect Strong Bullish Continuation
 const isStrongBullishContinuation = (
@@ -342,12 +295,12 @@ const computeStrongBearishSetup = (breakdownATL) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
                
-const currentATHCandle = findRecentATH(weeklyCandles);
+const currentATH = findRecentATH(weeklyCandles);
 const previousATH = previousATHInfo?.price;
 const ema70AtPreviousATH = previousATHInfo?.ema70;
-const currentATH = currentATHCandle?.high;
+const currentATH = currentATH?.high
 
-const athSignalRaw = getAthSignal(currentATHCandle, ema70AtPreviousATH);
+const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
 
         const upgradedToStrong = isStrongBullishContinuation(
   weeklyData,
@@ -359,10 +312,10 @@ const athSignalRaw = getAthSignal(currentATHCandle, ema70AtPreviousATH);
 
 const finalAthSignal = upgradedToStrong ? 'Strong Bullish Continuation' : athSignalRaw;
 
-       const currentATLCandle = findRecentATL(weeklyCandles);
+       const currentATL = findRecentATL(weeklyCandles);
 const previousATL = previousATLInfo?.price;
 const ema70AtPreviousATL = previousATLInfo?.ema70;
-const currentATL = currentATLCandle?.low;
+const currentATL = currentATL?.low;
 
 const atlSignalRaw = getAtlSignal(currentATLCandle, ema70AtPreviousATL);
 
