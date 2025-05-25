@@ -149,12 +149,6 @@ const isValid = emaNum !== null && emaNum > 0;
   const indexOfPrevATL = last100.findIndex(c => c.close === previousATL);
   const ema70AtPreviousATL = last100[indexOfPrevATL]?.ema70 || 0;
 
-  // Find actual ATL candle
-  let atlCandle = last100.reduce((min, c) => c.low < min.low ? c : min);
-  const atlPrice = atlCandle.low;
-  const atlEMA70 = atlCandle.ema70;
-  const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
-
   const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
 
   return {
@@ -216,12 +210,6 @@ const isValid = emaNum !== null && emaNum > 0;
   const previousATH = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
   const indexOfPrevATH = last100.findIndex(c => c.close === previousATH);
   const ema70AtPreviousATH = last100[indexOfPrevATH]?.ema70 || 0;
-
-  // Find actual ATH candle
-  let athCandle = last100.reduce((max, c) => c.high > max.high ? c : max);
-  const athPrice = athCandle.high;
-  const athEMA70 = athCandle.ema70;
-  const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
 
   const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
 
