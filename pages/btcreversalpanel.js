@@ -164,9 +164,7 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal');
-        const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
-
+        
 
         
         
