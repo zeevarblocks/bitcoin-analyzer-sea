@@ -282,8 +282,26 @@ const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
 const ema70AtPreviousATL1 = weeklyData[indexOfPrevATL]?.ema70 || 0;
 
 const athSignal = getATHSignal(currentATH, ema70AtPreviousATH);
-const atlSignal = getATLSignal(currentATL, ema70AtPreviousATL);
 
+const finalAthSignal = getFinalATHSignal({
+  previousATH,
+  ema70AtPreviousATH,
+  currentATH,
+  athSignal,
+  previousATHClassification,
+  currentATHClassification
+}, weeklyData);
+
+        const atlSignal = getATLSignal(currentATL, ema70AtPreviousATL);
+
+const finalAtlSignal = getFinalATLSignal({
+  previousATL,
+  ema70AtPreviousATL,
+  currentATL,
+  atlSignal,
+  previousATLClassification,
+  currentATLClassification
+}, weeklyData);
 
 
         
