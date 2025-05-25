@@ -268,16 +268,16 @@ const ema70AtPreviousATL = previousATLInfo?.ema70;
     // ATH calculations
 const newATH = Math.max(...closes);
 const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
-const previousATH = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
+const previousATH1 = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
 const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
-const ema70AtPreviousATH = weeklyData[indexOfPrevATH]?.ema70 || 0;
+const ema70AtPreviousATH1 = weeklyData[indexOfPrevATH]?.ema70 || 0;
 
 // ATL calculations
 const newATL = Math.min(...closes);
 const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
-const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
+const previousATL1 = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
 const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
-const ema70AtPreviousATL = weeklyData[indexOfPrevATL]?.ema70 || 0;
+const ema70AtPreviousATL1 = weeklyData[indexOfPrevATL]?.ema70 || 0;
 
 // ATH signal logic
 const getAthSignal = (newATH, ema70AtPreviousATH) => {
