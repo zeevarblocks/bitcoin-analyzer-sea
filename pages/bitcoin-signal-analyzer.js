@@ -297,6 +297,7 @@ const isStrongBullishContinuation = (input, weeklyData) => {
     athSignal,
     previousATHClassification,
     currentATHClassification,
+          newATH
         
   } = input || {};
 
@@ -348,9 +349,9 @@ const isStrongBullishContinuation = (input, weeklyData) => {
   return 'Reversal Confirmed';
 };
 
-let bullishConfirmed = {};
+let bullishConfirmed = null;
 
-if (previousATHInfo && newATH) {
+if (previousATHInfo && currentATHInfo) {
   bullishConfirmed = isStrongBullishContinuation({
     previousATH: previousATHInfo.price,
     ema70AtPreviousATH: previousATHInfo.ema70,
@@ -392,6 +393,7 @@ const isStrongBearishContinuation = (input, weeklyData) => {
     atlSignal,
     previousATLClassification,
     currentATLClassification,
+          newATL
           
   } = input || {};
 
@@ -730,4 +732,4 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
 </div>
 
 );
-                }
+                                                                        }
