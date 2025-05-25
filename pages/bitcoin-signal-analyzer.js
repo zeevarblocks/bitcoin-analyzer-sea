@@ -297,7 +297,6 @@ const isStrongBullishContinuation = (input, weeklyData) => {
     athSignal,
     previousATHClassification,
     currentATHClassification,
-          newATH
         
   } = input || {};
 
@@ -351,7 +350,7 @@ const isStrongBullishContinuation = (input, weeklyData) => {
 
 let bullishConfirmed = null;
 
-if (previousATHInfo && newATHInfo) {
+if (previousATHInfo && newATH) {
   bullishConfirmed = isStrongBullishContinuation({
     previousATH: previousATHInfo.price,
     ema70AtPreviousATH: previousATHInfo.ema70,
@@ -393,7 +392,6 @@ const isStrongBearishContinuation = (input, weeklyData) => {
     atlSignal,
     previousATLClassification,
     currentATLClassification,
-          newATL
           
   } = input || {};
 
