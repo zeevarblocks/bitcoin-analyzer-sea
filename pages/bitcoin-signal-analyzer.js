@@ -281,6 +281,12 @@ const previousATL1 = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
 const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
 const ema70AtPreviousATL1 = weeklyData[indexOfPrevATL]?.ema70 || 0;
 
+const athSignal = getATHSignal(currentATH, ema70AtPreviousATH);
+const atlSignal = getATLSignal(currentATL, ema70AtPreviousATL);
+
+
+
+        
 // ATH signal logic
 const getAthSignal = (newATH, ema70AtPreviousATH1) => {
   if (!ema70AtPreviousATH1 || !newATH) return 'N/A';
@@ -312,7 +318,8 @@ const getAtlSignal = (newATL, ema70AtPreviousATL1) => {
 };    
 
 
-
+const athSignal = getATHSignal(currentATH, ema70AtPreviousATH);
+          
 
         
 // Detect Strong Bullish Continuation
