@@ -594,27 +594,12 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                                         <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
                                                         <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
                                                         <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
+                                                <p className="text-sm text-gray-400">Occurred on: {bearishConfirmed}</p>
                                                 </div>
                                         )}
 
                                         <p>ATH: ${athNum.toFixed(2)}</p>
-                                        <p>Gap: {athGap.toFixed(2)}%</p>
-                                                <div className="bg-red-900 border border-red-400 p-3 rounded-md text-sm mt-4 text-red-200">
-  <strong className="block text-red-300">ATL Signal Unavailable</strong>
-  Trend is not currently bearish — EMA14 is not below EMA70 this week.
-</div>
-          
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div className="bg-gray-800 p-4 rounded-lg shadow">
-    <h3 className="text-yellow-400 font-bold mb-2">Previous ATH Reference</h3>
-    <p>Price: ${previousATH}</p>
-    <p>Date: {athDate}</p>
-    <p>ATH: ${currentATH}</p>
-    <p>Gap: {athGap.toFixed(2)}%</p>
-    <p className="text-yellow-400 font-semibold">Zone: {athZone}</p>
-  </div>
-            </div>
-            
+                                        <p>Gap: {athGap.toFixed(2)}%</p                            
                                         
 <p>
   Market Zone (ATH):{' '}
