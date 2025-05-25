@@ -610,12 +610,12 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
     {bullishConfirmed}
   </span>
 </p>
-{bearishBreakdown === 'Strong Bullish Continuation' && (
+{isStrongBullishContinuation === 'Strong Bullish Continuation' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
     <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
-    <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
-    <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
+    <p>Entry: ${bullish.entry.toFixed(2)}</p>
+    <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+    <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
   </div>
 )}
 
