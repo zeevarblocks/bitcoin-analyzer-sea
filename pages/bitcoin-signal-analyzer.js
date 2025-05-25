@@ -265,6 +265,8 @@ const ema70AtPreviousATL = previousATLInfo?.ema70;
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
+        const closes = weeklyData.map(c => c.close);
+        
     // ATH calculations
 const newATH = Math.max(...closes);
 const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
