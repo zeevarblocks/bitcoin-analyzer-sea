@@ -348,7 +348,7 @@ const isStrongBullishContinuation = (input, weeklyData) => {
   return 'Reversal Confirmed';
 };
 
-let bullishConfirmed = ();
+let bullishConfirmed = {};
 
 if (previousATHInfo && newATH) {
   bullishConfirmed = isStrongBullishContinuation({
