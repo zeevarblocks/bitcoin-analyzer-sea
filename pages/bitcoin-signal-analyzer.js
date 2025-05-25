@@ -136,25 +136,20 @@ const isValid = emaNum !== null && emaNum > 0;
   const latestCandle = data[data.length - 1];
 
   // Ensure current trend is bearish
-  if (latestCandle.ema14 >= latestCandle.ema70) {
-    console.warn("Skipping ATL check: Market not bearish (EMA14 >= EMA70).");
-    return null;
-  }
+  if (latestCandle.ema14 >= latestCandle.ema70) return null;
 
-  // ATL calculations
-  const closes = last100.map(c => c.close);
-  const currentATL = Math.min(...closes);
-  const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
-  const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
-  const indexOfPrevATL = last100.findIndex(c => c.close === previousATL);
-  const ema70AtPreviousATL = last100[indexOfPrevATL]?.ema70 || 0;
+  let atlCandle = last100[0];
+  last100.forEach(candle => {
+    if (candle.low < atlCandle.low) {
+      atlCandle = candle;
+    }
+  });
 
-                 // Find actual ATL candle
-  let atlCandle = last100.reduce((min, c) => c.low < min.low ? c : min);
   const atlPrice = atlCandle.low;
   const atlEMA70 = atlCandle.ema70;
   const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
 
+  // Custom classification logic
   const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
 
   return {
@@ -162,12 +157,9 @@ const isValid = emaNum !== null && emaNum > 0;
     ema70: atlEMA70,
     gapPercent: gapPercent.toFixed(2),
     classification,
-    candle: atlCandle,
-    currentATL,
-    previousATL,
-    ema70AtPreviousATL
+    candle: atlCandle // optional: full candle reference
   };
-};
+        };
         
         const getPreviousATH = (candles) => {
   if (!candles || candles.length < 2) return null;
@@ -198,45 +190,39 @@ const isValid = emaNum !== null && emaNum > 0;
 };
 
         const findRecentATH = (data) => {
-  if (!data || data.length < 100) return null;
+if (!data || data.length < 100) return null;
 
-  const last100 = data.slice(-100);
-  const latestCandle = data[data.length - 1];
+const last100 = data.slice(-100);
+const latestCandle = data[data.length - 1];
 
-  // Ensure current trend is bullish
-  if (latestCandle.ema14 <= latestCandle.ema70) {
-    console.warn("Skipping ATH check: Market not bullish (EMA14 <= EMA70).");
-    return null;
-  }
+// Ensure current trend is bullish
+if (latestCandle.ema14 <= latestCandle.ema70) return null;
 
-  // ATH calculations
-  const closes = last100.map(c => c.close);
-  const currentATH = Math.max(...closes);
-  const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
-  const previousATH = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
-  const indexOfPrevATH = last100.findIndex(c => c.close === previousATH);
-  const ema70AtPreviousATH = last100[indexOfPrevATH]?.ema70 || 0;
+let athCandle = last100[0];
+last100.forEach(candle => {
+if (candle.high > athCandle.high) {
+athCandle = candle;
+}
+});
 
-                 // Find actual ATH candle
-  let athCandle = last100.reduce((max, c) => c.high > max.high ? c : max);
-  const athPrice = athCandle.high;
-  const athEMA70 = athCandle.ema70;
-  const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+const athPrice = athCandle.high;
+const athEMA70 = athCandle.ema70;
+const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
 
-  const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+// Apply your custom classification logic
+const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
 
-  return {
-    ath: athPrice,
-    ema70: athEMA70,
-    gapPercent: gapPercent.toFixed(2),
-    classification,
-    candle: athCandle,
-    currentATH,
-    previousATH,
-    ema70AtPreviousATH
-  };
+return {
+ath: athPrice,
+ema70: athEMA70,
+gapPercent: gapPercent.toFixed(2),
+classification,
+candle: athCandle // optional: full candle reference
 };
+        };
 
+
+        
         const previousATLInfo = getPreviousATL(weeklyCandles);
         const previousATHInfo = getPreviousATH(weeklyCandles);
         const atlInfo = findRecentATL(weeklyCandles);
