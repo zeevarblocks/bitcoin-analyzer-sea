@@ -168,8 +168,6 @@ export default function Home() {
 
         const previousATLInfo = getPreviousATL(weeklyCandles);
         const previousATHInfo = getPreviousATH(weeklyCandles);
-        const atlInfo = findRecentATL(weeklyCandles);
-        const athInfo = findRecentATH(weeklyCandles);
         const currentATH = findRecentATH();
         const currentATHInfo = findRecentATH(weeklyData);
 const previousATH = previousATHInfo?.price;
