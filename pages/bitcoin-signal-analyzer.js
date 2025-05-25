@@ -594,7 +594,7 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                                         <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
                                                         <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
                                                         <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
-                                                <p className="text-sm text-gray-400">Occurred on: {bearishConfirmed}</p>
+                                                <p className="text-sm text-gray-400">Occurred on: {isStrongBullishContinuation}</p>
                                                 </div>
                                         )}
 
@@ -617,7 +617,7 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
 )}
 
          
-                                        {getAthSignal() === 'Strong Bullish Continuation' && (
+                                        {isStrongBullishContinuation() === 'Strong Bullish Continuation' && (
                                                 <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
                                                         <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
                                                         <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
