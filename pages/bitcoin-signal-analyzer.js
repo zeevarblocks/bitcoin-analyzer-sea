@@ -605,8 +605,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         
 <p>
   Market Zone (ATH):{' '}
-  <span className={`font-bold ${getSignalColor(bullishConfirmed)}`}>
-    {bullishConfirmed}
+  <span className={`font-bold ${getSignalColor(isStrongBullishContinuation)}`}>
+    {isStrongBullishContinuation}
   </span>
 </p>
 {bullishConfirmed === 'Strong Bullish Continuation' && (
@@ -679,8 +679,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {atlGap.toFixed(2)}%</p>
                                         <p>
   Market Zone (ATL):{' '}
-  <span className={`font-bold ${getSignalColor(bearishConfirmed)}`}>
-    {bearishConfirmed}
+  <span className={`font-bold ${getSignalColor(isStrongBearishContinuation)}`}>
+    {isStrongBearishContinuation}
   </span>
 </p>
 {bearishConfirmed === 'Strong Bearish Breakdown' && (
