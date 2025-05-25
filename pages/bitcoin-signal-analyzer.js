@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../components/Alert";
+import 
 
 
 
@@ -64,7 +65,42 @@ export default function Home() {
 
                 return emaArray;
         };
+        
+useEffect(() => {
+    let isMounted = true;
 
+    async function fetchMarketData() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin');
+            const data = await res.json();
+
+            if (isMounted) {
+                // Safely extract ATH and ATL
+                setAth(data?.market_data?.ath?.usd ?? null);
+                setAtl(data?.market_data?.atl?.usd ?? null);
+            }
+        } catch (error) {
+            console.error('Failed to fetch market data:', error);
+        } finally {
+            if (isMounted) setLoading(false);
+        }
+    }
+
+    fetchMarketData();
+
+    // Clean-up function to prevent state updates on unmounted component
+    return () => {
+        isMounted = false;
+    };
+}, []);
+        
+const athNum = !isNaN(parseFloat(ath)) ? parseFloat(ath) : null;
+const atlNum = !isNaN(parseFloat(atl)) ? parseFloat(atl) : null;
+const emaNum = !isNaN(parseFloat(ema70)) ? parseFloat(ema70) : null;
+const isValid = emaNum !== null && emaNum > 0;
+
+
+        
         const getPreviousATL = (candles) => {
   if (!candles || candles.length < 2) return null;
 
@@ -174,27 +210,6 @@ export default function Home() {
                         gapPercent: gapPercent.toFixed(2),
                 };
         };
-
-        useEffect(() => {
-                async function fetchMarketData() {
-                        try {
-                                const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin');
-                                const data = await res.json();
-                                setAth(data.market_data.ath.usd);
-                                setAtl(data.market_data.atl.usd);
-                        } catch (error) {
-                                console.error('Failed to fetch market data:', error);
-                        } finally {
-                                setLoading(false);
-                        }
-                }
-                fetchMarketData();
-        }, []);
-
-        const athNum = parseFloat(ath);
-        const atlNum = parseFloat(atl);
-        const emaNum = parseFloat(ema70);
-        const isValid = !isNaN(emaNum) && emaNum > 0;
 
         const previousATLInfo = getPreviousATL(weeklyCandles);
         const previousATHInfo = getPreviousATH(weeklyCandles);
