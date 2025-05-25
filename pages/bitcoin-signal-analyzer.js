@@ -436,51 +436,7 @@ const computeStrongBearishSetup = (breakdownATL) => {
 
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
-        
-let bearishConfirmed = false;
-
-if (previousATLInfo && currentATLInfo) {
-  bearishConfirmed = isStrongBearishContinuation({
-    previousATL: previousATLInfo.price,
-    ema70AtPreviousATL: previousATLInfo.ema70,
-    currentATL: currentATLInfo.price,
-    atlSignal: currentATLInfo.classification,
-    previousATLClassification: previousATLInfo.classification,
-    currentATLClassification: currentATLInfo.classification
-  }, weeklyData);
-} else {
-  console.warn('ATL info missing; skipping bearish continuation check.');
-}
-
-
-const athSignalRaw = getAthSignal(currentATH, ema70AtPreviousATH);
-
-        const upgradedToStrong = isStrongBullishContinuation(
-  
-  previousATH,
-  ema70AtPreviousATH,
-  currentATH,
-  athSignalRaw
-);
-
-const finalAthSignal = upgradedToStrong ? 'Strong Bullish Continuation' : athSignalRaw;
-
-
-const atlSignalRaw = getAtlSignal(currentATL, ema70AtPreviousATL);
-
-        const upgradedToStrongBearish = isStrongBearishBreakdown(
-  
-  previousATL,
-  ema70AtPreviousATL,
-  currentATL,
-  atlSignalRaw
-);
-
-const finalAtlSignal = upgradedToStrongBearish ? 'Strong Bearish Breakdown' : atlSignalRaw;
-
-
-        
-        
+               
 
 const getSignalColor = (signal) => {
         if (signal.includes('Bullish')) return 'text-green-700';
