@@ -447,11 +447,11 @@ const isStrongBearishContinuation = (input, weeklyData) => {
 
   // Reversal Confirmed
   return 'Reversal Confirmed';
-};
+};    
         
 
 // Trade setup for strong bearish
-const computeStrongBearishSetup = (breakdownATL) => {
+const BearishBreakdown = (breakdownATL) => {
   const entry = breakdownATL * 1.005;
   const stopLoss = entry * 1.03;
   const takeProfit1 = entry * 0.90;
@@ -610,7 +610,7 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
     {bullishConfirmed}
   </span>
 </p>
-{bullishConfirmed === 'Strong Bullish Continuation' && (
+{bearishBreakdown === 'Strong Bullish Continuation' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
     <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
     <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
