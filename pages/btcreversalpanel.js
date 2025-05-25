@@ -10,7 +10,6 @@ export default function Home() {
         const [ema70, setEma70] = useState('');
         const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
-        const [weeklyData, setWeeklyData] = useState([]);
 
         useEffect(() => {
                 const fetchBTCWeeklyCandles = async () => {
@@ -165,126 +164,9 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
+        const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal');
+        const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-        const previousATLInfo = getPreviousATL(weeklyCandles);
-        const previousATHInfo = getPreviousATH(weeklyCandles);
-        const currentATH = findRecentATH();
-        const currentATHInfo = findRecentATH(weeklyData);
-const previousATH = previousATHInfo?.price;
-const ema70AtPreviousATH = previousATHInfo?.ema70;
-        const currentATL = findRecentATL();
-        const currentATLInfo = findRecentATL(weeklyData);
-const previousATL = previousATLInfo?.price;
-const ema70AtPreviousATL = previousATLInfo?.ema70;
-        
-
-        
-        
-        const calculateGapPercent = (price, ema) => {
-  if (!price || !ema) return 0;
-  return ((price - ema) / ema) * 100;
-};
-
-const getAthSignal = (newATH, ema70AtPreviousATH) => {
-  if (!newATH || !ema70AtPreviousATH) return 'N/A';
-  const gap = calculateGapPercent(newATH, ema70AtPreviousATH);
-
-  if (gap > 120) return 'Strong Bullish Continuation';
-  if (gap > 100) return 'Bullish Continuation';
-  if (gap > 80) return 'Neutral Zone';
-  return 'Sell Zone (Possible Reversal)';
-};
-
-const isStrongBullishContinuation = (input, weeklyData) => {
-  const {
-    previousATH,
-    ema70AtPreviousATH,
-    currentATH,
-    athSignal,
-    previousATHClassification,
-    currentATHClassification,
-  } = input || {};
-
-  const bounceNearEMA = weeklyData?.some(c => {
-    if (!c.ema70 || !c.low) return false;
-    return Math.abs(c.low - c.ema70) / c.ema70 <= 0.03;
-  });
-
-  if (!ema70AtPreviousATH || !currentATH) return 'Reversal Confirmed';
-
-  const newAthGap = calculateGapPercent(currentATH, ema70AtPreviousATH);
-
-  if (
-    athSignal === 'Bullish Continuation' &&
-    previousATHClassification === 'Bullish Continuation' &&
-    currentATHClassification === 'Possible Reversal' &&
-    previousATH &&
-    bounceNearEMA &&
-    currentATH > previousATH &&
-    newAthGap > 80
-  ) {
-    return 'Strong Bullish Continuation';
-  }
-
-  if (
-    athSignal === 'Bullish Continuation' &&
-    ['Bullish Continuation', 'Neutral Zone'].includes(previousATHClassification) &&
-    bounceNearEMA
-  ) {
-    return 'Bullish Continuation';
-  }
-
-  if (newAthGap > 60 && newAthGap <= 80) return 'Neutral Zone';
-  if (newAthGap > 30 && newAthGap <= 60) return 'Sell Zone (Possible Reversal)';
-  return 'Reversal Confirmed';
-};
-
-// Combine everything here
-const analyzeATHBreakout = (weeklyData) => {
-  const previousATHInfo = findPreviousATH(weeklyData);
-  const currentATHInfo = findNewATH(weeklyData);
-
-  if (!previousATHInfo || !currentATHInfo?.price) {
-    console.warn('ATH info missing; skipping bullish continuation check.');
-    return {
-      signal: 'N/A',
-      classification: 'Reversal Confirmed',
-      currentATHInfo,
-      previousATHInfo,
-    };
-  }
-
-  const signal = getAthSignal(currentATHInfo.price, previousATHInfo.ema70);
-
-  const classification = isStrongBullishContinuation({
-    previousATH: previousATHInfo.price,
-    ema70AtPreviousATH: previousATHInfo.ema70,
-    currentATH: currentATHInfo.price,
-    athSignal: signal,
-    previousATHClassification: previousATHInfo.classification,
-    currentATHClassification: currentATHInfo.classification,
-  }, weeklyData);
-
-  return {
-    signal,
-    classification,
-    currentATHInfo,
-    previousATHInfo,
-  };
-};
-
-const result = analyzeATHBreakout(weeklyData);
-console.log('ATH Signal:', result.signal);
-console.log('Final Classification:', result.classification);
-
-
-
-
-        
-
-        
-
-        
 
         const computeBullishLevels = () => {
                 const ema = parseFloat(ema70);
@@ -347,9 +229,6 @@ console.log('Final Classification:', result.classification);
                 </h1>
                 <p className="text-lg mb-6 text-gray-300">
                         <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
-                </p>
-                <p className="text-lg mb-6 text-gray-300">
-                        <span className="font-semibold text-white">{result}.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
                 </p>
                 <div className="border-l-4 border-yellow-400 pl-4 text-sm text-yellow-100 italic">
                         Plan smarter. Trade better.
@@ -454,5 +333,5 @@ console.log('Final Classification:', result.classification);
         </div>
 
         );
-}
-
+                        }
+                                
