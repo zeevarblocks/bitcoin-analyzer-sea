@@ -317,9 +317,7 @@ const getAtlSignal = (newATL, ema70AtPreviousATL1) => {
     : 'Buy Zone (Possible Reversal)';
 };    
 
-
-const athSignal = getATHSignal(currentATH, ema70AtPreviousATH);
-          
+       
 
         
 // Detect Strong Bullish Continuation
