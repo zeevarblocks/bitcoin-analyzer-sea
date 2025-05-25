@@ -599,7 +599,7 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         )}
 
                                         <p>ATH: ${athNum.toFixed(2)}</p>
-                                        <p>Gap: {athGap.toFixed(2)}%</p                            
+                                        <p>Gap: {athGap.toFixed(2)}%</p>                            
                                         
 <p>
   Market Zone (ATH):{' '}
