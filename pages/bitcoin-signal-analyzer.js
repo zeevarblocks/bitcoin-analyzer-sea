@@ -547,7 +547,37 @@ const bearishReversal = computeBearishReversalFromAth();
 const bullish = computeBullishLevels();
 const bearish = computeBearishLevels();
 
-return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
+return (
+        
+         <div>
+    <h2>Signal Output</h2>
+    <p>Recent ATH: {recentATHData?.price}</p>
+    <p>Gap to EMA70: {recentATHData?.gap.toFixed(2)}%</p>
+    <p>Previous ATH: {previousATHData?.price} on {previousATHData?.date}</p>
+    <p>Previous ATL: {previousATLData?.price} on {previousATLData?.date}</p>
+    <p>Market Zone: {zone}</p>
+    <pre>{JSON.stringify(setup, null, 2)}</pre>
+  </div>
+
+        {recentATHData && (
+  <div className="mt-4 bg-gray-100 p-4 rounded">
+    <h2 className="text-xl font-bold">Signal Summary</h2>
+    <p>Recent ATH: {recentATHData.price}</p>
+    <p>EMA70 at ATH: {recentATHData.emaAtATH.toFixed(2)}</p>
+    <p>Gap to EMA70: {recentATHData.gap.toFixed(2)}%</p>
+    <p>Market Zone: {zone}</p>
+    <pre>{JSON.stringify(setup, null, 2)}</pre>
+  </div>
+)}
+
+        
+        
+        
+        
+        
+        
+        
+        <div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
         <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
                 Bitcoin Signal Analyzer
         </h1>
