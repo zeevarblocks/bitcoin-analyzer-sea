@@ -280,30 +280,6 @@ const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
 const previousATL1 = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
 const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
 const ema70AtPreviousATL1 = weeklyData[indexOfPrevATL]?.ema70 || 0;
-
-const athSignal = getAthSignal(currentATH, ema70AtPreviousATH);
-
-const finalAthSignal = getFinalAthSignal({
-  previousATH,
-  ema70AtPreviousATH,
-  currentATH,
-  athSignal,
-  previousATHClassification,
-  currentATHClassification
-}, weeklyData);
-
-        const atlSignal = getAtlSignal(currentATL, ema70AtPreviousATL);
-
-const finalAtlSignal = getFinalAtlSignal({
-  previousATL,
-  ema70AtPreviousATL,
-  currentATL,
-  atlSignal,
-  previousATLClassification,
-  currentATLClassification
-}, weeklyData);
-
-
         
 // ATH signal logic
 const getAthSignal = (newATH, ema70AtPreviousATH1) => {
@@ -339,7 +315,7 @@ const getAtlSignal = (newATL, ema70AtPreviousATL1) => {
 
         
 // Detect Strong Bullish Continuation
-const getFinalSignal = (input, weeklyData) => {
+const isStrongBullishContinuation = (input, weeklyData) => {
   const {
     previousATH,
     ema70AtPreviousATH,
@@ -397,12 +373,27 @@ const getFinalSignal = (input, weeklyData) => {
   return 'Reversal Confirmed';
 };
 
+let bullishConfirmed = false;
+
+if (previousATHInfo && currentATHInfo) {
+  bullishConfirmed = isStrongBullishContinuation({
+    previousATH: previousATHInfo.price,
+    ema70AtPreviousATH: previousATHInfo.ema70,
+    currentATH: currentATHInfo.price,
+    athSignal: currentATHInfo.classification,
+    previousATHClassification: previousATHInfo.classification,
+    currentATHClassification: currentATHInfo.classification
+  }, weeklyData);
+} else {
+  console.warn('ATH info missing; skipping bullish continuation check.');
+}
+
         
         
         
 
 // Detect Strong Bearish Continuation
-const getFinalATLSignal = (input, weeklyData) => {
+const isStrongBearishContinuation = (input, weeklyData) => {
   const {
     previousATL,
     ema70AtPreviousATL,
@@ -470,6 +461,21 @@ const computeStrongBearishSetup = (breakdownATL) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
 
+
+     let bearishConfirmed = false;
+
+if (previousATLInfo && currentATLInfo) {
+  bearishConfirmed = isStrongBearishContinuation({
+    previousATL: previousATLInfo.price,
+    ema70AtPreviousATL: previousATLInfo.ema70,
+    currentATL: currentATLInfo.price,
+    atlSignal: currentATLInfo.classification,
+    previousATLClassification: previousATLInfo.classification,
+    currentATLClassification: currentATLInfo.classification
+  }, weeklyData);
+} else {
+  console.warn('ATL info missing; skipping bearish continuation check.');
+}   
         
         
 
