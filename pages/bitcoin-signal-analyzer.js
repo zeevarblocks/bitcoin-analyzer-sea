@@ -609,7 +609,7 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
     {finalAthSignal}
   </span>
 </p>
-{finalAthSignal === 'Strong Bullish Continuation' && (
+{bullishConfirmed === 'Strong Bullish Continuation' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
     <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
     <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
@@ -683,7 +683,7 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
     {finalAtlSignal}
   </span>
 </p>
-{finalAtlSignal === 'Strong Bearish Breakdown' && (
+{bearishConfirmed === 'Strong Bearish Breakdown' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bearish Breakdown')}`}>
     <p className="font-semibold">Trade Setup (Strong Bearish Breakdown):</p>
     <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
