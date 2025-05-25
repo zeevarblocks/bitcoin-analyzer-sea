@@ -603,11 +603,11 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         
 <p>
   Market Zone (ATH):{' '}
-  <span className={`font-bold ${getSignalColor(bullishConfirmed)}`}>
-    {bullishConfirmed}
+  <span className={`font-bold ${getSignalColor(isStrongBullishContinuation)}`}>
+    {isStrongBullishContinuation}
   </span>
 </p>
-{bullishConfirmed === 'Strong Bullish Continuation' && (
+{isStrongBullishContinuation === 'Strong Bullish Continuation' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
     <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
     <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
@@ -684,9 +684,9 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
 {bearishConfirmed === 'Strong Bearish Breakdown' && (
   <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bearish Breakdown')}`}>
     <p className="font-semibold">Trade Setup (Strong Bearish Breakdown):</p>
-    <p>Entry: ${strongBearish.entry.toFixed(2)}</p>
-    <p>SL: ${strongBearish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${strongBearish.takeProfit1.toFixed(2)} to ${strongBearish.takeProfit2.toFixed(2)}</p>
+    <p>Entry: ${bullish.entry.toFixed(2)}</p>
+    <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+    <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
   </div>
 )}
 
