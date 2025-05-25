@@ -378,7 +378,7 @@ let bullishConfirmed = false;
 if (previousATHInfo && currentATHInfo) {
   bullishConfirmed = isStrongBullishContinuation({
     previousATH: previousATHInfo.price,
-    ema70AtPreviousATH: previousATHInfo.ema70,
+    ema70AtPreviousATH1: previousATHInfo.ema70,
     currentATH: currentATHInfo.price,
     athSignal: currentATHInfo.classification,
     previousATHClassification: previousATHInfo.classification,
@@ -467,7 +467,7 @@ const computeStrongBearishSetup = (breakdownATL) => {
 if (previousATLInfo && currentATLInfo) {
   bearishConfirmed = isStrongBearishContinuation({
     previousATL: previousATLInfo.price,
-    ema70AtPreviousATL: previousATLInfo.ema70,
+    ema70AtPreviousATL1: previousATLInfo.ema70,
     currentATL: currentATLInfo.price,
     atlSignal: currentATLInfo.classification,
     previousATLClassification: previousATLInfo.classification,
