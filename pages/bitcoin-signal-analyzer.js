@@ -265,12 +265,25 @@ const ema70AtPreviousATL = previousATLInfo?.ema70;
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        
-// Signal classifier for ATH
-const getAthSignal = (currentATH, ema70AtPreviousATH) => {
-  if (!ema70AtPreviousATH || !currentATH) return 'N/A';
+    // ATH calculations
+const newATH = Math.max(...closes);
+const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
+const previousATH = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
+const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
+const ema70AtPreviousATH = weeklyData[indexOfPrevATH]?.ema70 || 0;
 
-  const athGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+// ATL calculations
+const newATL = Math.min(...closes);
+const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
+const previousATL = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
+const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL);
+const ema70AtPreviousATL = weeklyData[indexOfPrevATL]?.ema70 || 0;
+
+// ATH signal logic
+const getAthSignal = (newATH, ema70AtPreviousATH) => {
+  if (!ema70AtPreviousATH || !newATH) return 'N/A';
+
+  const athGap = ((newATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
   return athGap > 120
     ? 'Strong Bullish Continuation'
@@ -281,20 +294,21 @@ const getAthSignal = (currentATH, ema70AtPreviousATH) => {
     : 'Sell Zone (Possible Reversal)';
 };
 
-// Signal classifier for ATL
-const getAtlSignal = (currentATL, ema70AtPreviousATL) => {
-  if (!ema70AtPreviousATL || !currentATL) return 'N/A';
+// ATL signal logic
+const getAtlSignal = (newATL, ema70AtPreviousATL) => {
+  if (!ema70AtPreviousATL || !newATL) return 'N/A';
 
-  const atlGap = ((ema70AtPreviousATL - currentATL) / ema70AtPreviousATL) * 100;
+  const atlGap = ((ema70AtPreviousATL - newATL) / ema70AtPreviousATL) * 100;
 
   return atlGap > 120
     ? 'Strong Bearish Continuation'
     : atlGap > 100
-    ? 'Bearish Breakdown'
+    ? 'Bearish Continuation'
     : atlGap > 80
     ? 'Neutral Zone'
     : 'Buy Zone (Possible Reversal)';
-};
+};    
+
 
 // Detect Strong Bullish Continuation
 const isStrongBullishContinuation = (input, weeklyData) => {
