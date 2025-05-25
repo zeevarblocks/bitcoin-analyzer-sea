@@ -351,7 +351,7 @@ const isStrongBullishContinuation = (input, weeklyData) => {
 
 let bullishConfirmed = null;
 
-if (previousATHInfo && currentATHInfo) {
+if (previousATHInfo && newATHInfo) {
   bullishConfirmed = isStrongBullishContinuation({
     previousATH: previousATHInfo.price,
     ema70AtPreviousATH: previousATHInfo.ema70,
