@@ -165,6 +165,19 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
+
+        const previousATLInfo = getPreviousATL(weeklyCandles);
+        const previousATHInfo = getPreviousATH(weeklyCandles);
+        const atlInfo = findRecentATL(weeklyCandles);
+        const athInfo = findRecentATH(weeklyCandles);
+        const currentATH = findRecentATH();
+        const currentATHInfo = findRecentATH(weeklyData);
+const previousATH = previousATHInfo?.price;
+const ema70AtPreviousATH = previousATHInfo?.ema70;
+        const currentATL = findRecentATL();
+        const currentATLInfo = findRecentATL(weeklyData);
+const previousATL = previousATLInfo?.price;
+const ema70AtPreviousATL = previousATLInfo?.ema70;
         
 
         
