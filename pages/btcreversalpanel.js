@@ -10,6 +10,7 @@ export default function Home() {
         const [ema70, setEma70] = useState('');
         const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
+        const [weeklyData, setWeeklyData] = useState([]);
 
         useEffect(() => {
                 const fetchBTCWeeklyCandles = async () => {
