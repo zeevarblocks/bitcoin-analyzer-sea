@@ -270,22 +270,17 @@ const ema70AtPreviousATL = previousATLInfo?.ema70;
     // ATH calculations
 const newATH = Math.max(...closes);
 const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
-const previousATH1 = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
-const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH1);
-const ema70AtPreviousATH1 = weeklyData[indexOfPrevATH]?.ema70 || 0;
+
 
 // ATL calculations
 const newATL = Math.min(...closes);
 const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);
-const previousATL1 = sortedClosesLowToHigh[1] || sortedClosesLowToHigh[0];
-const indexOfPrevATL = weeklyData.findIndex(c => c.close === previousATL1);
-const ema70AtPreviousATL1 = weeklyData[indexOfPrevATL]?.ema70 || 0;
         
 // ATH signal logic
-const getAthSignal = (newATH, ema70AtPreviousATH1) => {
-  if (!ema70AtPreviousATH1 || !newATH) return 'N/A';
+const getAthSignal = (newATH, ema70AtPreviousATH) => {
+  if (!ema70AtPreviousATH || !newATH) return 'N/A';
 
-  const athGap = ((newATH - ema70AtPreviousATH1) / ema70AtPreviousATH1) * 100;
+  const athGap = ((newATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
   return athGap > 120
     ? 'Strong Bullish Continuation'
@@ -297,10 +292,10 @@ const getAthSignal = (newATH, ema70AtPreviousATH1) => {
 };
 
 // ATL signal logic
-const getAtlSignal = (newATL, ema70AtPreviousATL1) => {
-  if (!ema70AtPreviousATL1 || !newATL) return 'N/A';
+const getAtlSignal = (newATL, ema70AtPreviousATL) => {
+  if (!ema70AtPreviousATL || !newATL) return 'N/A';
 
-  const atlGap = ((ema70AtPreviousATL1 - newATL) / ema70AtPreviousATL1) * 100;
+  const atlGap = ((ema70AtPreviousATL - newATL) / ema70AtPreviousATL) * 100;
 
   return atlGap > 120
     ? 'Strong Bearish Continuation'
