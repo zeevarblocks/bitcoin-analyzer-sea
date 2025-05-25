@@ -312,20 +312,11 @@ const getAtlSignal = (newATL, ema70AtPreviousATL1) => {
 };    
 
 
+
+
+        
 // Detect Strong Bullish Continuation
-const getATHSignal = (currentATH, ema70AtPreviousATH) => {
-  if (!ema70AtPreviousATH || !currentATH) return 'Reversal Confirmed';
-
-  const athGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
-
-  if (athGap > 120) return 'Strong Bullish Continuation';
-  if (athGap > 100) return 'Bullish Continuation';
-  if (athGap > 80) return 'Neutral Zone';
-  if (athGap > 30) return 'Sell Zone (Possible Reversal)';
-  return 'Reversal Confirmed';
-};
-
-const getFinalATHSignal = (input, weeklyData) => {
+const getFinalSignal = (input, weeklyData) => {
   const {
     previousATH,
     ema70AtPreviousATH,
@@ -335,64 +326,59 @@ const getFinalATHSignal = (input, weeklyData) => {
     currentATHClassification
   } = input || {};
 
-  const bounceNearEMA = weeklyData?.some(c => {
-    if (!c.ema70) return false;
-    const diff = Math.abs(c.low - c.ema70);
-    return diff / c.ema70 <= 0.03;
+  // Check bounce near EMA70 (within 3%)
+  const bounceNearEMA = weeklyData?.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.low - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
   });
 
+  // Fallback if critical data missing
   if (!ema70AtPreviousATH || !currentATH) return 'Reversal Confirmed';
 
   const currentGap = ((currentATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
 
-  const isStrongBullish =
+  // Strong Bullish Continuation (all signals aligned)
+  if (
     athSignal === 'Bullish Continuation' &&
     previousATHClassification === 'Bullish Continuation' &&
     currentATHClassification === 'Possible Reversal' &&
     previousATH &&
     bounceNearEMA &&
     currentATH > previousATH &&
-    currentGap > 80;
+    currentGap > 80
+  ) {
+    return 'Strong Bullish Continuation';
+  }
 
-  if (isStrongBullish) return 'Strong Bullish Continuation';
-
-  const isBullish =
+  // Bullish Continuation (less strict)
+  if (
     athSignal === 'Bullish Continuation' &&
-    ['Bullish Continuation', 'Neutral Zone'].includes(previousATHClassification) &&
-    bounceNearEMA;
+    (previousATHClassification === 'Bullish Continuation' || previousATHClassification === 'Neutral Zone') &&
+    bounceNearEMA
+  ) {
+    return 'Bullish Continuation';
+  }
 
-  if (isBullish) return 'Bullish Continuation';
+  // Neutral Zone
+  if (currentGap > 60 && currentGap <= 80) {
+    return 'Neutral Zone';
+  }
 
-  if (currentGap > 60 && currentGap <= 80) return 'Neutral Zone';
-  if (currentGap > 30 && currentGap <= 60) return 'Sell Zone (Possible Reversal)';
+  // Sell Zone (possible weakening trend)
+  if (currentGap > 30 && currentGap <= 60) {
+    return 'Sell Zone (Possible Reversal)';
+  }
+
+  // Reversal Confirmed (very low gap or bearish signal)
   return 'Reversal Confirmed';
 };
-        const athSignal = getATHSignal(currentATH, ema70AtPreviousATH);
 
-const finalAthSignal = getFinalATHSignal({
-  previousATH,
-  ema70AtPreviousATH,
-  currentATH,
-  athSignal,
-  previousATHClassification,
-  currentATHClassification
-}, weeklyData);
+        
         
         
 
 // Detect Strong Bearish Continuation
-const getATLSignal = (currentATL, ema70AtPreviousATL) => {
-  if (!ema70AtPreviousATL || !currentATL) return 'Reversal Confirmed';
-
-  const atlGap = ((ema70AtPreviousATL - currentATL) / ema70AtPreviousATL) * 100;
-
-  if (atlGap > 120) return 'Strong Bearish Continuation';
-  if (atlGap > 100) return 'Bearish Continuation';
-  if (atlGap > 80) return 'Neutral Zone';
-  if (atlGap > 30) return 'Buy Zone (Possible Reversal)';
-  return 'Reversal Confirmed';
-};
-
 const getFinalATLSignal = (input, weeklyData) => {
   const {
     previousATL,
@@ -403,36 +389,50 @@ const getFinalATLSignal = (input, weeklyData) => {
     currentATLClassification
   } = input || {};
 
-  const rejectionNearEMA = weeklyData?.some(c => {
-    if (!c.ema70) return false;
-    const diff = Math.abs(c.high - c.ema70);
-    return diff / c.ema70 <= 0.03;
+  // Rejection near EMA70 (within 3%)
+  const rejectionNearEMA = weeklyData?.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.high - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
   });
 
   if (!ema70AtPreviousATL || !currentATL) return 'Reversal Confirmed';
 
   const currentGap = ((ema70AtPreviousATL - currentATL) / ema70AtPreviousATL) * 100;
 
-  const isStrongBearish =
+  // Strong Bearish Continuation
+  if (
     atlSignal === 'Bearish Continuation' &&
     previousATLClassification === 'Bearish Continuation' &&
     currentATLClassification === 'Possible Reversal' &&
     previousATL &&
     rejectionNearEMA &&
     currentATL < previousATL &&
-    currentGap > 80;
+    currentGap > 80
+  ) {
+    return 'Strong Bearish Continuation';
+  }
 
-  if (isStrongBearish) return 'Strong Bearish Continuation';
-
-  const isBearish =
+  // Bearish Continuation
+  if (
     atlSignal === 'Bearish Continuation' &&
-    ['Bearish Continuation', 'Neutral Zone'].includes(previousATLClassification) &&
-    rejectionNearEMA;
+    (previousATLClassification === 'Bearish Continuation' || previousATLClassification === 'Neutral Zone') &&
+    rejectionNearEMA
+  ) {
+    return 'Bearish Continuation';
+  }
 
-  if (isBearish) return 'Bearish Continuation';
+  // Neutral Zone
+  if (currentGap > 60 && currentGap <= 80) {
+    return 'Neutral Zone';
+  }
 
-  if (currentGap > 60 && currentGap <= 80) return 'Neutral Zone';
-  if (currentGap > 30 && currentGap <= 60) return 'Buy Zone (Possible Reversal)';
+  // Buy Zone (Possible Reversal)
+  if (currentGap > 30 && currentGap <= 60) {
+    return 'Buy Zone (Possible Reversal)';
+  }
+
+  // Reversal Confirmed
   return 'Reversal Confirmed';
 };
         
@@ -447,16 +447,7 @@ const computeStrongBearishSetup = (breakdownATL) => {
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
 
-        const atlSignal = getATLSignal(currentATL, ema70AtPreviousATL);
-
-const finalAtlSignal = getFinalATLSignal({
-  previousATL,
-  ema70AtPreviousATL,
-  currentATL,
-  atlSignal,
-  previousATLClassification,
-  currentATLClassification
-}, weeklyData);
+        
         
 
 const getSignalColor = (signal) => {
