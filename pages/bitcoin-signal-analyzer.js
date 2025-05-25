@@ -317,7 +317,8 @@ const isStrongBullishContinuation = (input, weeklyData) => {
     currentATH,
     athSignal,
     previousATHClassification,
-    currentATHClassification
+    currentATHClassification,
+          newATH
   } = input || {};
 
   // Check bounce near EMA70 (within 3%)
@@ -395,7 +396,9 @@ const isStrongBearishContinuation = (input, weeklyData) => {
     currentATL,
     atlSignal,
     previousATLClassification,
-    currentATLClassification
+    currentATLClassification,
+          newATL
+          
   } = input || {};
 
   // Rejection near EMA70 (within 3%)
