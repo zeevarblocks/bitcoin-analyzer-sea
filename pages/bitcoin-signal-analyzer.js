@@ -462,7 +462,7 @@ const computeStrongBearishSetup = (breakdownATL) => {
 };
 
 
-     let bearishConfirmed = false;
+     let bearishConfirmed = null;
 
 if (previousATLInfo && currentATLInfo) {
   bearishConfirmed = isStrongBearishContinuation({
@@ -480,17 +480,19 @@ if (previousATLInfo && currentATLInfo) {
         
 
 const getSignalColor = (signal) => {
-        if (signal.includes('Bullish')) return 'text-green-700';
-        if (signal.includes('Bearish')) return 'text-red-700';
-        if (signal.includes('Neutral')) return 'text-yellow-600';
-        return 'text-gray-600';
+  if (typeof signal !== 'string') return 'text-gray-600';
+  if (signal.includes('Bullish')) return 'text-green-700';
+  if (signal.includes('Bearish')) return 'text-red-700';
+  if (signal.includes('Neutral')) return 'text-yellow-600';
+  return 'text-gray-600';
 };
 
 const getBoxColor = (signal) => {
-        if (signal.includes('Bullish')) return 'bg-green-50 border-green-200 text-green-800';
-        if (signal.includes('Bearish')) return 'bg-red-50 border-red-200 text-red-800';
-        if (signal.includes('Neutral')) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-        return 'bg-gray-100 border-gray-300 text-gray-800';
+  if (typeof signal !== 'string') return 'bg-gray-100 border-gray-300 text-gray-800';
+  if (signal.includes('Bullish')) return 'bg-green-50 border-green-200 text-green-800';
+  if (signal.includes('Bearish')) return 'bg-red-50 border-red-200 text-red-800';
+  if (signal.includes('Neutral')) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+  return 'bg-gray-100 border-gray-300 text-gray-800';
 };
 
 
@@ -605,8 +607,8 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         
 <p>
   Market Zone (ATH):{' '}
-  <span className={`font-bold ${getSignalColor(isStrongBullishContinuation)}`}>
-    {isStrongBullishContinuation}
+  <span className={`font-bold ${getSignalColor(bullishConfirmed)}`}>
+    {bullishConfirmed}
   </span>
 </p>
 {bullishConfirmed === 'Strong Bullish Continuation' && (
