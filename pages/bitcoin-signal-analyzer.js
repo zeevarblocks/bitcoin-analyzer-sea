@@ -10,7 +10,7 @@ export default function Home() {
         const [ema70, setEma70] = useState('');
         const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
-        const [weeklyData, setWeeklyData] = useState(null);
+        const [weeklyData, setWeeklyData] = useState([]);
 
         useEffect(() => {
                 const fetchBTCWeeklyCandles = async () => {
@@ -268,7 +268,7 @@ const ema70AtPreviousATL = previousATLInfo?.ema70;
         const closes = weeklyData.map(c => c.close);
         
     // ATH calculations
-const newATH = Math.max(...closes);
+const closes = weeklyData?.map(c => c.close) || [];
 const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
 const previousATH1 = sortedClosesHighToLow[1] || sortedClosesHighToLow[0];
 const indexOfPrevATH = weeklyData.findIndex(c => c.close === previousATH);
