@@ -553,7 +553,6 @@ return (
     {/* Setup JSON Display */}
     <div className="bg-gray-200 p-4 rounded mb-4">
       <h2 className="text-lg font-bold">Trade Setup</h2>
-      <pre className="whitespace-pre-wrap">{JSON.stringify(setup, null, 2)}</pre>
     </div>
 
     {/* Conditional Signal Summary */}
@@ -580,4 +579,4 @@ return (
     )}
   </div>
 );
-    }
+}
