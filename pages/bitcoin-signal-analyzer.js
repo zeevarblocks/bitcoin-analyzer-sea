@@ -367,6 +367,16 @@ const getFinalATHSignal = (input, weeklyData) => {
   if (currentGap > 30 && currentGap <= 60) return 'Sell Zone (Possible Reversal)';
   return 'Reversal Confirmed';
 };
+        const athSignal = getATHSignal(currentATH, ema70AtPreviousATH);
+
+const finalAthSignal = getFinalATHSignal({
+  previousATH,
+  ema70AtPreviousATH,
+  currentATH,
+  athSignal,
+  previousATHClassification,
+  currentATHClassification
+}, weeklyData);
         
         
 
@@ -436,7 +446,18 @@ const computeStrongBearishSetup = (breakdownATL) => {
 
   return { entry, stopLoss, takeProfit1, takeProfit2 };
 };
-               
+
+        const atlSignal = getATLSignal(currentATL, ema70AtPreviousATL);
+
+const finalAtlSignal = getFinalATLSignal({
+  previousATL,
+  ema70AtPreviousATL,
+  currentATL,
+  atlSignal,
+  previousATLClassification,
+  currentATLClassification
+}, weeklyData);
+        
 
 const getSignalColor = (signal) => {
         if (signal.includes('Bullish')) return 'text-green-700';
