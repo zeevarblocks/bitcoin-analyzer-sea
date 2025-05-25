@@ -351,18 +351,6 @@ const isStrongBullishContinuation = (input, weeklyData) => {
 
 let bullishConfirmed = null;
 
-if (previousATHInfo && currentATHInfo) {
-  bullishConfirmed = isStrongBullishContinuation({
-    previousATH: previousATHInfo.price,
-    ema70AtPreviousATH: previousATHInfo.ema70,
-    currentATH: currentATHInfo.price,
-    athSignal: currentATHInfo.classification,
-    previousATHClassification: previousATHInfo.classification,
-    currentATHClassification: currentATHInfo.classification
-  }, weeklyData);
-} else {
-  console.warn('ATH info missing; skipping bullish continuation check.');
-}
 
         
 // Detect Strong Bearish Continuation
