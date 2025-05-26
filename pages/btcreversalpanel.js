@@ -344,6 +344,7 @@ const getPreviousATL = (candles) => {
     time: new Date(athCandle.time).toLocaleDateString()
   };
 }; 
+        const { previous, recent, finalClassification } = resolveFinalATHSignal(candles);
 
 
         const getATLSignal = (candles, { type }) => {
@@ -372,6 +373,7 @@ const getPreviousATL = (candles) => {
     time: new Date(atlCandle.time).toLocaleDateString()
   };
 };
+const { previous, recent, finalClassification } = resolveFinalATLSignal(candles);
         
 
 
