@@ -36,7 +36,7 @@ const detectBullishReversal = (data) => {
       atl: atlPrice,
       ema14: latest.ema14,
       ema70: latest.ema70,
-      time: new Date(latest.time).toLocaleDateString(),
+      time: new Date(latest.time).toLocaleString(),
       candle: latest
     };
   }
@@ -60,22 +60,18 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
-// Fetch candles from CoinGecko
+// Fetch 15m candles from Binance
 async function fetchCandleData() {
   try {
-    const coinId = 'bitcoin';
-    const vsCurrency = 'usd';
-    const days = 30;
-
-    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=${vsCurrency}&days=${days}`;
+    const url = `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=500`;
     const { data } = await axios.get(url);
 
     const candles = data.map(c => ({
       time: c[0],
-      open: c[1],
-      high: c[2],
-      low: c[3],
-      close: c[4]
+      open: parseFloat(c[1]),
+      high: parseFloat(c[2]),
+      low: parseFloat(c[3]),
+      close: parseFloat(c[4])
     }));
 
     const ema14Array = calculateEMA(candles, 14);
@@ -92,7 +88,7 @@ async function fetchCandleData() {
   }
 }
 
-// Main React component (no async here!)
+// Main React component
 export default function Home({ candles, result, error }) {
   if (error) {
     return (
@@ -104,7 +100,7 @@ export default function Home({ candles, result, error }) {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector</h1>
+      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector (15m)</h1>
 
       <div className="bg-gray-100 p-4 rounded shadow">
         {result.valid ? (
@@ -146,4 +142,4 @@ export async function getServerSideProps() {
       }
     };
   }
-    }
+                                         }
