@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Home() { const [ath, setAth] = useState(null); const [atl, setAtl] = useState(null); const [ema70, setEma70] = useState(''); const [loading, setLoading] = useState(true);
 
-const weeklyData = [ { open: 30000, high: 32000, low: 28000, close: 31000, ema14: 29500, ema70: 30000 }, { open: 31000, high: 33000, low: 29000, close: 32500, ema14: 30500, ema70: 31000 }, { open: 32500, high: 33500, low: 30000, close: 31000, ema14: 31000, ema70: 32000 }, { open: 31000, high: 31500, low: 25000, close: 26000, ema14: 27000, ema70: 27500 }, { open: 26000, high: 27000, low: 24000, close: 26500, ema14: 26000, ema70: 27000 }, { open: 26500, high: 28000, low: 25500, close: 27800, ema14: 26500, ema70: 27200 }, ];
+export default function BitcoinSignalAnalyzer() {
+    const [ath, setAth] = useState('');
+    const [atl, setAtl] = useState('');
+    const [ema70, setEma70] = useState('');
+    const [currentPrice, setCurrentPrice] = useState('');
 
-const findValidATL = (data) => { if (!data || data.length < 100) return null; const last100 = data.slice(-100); const validBearishCandles = last100.filter(candle => candle.ema14 < candle.ema70); if (validBearishCandles.length < 100) return null; let lowest = validBearishCandles[0].low; validBearishCandles.forEach(candle => { if (candle.low < lowest) lowest = candle.low; }); return lowest; };
 
-const findValidATH = (data) => { if (!data || data.length < 100) return null; const last100 = data.slice(-100); const validBullishCandles = last100.filter(candle => candle.ema14 > candle.ema70); if (validBullishCandles.length < 100) return null; let highest = validBullishCandles[0].high; validBullishCandles.forEach(candle => { if (candle.high > highest) highest = candle.high; }); return highest; };
 
-useEffect(() => { async function fetchMarketData() { try { const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin'); const data = await res.json(); setAth(data.market_data.ath.usd); setAtl(data.market_data.atl.usd); } catch (error) { console.error('Failed to fetch market data:', error); } finally { setLoading(false); } } fetchMarketData(); }, []);
+    const computeAthGap = () => {
+        const athNum = parseFloat(ath);
+        const emaNum = parseFloat(ema70);
+        if (isNaN(athNum) || isNaN(emaNum) || emaNum === 0) return 0;
+        return ((athNum - emaNum) / emaNum) * 100;
+    };
 
-const athNum = parseFloat(ath); const atlNum = parseFloat(atl); const emaNum = parseFloat(ema70); const isValid = !isNaN(emaNum) && emaNum > 0;
+    const computeAtlGap = () => {
+        const atlNum = parseFloat(atl);
+        const emaNum = parseFloat(ema70);
+        if (isNaN(atlNum) || isNaN(emaNum) || atlNum === 0) return 0;
+        return ((emaNum - atlNum) / atlNum) * 100;
+    };
 
-const atlWeeklyNum = findValidATL(weeklyData); const athWeeklyNum = findValidATH(weeklyData); const isValidAtl = atlWeeklyNum !== null; const isValidAth = athWeeklyNum !== null;
+    const getAthSignal = () => (computeAthGap() > 100 ? 'Bullish Continuation' : 'Possible Reversal');
+    const getAtlSignal = () => (computeAtlGap() > 100 ? 'Bearish Continuation' : 'Possible Reversal');
 
-const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0; const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
-
-const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal'); const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
-
-const computeBullishLevels = () => {
+    const computeBullishLevels = () => {
         const ema = parseFloat(ema70);
         const athNum = parseFloat(ath);
         if (isNaN(ema) || isNaN(athNum)) return {};
@@ -73,90 +81,139 @@ const computeBullishLevels = () => {
     const bullish = computeBullishLevels();
     const bearish = computeBearishLevels();
 
-return ( <div className="p-6 space-y-6"> <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1> <p className="text-gray-700 text-center"> Analyze the Bitcoin market using ATH, ATL, and the 70 EMA on the 1W timeframe. </p>
+    return (
 
-<div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
-    <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
-      <h2 className="text-lg font-semibold text-blue-400 mb-2">Mock EMA70 Input</h2>
-      <input
-        type="number"
-        placeholder="EMA70 (Manual Input)"
-        className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-        value={ema70}
-        onChange={e => setEma70(e.target.value)}
-      />
-    </div>
-  </div>
+        <div className="max-w-4xl mx-auto bg-gray-100 text-gray-900 rounded-xl shadow-xl p-6 space-y-6">
+            <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
-  {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
+            <p className="text-gray-700 text-center">
+                Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
+            </p>
 
-  {!loading && isValid && (
-    <>
-      {/* ATH Analysis */}
-      {isValidAth && (
-        <div className="space-y-2 text-gray-800">
-          <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
-          <p>ATH: ${athNum.toFixed(2)}</p>
-          <p>Gap: {athGap.toFixed(2)}%</p>
-          <p>
-            Market Zone:{' '}
-            <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
-              {getAthSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
-            </span>
-          </p>
-
-          {getAthSignal() === 'Bullish Continuation' ? (
-            <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-              <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-              <p>Entry: ${bullish.entry.toFixed(2)}</p>
-              <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+            {/* Ad-Safe Placement */}
+            <div style={{ margin: '2rem 0', backgroundColor: '#fff', padding: '1rem', borderRadius: '8px' }}>
+                {/* Example ad placeholder — replace with real ad component */}
+                <p style={{ textAlign: 'center', color: '#888' }}>[ Advertisement Space ]</p>
             </div>
-          ) : (
-            <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
-              <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
-              <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-              <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
+
+            {/* Grouped Input Sections (Dark Mode) */}
+            <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
+
+                {/* ATH (Bullish) Inputs */}
+                <div className="bg-gray-900 p-4 rounded-lg border border-green-600">
+                    <h2 className="text-lg font-semibold text-green-400 mb-2">
+                        Bullish Analysis (ATH vs EMA70)
+                    </h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <input
+                            type="number"
+                            placeholder="All-Time High (ATH)"
+                            className="bg-gray-800 text-white placeholder-gray-500 border border-green-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            onChange={e => setAth(e.target.value)}
+                        />
+                        <input
+                            type="number"
+                            placeholder="EMA70"
+                            className="bg-gray-800 text-white placeholder-gray-500 border border-green-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            onChange={e => setEma70(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                {/* ATL (Bearish) Inputs */}
+                <div className="bg-gray-900 p-4 rounded-lg border border-red-600">
+                    <h2 className="text-lg font-semibold text-red-400 mb-2">
+                        Bearish Analysis (ATL vs EMA70)
+                    </h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <input
+                            type="number"
+                            placeholder="All-Time Low (ATL)"
+                            className="bg-gray-800 text-white placeholder-gray-500 border border-red-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            onChange={e => setAtl(e.target.value)}
+                        />
+                        <input
+                            type="number"
+                            placeholder="EMA70"
+                            className="bg-gray-800 text-white placeholder-gray-500 border border-red-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            onChange={e => setEma70(e.target.value)}
+                        />
+                    </div>
+                </div>
             </div>
-          )}
+
+            {/* ATH Signal Block */}
+            <div className="space-y-2 text-gray-800">
+                <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
+                <p>Gap: {computeAthGap().toFixed(2)}%</p>
+                <p>
+                    Signal:{' '}
+                    <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                        {getAthSignal()}
+                    </span>
+                </p>
+                <p className="text-sm text-gray-700">
+                    {getAthSignal() === 'Bullish Continuation'
+                        ? 'Price is trending above long-term resistance. Momentum is strong; consider watching for breakout confirmations.'
+                        : 'Price may be weakening. A pullback or trend reversal could be developing. Monitor weekly candles closely.'}
+                </p>
+                {getAthSignal() === 'Bullish Continuation' && bullish.entry && (
+                    <div className="text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 space-y-1">
+                        <p className="font-semibold text-blue-800">Suggested Trade Levels (Bullish):</p>
+                        <p>Entry Point: <span className="font-medium text-gray-800">${bullish.entry.toFixed(2)}</span></p>
+                        <p>Stop Loss: <span className="font-medium text-gray-800">${bullish.stopLoss.toFixed(2)}</span></p>
+                        <p>Take Profit: <span className="font-medium text-gray-800">${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</span></p>
+                    </div>
+                )}
+
+                {getAthSignal() === 'Possible Reversal' && bearishReversal.entry && (
+                    <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
+                        <p className="font-semibold text-yellow-800">Suggested Trade Levels (Bearish - Based on ATH Reversal):</p>
+                        <p>Entry Point: <span className="font-medium text-gray-800">${bearishReversal.entry.toFixed(2)}</span></p>
+                        <p>Stop Loss: <span className="font-medium text-gray-800">${bearishReversal.stopLoss.toFixed(2)}</span></p>
+                        <p>Take Profit: <span className="font-medium text-gray-800">${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</span></p>
+                    </div>
+                )}
+            </div>
+
+            {/* ATL Signal Block */}
+            <div className="space-y-2 text-gray-800">
+                <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
+                <p>Gap: {computeAtlGap().toFixed(2)}%</p>
+                <p>
+                    Signal:{' '}
+                    <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold'}>
+                        {getAtlSignal()}
+                    </span>
+                </p>
+                <p className="text-sm text-gray-700">
+                    {getAtlSignal() === 'Bearish Continuation'
+                        ? 'Price remains under long-term pressure. Trend continuation likely unless strong reversal patterns emerge.'
+                        : 'Price may be rebounding from historic lows. Watch for a higher low structure and rising EMA support.'}
+                </p>
+                {getAtlSignal() === 'Bearish Continuation' && bearish.entry && (
+                    <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
+                        <p className="font-semibold text-red-800">Suggested Trade Levels (Bearish):</p>
+                        <p>Entry Point: <span className="font-medium text-gray-800">${bearish.entry.toFixed(2)}</span></p>
+                        <p>Stop Loss: <span className="font-medium text-gray-800">${bearish.stopLoss.toFixed(2)}</span></p>
+                        <p>Take Profit: <span className="font-medium text-gray-800">${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</span></p>
+                    </div>
+                )}
+
+                {getAtlSignal() === 'Possible Reversal' && bullishReversal.entry && (
+                    <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+                        <p className="font-semibold text-green-800">Suggested Trade Levels (Bullish - Based on ATL Reversal):</p>
+                        <p>Entry Point: <span className="font-medium text-gray-800">${bullishReversal.entry.toFixed(2)}</span></p>
+                        <p>Stop Loss: <span className="font-medium text-gray-800">${bullishReversal.stopLoss.toFixed(2)}</span></p>
+                        <p>Take Profit: <span className="font-medium text-gray-800">${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</span></p>
+                    </div>
+                )}
+            </div>
+            <footer className="text-sm text-center text-gray-500 pt-6 border-t border-gray-200">
+                <p>
+                    <strong>Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
+                </p>
+            </footer>
         </div>
-      )}
-
-      {/* ATL Analysis */}
-      {isValidAtl && (
-        <div className="space-y-2 text-gray-800">
-          <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
-          <p>ATL: ${atlNum.toFixed(2)}</p>
-          <p>Gap: {atlGap.toFixed(2)}%</p>
-          <p>
-            Market Zone:{' '}
-            <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
-              {getAtlSignal() === 'Bearish Continuation' ? '🔻 Still in the Sell Zone' : '🟢 Opportunity: Buy Zone'}
-            </span>
-          </p>
-
-          {getAtlSignal() === 'Bearish Continuation' ? (
-            <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
-              <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
-              <p>Entry: ${bearish.entry.toFixed(2)}</p>
-              <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
-            </div>
-          ) : (
-            <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-              <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-              <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-              <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-              <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
-            </div>
-          )}
-        </div>
-      )}
-    </>
-  )}
-</div>
-
-); }
-
-          
+    );
+            }
