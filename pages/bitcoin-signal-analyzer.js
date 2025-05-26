@@ -432,7 +432,7 @@ const findRecentATH = (data) => {
                                                 {previousATHInfo && (
                                                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
                                                                 <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
-                                                                <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
+                                                                <p className="text-sm text-gray-300">Price: ${(previousATHInfo.price?.toFixed(2) || "N/A")}</p>
                                                                 <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
                                                         </div>
                                                 )}
@@ -449,16 +449,16 @@ const findRecentATH = (data) => {
                                                 {getAthSignal() === 'Bullish Continuation' ? (
                                                         <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
                                                                 <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+                                                                <p>Entry: ${(bullish.entry?.toFixed(2) || "N/A")}</p>
+                                                                <p>SL: ${(bullish.stopLoss?.toFixed(2) || "N/A")}</p>
+                                                                <p>TP: ${(bullish.takeProfit1?.toFixed(2) || "N/A")} to ${(bullish.takeProfit2?.toFixed(2) || "N/A")}</p>
                                                         </div>
                                                 ) : (
                                                         <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
                                                                 <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
+                                                                <p>Entry: ${(bearishReversal.entry?.toFixed(2) || "N/A")}</p>
+                                                                <p>SL: ${(bearishReversal.stopLoss?.toFixed(2) || "N/A")}</p>
+                                                                <p>TP: ${(bearishReversal.takeProfit2?.toFixed(2) || "N/A")} to ${(bearishReversal.takeProfit1?.toFixed(2) || "N/A")}</p>
                                                         </div>
                                                 )}
                                         </div>
@@ -480,7 +480,7 @@ const findRecentATH = (data) => {
                                                 {previousATLInfo && (
                                                         <div className="text-sm bg-gray-800 p-3 rounded-lg border border-gray-700 text-gray-300 space-y-1">
                                                                 <p className="font-semibold text-gray-100">Previous ATL (Historical):</p>
-                                                                <p>Price: ${previousATLInfo.price.toFixed(2)}</p>
+                                                                <p>Price: ${(previousATLInfo.price?.toFixed(2) || "N/A")}</p>
                                                                 <p>Date: {previousATLInfo.time}</p>
                                                         </div>
                                                 )}
@@ -496,16 +496,16 @@ const findRecentATH = (data) => {
                                                 {getAtlSignal() === 'Bearish Continuation' ? (
                                                         <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
                                                                 <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
+                                                                <p>Entry: ${(bearish.entry?.toFixed(2) || "N/A")}</p>
+                                                                <p>SL: ${(bearish.stopLoss?.toFixed(2) || "N/A")}</p>
+                                                                <p>TP: ${(bearish.takeProfit2?.toFixed(2) || "N/A")} to ${(bearish.takeProfit1?.toFixed(2) || "N/A")}</p>
                                                         </div>
                                                 ) : (
                                                         <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
                                                                 <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
+                                                                <p>Entry: ${(bullishReversal.entry?.toFixed(2) || "N/A")}</p>
+                                                                <p>SL: ${(bullishReversal.stopLoss?.toFixed(2) || "N/A")}</p>
+                                                                <p>TP: ${(bullishReversal.takeProfit1?.toFixed(2) || "N/A")} to ${(bullishReversal.takeProfit2?.toFixed(2) || "N/A")}</p>
                                                         </div>
                                                 )}
                                         </div>
