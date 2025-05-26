@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-// Detect bullish reversal
+// Tell Next.js to render dynamically (not static HTML at build time)
+export const dynamic = "force-dynamic";
+
 const detectBullishReversal = (data) => {
   if (!data || data.length < 3) {
     return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
@@ -44,7 +46,6 @@ const detectBullishReversal = (data) => {
   return { valid: false, error: 'Current candle is not the ATL.' };
 };
 
-// Calculate EMA
 const calculateEMA = (data, period) => {
   const k = 2 / (period + 1);
   let emaArray = [];
@@ -61,34 +62,29 @@ const calculateEMA = (data, period) => {
 };
 
 async function fetchCandleData() {
-  try {
-    const coinId = 'bitcoin';
-    const vsCurrency = 'usd';
-    const days = 30;
+  const coinId = 'bitcoin';
+  const vsCurrency = 'usd';
+  const days = 30;
 
-    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=${vsCurrency}&days=${days}`;
-    const { data } = await axios.get(url);
+  const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=${vsCurrency}&days=${days}`;
+  const { data } = await axios.get(url);
 
-    const candles = data.map(c => ({
-      time: c[0],
-      open: c[1],
-      high: c[2],
-      low: c[3],
-      close: c[4]
-    }));
+  const candles = data.map(c => ({
+    time: c[0],
+    open: c[1],
+    high: c[2],
+    low: c[3],
+    close: c[4]
+  }));
 
-    const ema14Array = calculateEMA(candles, 14);
-    const ema70Array = calculateEMA(candles, 70);
+  const ema14Array = calculateEMA(candles, 14);
+  const ema70Array = calculateEMA(candles, 70);
 
-    return candles.map((c, i) => ({
-      ...c,
-      ema14: ema14Array[i] || c.close,
-      ema70: ema70Array[i] || c.close
-    }));
-  } catch (error) {
-    console.error(error);
-    return { error: error.message };
-  }
+  return candles.map((c, i) => ({
+    ...c,
+    ema14: ema14Array[i] || c.close,
+    ema70: ema70Array[i] || c.close
+  }));
 }
 
 export default async function Home() {
@@ -125,4 +121,4 @@ export default async function Home() {
       </div>
     </main>
   );
-}
+  }
