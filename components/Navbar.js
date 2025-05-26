@@ -12,7 +12,7 @@ export default function Navbar() {
     { href: '/', label: 'Home' },
     { href: '/rewards', label: 'Rewards' },
     { href: '/about', label: 'About' },
-    { href: '/bullish-reversal-detector', label: 'Trend Detector' },
+    { href: '/trendanalyzer', label: 'Trend Detector' },
     { href: '/btcreversalpanel', label: 'BTC Reversal Panel' },
   ];
 
