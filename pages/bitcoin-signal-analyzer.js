@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../components/Alert";
-
+import { startOfWeek } from "date-fns";
 
 
 export default function Home() {
@@ -10,39 +10,62 @@ export default function Home() {
         const [ema70, setEma70] = useState('');
         const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
+    
 
-        useEffect(() => {
-                const fetchBTCWeeklyCandles = async () => {
-                        try {
-                                const res = await fetch("https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=200");
-                                if (!res.ok) throw new Error("Failed to fetch weekly candles");
-                                const data = await res.json();
-                                const formatted = data.map((candle) => ({
-                                        time: Number(candle[0]),
-                                        open: parseFloat(candle[1]),
-                                        high: parseFloat(candle[2]),
-                                        low: parseFloat(candle[3]),
-                                        close: parseFloat(candle[4]),
-                                        volume: parseFloat(candle[5]),
-                                }));
+useEffect(() => {
+  const fetchBTCWeeklyCandles = async () => {
+    try {
+      const res = await fetch(
+        "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=200&interval=daily"
+      );
+      if (!res.ok) throw new Error("Failed to fetch daily data");
 
-                                const ema14 = calculateEMA(formatted, 14);
-                                const ema70 = calculateEMA(formatted, 70);
+      const data = await res.json();
+      const daily = data.prices.map((price, idx) => ({
+        time: price[0],
+        close: price[1],
+        low: data.low_24h ? data.low_24h[idx][1] : price[1],
+        high: data.high_24h ? data.high_24h[idx][1] : price[1],
+        open: idx === 0 ? price[1] : data.prices[idx - 1][1],
+        volume: data.total_volumes[idx][1],
+      }));
 
-                                const candlesWithEma = formatted.map((candle, idx) => ({
-                                        ...candle,
-                                        ema14: ema14[idx] || 0,
-                                        ema70: ema70[idx] || 0,
-                                }));
+      const grouped = new Map();
 
-                                setWeeklyCandles(candlesWithEma);
-                        } catch (err) {
-                                console.error("Error loading candles:", err);
-                        }
-                };
+      for (const d of daily) {
+        const week = startOfWeek(new Date(d.time)).getTime();
+        if (!grouped.has(week)) {
+          grouped.set(week, []);
+        }
+        grouped.get(week).push(d);
+      }
 
-                fetchBTCWeeklyCandles();
-        }, []);
+      const weekly = Array.from(grouped.entries()).map(([time, candles]) => ({
+        time,
+        open: candles[0].open,
+        close: candles[candles.length - 1].close,
+        high: Math.max(...candles.map((c) => c.high)),
+        low: Math.min(...candles.map((c) => c.low)),
+        volume: candles.reduce((sum, c) => sum + c.volume, 0),
+      }));
+
+      const ema14 = calculateEMA(weekly, 14);
+      const ema70 = calculateEMA(weekly, 70);
+
+      const candlesWithEma = weekly.map((candle, idx) => ({
+        ...candle,
+        ema14: ema14[idx] || 0,
+        ema70: ema70[idx] || 0,
+      }));
+
+      setWeeklyCandles(candlesWithEma);
+    } catch (err) {
+      console.error("Error loading candles:", err);
+    }
+  };
+
+  fetchBTCWeeklyCandles();
+}, []);            
 
         useEffect(() => {
                 if (weeklyCandles.length > 0) {
