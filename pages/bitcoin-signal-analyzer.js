@@ -99,13 +99,21 @@ const atlNum = !isNaN(parseFloat(atl)) ? parseFloat(atl) : null;
 const emaNum = !isNaN(parseFloat(ema70)) ? parseFloat(ema70) : null;
 const isValid = emaNum !== null && emaNum > 0;
 
-
-        
-        const getPreviousATL = (candles) => {
-  if (!candles || candles.length < 2) return null;
+const getPreviousATL = (candles) => {
+  if (!candles || candles.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
 
   const candlesExcludingLast = candles.slice(0, -1).filter(c => c.low != null && c.ema70 != null);
-  if (candlesExcludingLast.length === 0) return null;
+  if (candlesExcludingLast.length === 0) {
+    return {
+      error: 'No valid candles found for previous ATL.',
+      valid: false,
+    };
+  }
 
   const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
     curr.low < min.low ? curr : min
@@ -113,30 +121,54 @@ const isValid = emaNum !== null && emaNum > 0;
 
   const price = prevAtlCandle.low;
   const ema70 = prevAtlCandle.ema70;
+  if (ema70 === 0) {
+    return {
+      error: 'Invalid EMA70 at previous ATL.',
+      valid: false,
+    };
+  }
 
-  if (ema70 === 0) return null; // Prevent division by zero
+  const gapPercent = ((ema70 - price) / ema70) * 100;
+  const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
 
-  const classAtlGap = ((ema70 - price) / ema70) * 100;
+  const rejectionNearEMA = candlesExcludingLast.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.low - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
 
-  const classification = classAtlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+  const bearishSignal = gapPercent > 100 && rejectionNearEMA;
 
   return {
     price,
     ema70,
-    gapPercent: classAtlGap.toFixed(2),
+    gapPercent: gapPercent.toFixed(2),
     classification,
+    rejectionNearEMA,
+    bearishSignal,
     time: new Date(prevAtlCandle.time).toLocaleDateString(),
+    valid: true,
   };
 };
-
+        
+        
         const findRecentATL = (data) => {
-  if (!data || data.length < 100) return null;
+  if (!data || data.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
 
   const last100 = data.slice(-100);
   const latestCandle = data[data.length - 1];
 
-  // Ensure current trend is bearish
-  if (latestCandle.ema14 >= latestCandle.ema70) return null;
+  if (latestCandle.ema14 >= latestCandle.ema70) {
+    return {
+      error: 'Market is not in a bearish condition (ema14 >= ema70).',
+      valid: false,
+    };
+  }
 
   let atlCandle = last100[0];
   last100.forEach(candle => {
@@ -148,24 +180,44 @@ const isValid = emaNum !== null && emaNum > 0;
   const atlPrice = atlCandle.low;
   const atlEMA70 = atlCandle.ema70;
   const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
-
-  // Custom classification logic
   const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+
+  const rejectionNearEMA = last100.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.low - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+
+  const bearishSignal = gapPercent > 100 && rejectionNearEMA;
 
   return {
     atl: atlPrice,
     ema70: atlEMA70,
     gapPercent: gapPercent.toFixed(2),
     classification,
-    candle: atlCandle // optional: full candle reference
+    rejectionNearEMA,
+    bearishSignal,
+    candle: atlCandle,
+    time: new Date(atlCandle.time).toLocaleDateString(),
+    valid: true,
   };
-        };
+};
         
-        const getPreviousATH = (candles) => {
-  if (!candles || candles.length < 2) return null;
+     const getPreviousATH = (candles) => {
+  if (!candles || candles.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
 
   const candlesExcludingLast = candles.slice(0, -1).filter(c => c.high != null && c.ema70 != null);
-  if (candlesExcludingLast.length === 0) return null;
+  if (candlesExcludingLast.length === 0) {
+    return {
+      error: 'No valid candles found for previous ATH.',
+      valid: false,
+    };
+  }
 
   const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
     curr.high > max.high ? curr : max
@@ -173,40 +225,55 @@ const isValid = emaNum !== null && emaNum > 0;
 
   const price = prevAthCandle.high;
   const ema70 = prevAthCandle.ema70;
+  if (ema70 === 0) {
+    return {
+      error: 'Invalid EMA70 at previous ATH.',
+      valid: false,
+    };
+  }
 
-  if (ema70 === 0) return null; // Prevent division by zero
+  const gapPercent = ((price - ema70) / ema70) * 100;
+  const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
 
-  const classAthGap = ((price - ema70) / ema70) * 100;
+  const rejectionNearEMA = candlesExcludingLast.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.high - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
 
-  const classification = classAthGap > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+  const bullishSignal = gapPercent > 100 && rejectionNearEMA;
 
   return {
     price,
     ema70,
-    gapPercent: classAthGap.toFixed(2),
+    gapPercent: gapPercent.toFixed(2),
     classification,
+    rejectionNearEMA,
+    bullishSignal,
     time: new Date(prevAthCandle.time).toLocaleDateString(),
+    valid: true,
   };
 };
-
+          
+        
         const findRecentATH = (data) => {
-  // Ensure there is enough data: must have at least 100 weekly candles
   if (!data || data.length < 100) {
-    console.warn("Invalid data: at least 100 weekly candles are required.");
-    return null;
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
   }
 
-  // Use the most recent 100 candles
   const last100 = data.slice(-100);
   const latestCandle = data[data.length - 1];
 
-  // Ensure the current trend is bullish (EMA14 > EMA70)
   if (latestCandle.ema14 <= latestCandle.ema70) {
-    console.warn("Trend is not bullish: EMA14 is not above EMA70.");
-    return null;
+    return {
+      error: 'Market is not in a bullish condition (ema14 <= ema70).',
+      valid: false,
+    };
   }
 
-  // Find the ATH candle (highest high in the last 100 candles)
   let athCandle = last100[0];
   last100.forEach(candle => {
     if (candle.high > athCandle.high) {
@@ -216,27 +283,29 @@ const isValid = emaNum !== null && emaNum > 0;
 
   const athPrice = athCandle.high;
   const athEMA70 = athCandle.ema70;
-
-  // Prevent division by zero
-  if (athEMA70 === 0) {
-    console.warn("Invalid ATH candle: EMA70 is zero.");
-    return null;
-  }
-
   const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
-
-  // Classify the ATH based on gap percentage
   const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+
+  const rejectionNearEMA = last100.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.high - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+
+  const bullishSignal = gapPercent > 100 && rejectionNearEMA;
 
   return {
     ath: athPrice,
     ema70: athEMA70,
     gapPercent: gapPercent.toFixed(2),
     classification,
-    candle: athCandle, // optional: full candle reference
+    rejectionNearEMA,
+    bullishSignal,
+    candle: athCandle,
+    time: new Date(athCandle.time).toLocaleDateString(),
+    valid: true,
   };
 };
-
 
         
         const previousATLInfo = getPreviousATL(weeklyCandles);
@@ -281,199 +350,89 @@ const ema70AtPreviousATL = previousATLInfo?.ema70;
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        const closes = weeklyData?.map(c => c.close) || [];
-        
-        
-// Detect Strong Bullish Continuation
-// ATH signal logic
-// ATH calculations
-const newATH = Math.max(...closes);
-const sortedClosesHighToLow = [...closes].sort((a, b) => b - a);
-        
-const getAthSignal = (newATH, ema70AtPreviousATH) => {
-  if (!ema70AtPreviousATH || !newATH) return 'N/A';
+        const resolveFinalATHSignal = (weeklyData) => {
+  const previous = getATHSignal(candles, { type: "previous" });
+  const recent = getATHSignal(candles, { type: "recent" });
 
-  const newAthGap = ((newATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
+  if (!previous.valid || !recent.valid) {
+    return {
+      error: "Invalid data in one or both ATH signals.",
+      valid: false,
+      previous,
+      recent,
+    };
+  }
 
-  return newAthGap > 120
-    ? 'Strong Bullish Continuation'
-    : newAthGap > 100
-    ? 'Bullish Continuation'
-    : newAthGap > 80
-    ? 'Neutral Zone'
-    : 'Sell Zone (Possible Reversal)';
+  const breakout = recent.ath > previous.ath;
+  const bounce = recent.rejectionNearEMA;
+
+  const strongPrior = previous.classification === "Bullish Continuation";
+  const recentSetupValid = recent.classification === "Possible Reversal" && breakout && bounce;
+
+  const finalClassification =
+    strongPrior && recentSetupValid ? "Bullish Continuation" : "Possible Reversal";
+
+  return {
+    valid: true,
+    finalClassification,
+    previous,
+    recent,
+    breakout,
+    bounce,
+  };
+};
+        const athSignal = resolveFinalATHSignal(weeklyData);
+
+let bullish = {};
+if (athSignal.valid) {
+  const ema = parseFloat(athSignal.recent.ema70);
+  const ath = parseFloat(athSignal.recent.ath);
+  if (!isNaN(ema) && !isNaN(ath)) {
+    bullish = {
+      entry: ema * 1.02,
+      stopLoss: ema * 0.97,
+      takeProfit1: ath * 0.98,
+      takeProfit2: ath * 1.05,
+    };
+  }
+}
+        
+
+const resolveFinalATLSignal = (weeklyData) => {
+  const previous = getATLSignal(candles, { type: "previous" });
+  const recent = getATLSignal(candles, { type: "recent" });
+
+  if (!previous.valid || !recent.valid) {
+    return {
+      error: "Invalid data in one or both ATL signals.",
+      valid: false,
+      previous,
+      recent,
+    };
+  }
+
+  const breakdown = recent.atl < previous.atl;
+  const bounce = recent.rejectionNearEMA;
+
+  const strongPrior = previous.classification === "Bearish Continuation";
+  const recentSetupValid =
+    recent.classification === "Possible Reversal" && breakdown && bounce;
+
+  const finalClassification =
+    strongPrior && recentSetupValid ? "Bearish Continuation" : "Possible Reversal";
+
+  return {
+    valid: true,
+    finalClassification,
+    previous,
+    recent,
+    breakdown,
+    bounce,
+  };
 };
         
         
-const isStrongBullishContinuation = (input, weeklyData) => {
-  const {
-    previousATH,
-    ema70AtPreviousATH,
-    currentATH,
-    athSignal,
-    previousATHClassification,
-    currentATHClassification,
-          newATH
-        
-  } = input || {};
-
-  // Check bounce near EMA70 (within 3%)
-  const bounceNearEMA = weeklyData?.some(candle => {
-    if (!candle.ema70) return false;
-    const diff = Math.abs(candle.low - candle.ema70);
-    return diff / candle.ema70 <= 0.03;
-  });
-
-  // Fallback if critical data missing
-  if (!ema70AtPreviousATH || !newATH) return 'Reversal Confirmed';
-
-  const newAthGap = ((newATH - ema70AtPreviousATH) / ema70AtPreviousATH) * 100;
-
-  // Strong Bullish Continuation (all signals aligned)
-  if (
-    athSignal === 'Bullish Continuation' &&
-    previousATHClassification === 'Bullish Continuation' &&
-    currentATHClassification === 'Possible Reversal' &&
-    previousATH &&
-    bounceNearEMA &&
-    newATH > previousATH &&
-    newAthGap > 80
-  ) {
-    return 'Strong Bullish Continuation';
-  }
-
-  // Bullish Continuation (less strict)
-  if (
-    athSignal === 'Bullish Continuation' &&
-    (previousATHClassification === 'Bullish Continuation' || previousATHClassification === 'Neutral Zone') &&
-    bounceNearEMA
-  ) {
-    return 'Bullish Continuation';
-  }
-
-  // Neutral Zone
-  if (newAthGap > 60 && newAthGap <= 80) {
-    return 'Neutral Zone';
-  }
-
-  // Sell Zone (possible weakening trend)
-  if (newAthGap > 30 && newAthGap <= 60) {
-    return 'Sell Zone (Possible Reversal)';
-  }
-
-  // Reversal Confirmed (very low gap or bearish signal)
-  return 'Reversal Confirmed';
-};
-
-let bullishConfirmed = null;
-
-
-        
-// Detect Strong Bearish Continuation
-// ATL signal logic
-// ATL calculations
-const newATL = Math.min(...closes);
-const sortedClosesLowToHigh = [...closes].sort((a, b) => a - b);    
-        
-const getAtlSignal = (newATL, ema70AtPreviousATL) => {
-  if (!ema70AtPreviousATL || !newATL) return 'N/A';
-
-  const newAtlGap = ((ema70AtPreviousATL - newATL) / ema70AtPreviousATL) * 100;
-
-  return newAtlGap > 120
-    ? 'Strong Bearish Continuation'
-    : newAtlGap > 100
-    ? 'Bearish Continuation'
-    : newAtlGap > 80
-    ? 'Neutral Zone'
-    : 'Buy Zone (Possible Reversal)';
-};    
-        
-const isStrongBearishContinuation = (input, weeklyData) => {
-  const {
-    previousATL,
-    ema70AtPreviousATL,
-    currentATL,
-    atlSignal,
-    previousATLClassification,
-    currentATLClassification,
-          newATL
-          
-  } = input || {};
-
-  // Rejection near EMA70 (within 3%)
-  const rejectionNearEMA = weeklyData?.some(candle => {
-    if (!candle.ema70) return false;
-    const diff = Math.abs(candle.high - candle.ema70);
-    return diff / candle.ema70 <= 0.03;
-  });
-
-  if (!ema70AtPreviousATL || !currentATL) return 'Reversal Confirmed';
-
-  const newAtlGap = ((ema70AtPreviousATL - newATL) / ema70AtPreviousATL) * 100;
-
-  // Strong Bearish Continuation
-  if (
-    atlSignal === 'Bearish Continuation' &&
-    previousATLClassification === 'Bearish Continuation' &&
-    currentATLClassification === 'Possible Reversal' &&
-    previousATL &&
-    rejectionNearEMA &&
-    newATL < previousATL &&
-    newAtlGap > 80
-  ) {
-    return 'Strong Bearish Continuation';
-  }
-
-  // Bearish Continuation
-  if (
-    atlSignal === 'Bearish Continuation' &&
-    (previousATLClassification === 'Bearish Continuation' || previousATLClassification === 'Neutral Zone') &&
-    rejectionNearEMA
-  ) {
-    return 'Bearish Continuation';
-  }
-
-  // Neutral Zone
-  if (newAtlGap > 60 && newAtlGap <= 80) {
-    return 'Neutral Zone';
-  }
-
-  // Buy Zone (Possible Reversal)
-  if (newAtlGap > 30 && newAtlGap <= 60) {
-    return 'Buy Zone (Possible Reversal)';
-  }
-
-  // Reversal Confirmed
-  return 'Reversal Confirmed';
-};    
-        
-
-// Trade setup for strong bearish
-const BearishBreakdown = (breakdownATL) => {
-  const entry = breakdownATL * 1.005;
-  const stopLoss = entry * 1.03;
-  const takeProfit1 = entry * 0.90;
-  const takeProfit2 = entry * 0.80;
-
-  return { entry, stopLoss, takeProfit1, takeProfit2 };
-};
-
-
-     let bearishConfirmed = null;
-
-if (previousATLInfo && currentATLInfo) {
-  bearishConfirmed = isStrongBearishContinuation({
-    previousATL: previousATLInfo.price,
-    ema70AtPreviousATL1: previousATLInfo.ema70,
-    currentATL: currentATLInfo.price,
-    atlSignal: currentATLInfo.classification,
-    previousATLClassification: previousATLInfo.classification,
-    currentATLClassification: currentATLInfo.classification
-  }, weeklyData);
-} else {
-  console.warn('ATL info missing; skipping bearish continuation check.');
-}   
+ 
         
         
 
@@ -605,20 +564,26 @@ return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 tex
                                         <p>Gap: {athGap.toFixed(2)}%</p>                            
                                         
 <p>
-  Market Zone (ATH):{' '}
-  <span className={`font-bold ${getSignalColor(isStrongBullishContinuation)}`}>
-    {isStrongBullishContinuation}
+  Market Zone:{' '}
+  <span className={
+    athSignal.finalClassification === 'Bullish Continuation'
+      ? 'text-green-700 font-bold'
+      : 'text-yellow-700 font-bold'
+  }>
+    {athSignal.finalClassification === 'Bullish Continuation'
+      ? '🔥 Still in the Buy Zone'
+      : '⚠️ Caution: Sell Zone'}
   </span>
 </p>
-{isStrongBullishContinuation === 'Strong Bullish Continuation' && (
-  <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
-    <p className="font-semibold">Trade Setup (Strong Bullish Continuation):</p>
-    <p>Entry: ${strongBullish.entry.toFixed(2)}</p>
-    <p>SL: ${strongBullish.stopLoss.toFixed(2)}</p>
-    <p>TP: ${strongBullish.takeProfit1.toFixed(2)} to ${strongBullish.takeProfit2.toFixed(2)}</p>
-  </div>
-)}
 
+{athSignal.finalClassification === 'Bullish Continuation' && bullish.entry ? (
+  <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+    <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+    <p>Entry: ${bullish.entry.toFixed(2)}</p>
+    <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+    <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+  </div>
+) : null}
          
                                         {isStrongBullishContinuation() === 'Strong Bullish Continuation' && (
                                                 <div className={`text-sm p-3 rounded-lg border space-y-1 ${getBoxColor('Strong Bullish Continuation')}`}>
