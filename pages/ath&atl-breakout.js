@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-// Tell Next.js to render dynamically (not static HTML at build time)
-export const dynamic = "force-dynamic";
-
+// Detect bullish reversal
 const detectBullishReversal = (data) => {
   if (!data || data.length < 3) {
     return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
@@ -46,6 +44,7 @@ const detectBullishReversal = (data) => {
   return { valid: false, error: 'Current candle is not the ATL.' };
 };
 
+// Calculate EMA
 const calculateEMA = (data, period) => {
   const k = 2 / (period + 1);
   let emaArray = [];
@@ -61,44 +60,47 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
+// Fetch candles from CoinGecko
 async function fetchCandleData() {
-  const coinId = 'bitcoin';
-  const vsCurrency = 'usd';
-  const days = 30;
+  try {
+    const coinId = 'bitcoin';
+    const vsCurrency = 'usd';
+    const days = 30;
 
-  const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=${vsCurrency}&days=${days}`;
-  const { data } = await axios.get(url);
+    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=${vsCurrency}&days=${days}`;
+    const { data } = await axios.get(url);
 
-  const candles = data.map(c => ({
-    time: c[0],
-    open: c[1],
-    high: c[2],
-    low: c[3],
-    close: c[4]
-  }));
+    const candles = data.map(c => ({
+      time: c[0],
+      open: c[1],
+      high: c[2],
+      low: c[3],
+      close: c[4]
+    }));
 
-  const ema14Array = calculateEMA(candles, 14);
-  const ema70Array = calculateEMA(candles, 70);
+    const ema14Array = calculateEMA(candles, 14);
+    const ema70Array = calculateEMA(candles, 70);
 
-  return candles.map((c, i) => ({
-    ...c,
-    ema14: ema14Array[i] || c.close,
-    ema70: ema70Array[i] || c.close
-  }));
+    return candles.map((c, i) => ({
+      ...c,
+      ema14: ema14Array[i] || c.close,
+      ema70: ema70Array[i] || c.close
+    }));
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to fetch candle data.');
+  }
 }
 
-export default async function Home() {
-  const candles = await fetchCandleData();
-
-  if (candles.error) {
+// Main React component (no async here!)
+export default function Home({ candles, result, error }) {
+  if (error) {
     return (
       <main className="p-4 text-red-600">
-        <p>Error fetching data: {candles.error}</p>
+        <p>Error fetching data: {error}</p>
       </main>
     );
   }
-
-  const result = detectBullishReversal(candles);
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -121,4 +123,27 @@ export default async function Home() {
       </div>
     </main>
   );
+}
+
+// Use Next.js getServerSideProps for SSR
+export async function getServerSideProps() {
+  try {
+    const candles = await fetchCandleData();
+    const result = detectBullishReversal(candles);
+
+    return {
+      props: {
+        candles,
+        result
+      }
+    };
+  } catch (error) {
+    return {
+      props: {
+        candles: [],
+        result: { valid: false, error: 'Could not determine reversal setup.' },
+        error: error.message
+      }
+    };
   }
+    }
