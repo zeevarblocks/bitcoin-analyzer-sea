@@ -60,19 +60,23 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
-// Fetch 15m candles from Binance
+// Fetch 15m candles from OKX
 async function fetchCandleData() {
   try {
-    const url = `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=500`;
+    const url = `https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=15m&limit=200`;
     const { data } = await axios.get(url);
 
-    const candles = data.map(c => ({
-      time: c[0],
-      open: parseFloat(c[1]),
-      high: parseFloat(c[2]),
-      low: parseFloat(c[3]),
-      close: parseFloat(c[4])
-    }));
+    const rawCandles = data.data || [];
+
+    const candles = rawCandles
+      .reverse()
+      .map(c => ({
+        time: Number(c[0]),
+        open: parseFloat(c[1]),
+        high: parseFloat(c[2]),
+        low: parseFloat(c[3]),
+        close: parseFloat(c[4])
+      }));
 
     const ema14Array = calculateEMA(candles, 14);
     const ema70Array = calculateEMA(candles, 70);
@@ -84,7 +88,7 @@ async function fetchCandleData() {
     }));
   } catch (error) {
     console.error(error);
-    throw new Error('Failed to fetch candle data.');
+    throw new Error('Failed to fetch candle data from OKX.');
   }
 }
 
@@ -100,9 +104,9 @@ export default function Home({ candles, result, error }) {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector (15m)</h1>
+      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector (15m - OKX BTC-USDT)</h1>
 
-      <div className="bg-gray-100 p-4 rounded shadow">
+      <div className="bg-gray-100 p-4 rounded shadow w-full max-w-md">
         {result.valid ? (
           <div>
             <p className="text-green-600 font-bold">Signal: {result.signal}</p>
@@ -142,4 +146,4 @@ export async function getServerSideProps() {
       }
     };
   }
-                                          }
+      }
