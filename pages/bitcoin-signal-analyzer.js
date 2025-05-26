@@ -507,7 +507,7 @@ const computeBearishReversalFromAth = () => {
 const bullishContinuation = isStrongBullishContinuation();
 const bullishReversal = computeBullishReversalFromAtl();
 const bearishReversal = computeBearishReversalFromAth();
-const bullish = computeBullishLevels();
+
 const bearish = computeBearishLevels();
 
 
