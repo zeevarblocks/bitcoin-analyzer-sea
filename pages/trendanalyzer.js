@@ -29,16 +29,16 @@ const detectBullishReversal = (data) => {
 
   if (isCurrentATL) {
     return {
-      valid: true,
-      signal: 'Bullish Reversal Setup',
-      classification,
-      gapPercent: gapPercent.toFixed(2),
-      atl: atlPrice,
-      ema14: latest.ema14,
-      ema70: latest.ema70,
-      time: new Date(latest.time).toLocaleString(),
-      candle: latest
-    };
+  valid: true,
+  signal: 'Bullish Reversal Setup',
+  classification,
+  gapPercent: gapPercent.toFixed(6),
+  atl: atlPrice.toFixed(6),
+  ema14: latest.ema14.toFixed(6),
+  ema70: latest.ema70.toFixed(6),
+  time: new Date(latest.time).toLocaleString(),
+  candle: latest
+};
   }
 
   return { valid: false, error: 'Current candle is not the ATL.' };
