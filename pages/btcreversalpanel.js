@@ -318,6 +318,64 @@ const getPreviousATL = (candles) => {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
+       const getATHSignal = (candles, { type }) => {
+  if (!candles || candles.length < 100) return { valid: false, error: 'Need at least 100 candles.' };
+
+  const scope = type === "recent" ? candles.slice(-100) : candles.slice(0, -1);
+  const filtered = scope.filter(c => c.high != null && c.ema70 != null);
+  if (filtered.length === 0) return { valid: false, error: 'No valid candles.' };
+
+  let athCandle = filtered[0];
+  for (const c of filtered) if (c.high > athCandle.high) athCandle = c;
+
+  const ath = athCandle.high;
+  const ema70 = athCandle.ema70;
+  if (!ema70) return { valid: false, error: 'Invalid EMA70 at ATH.' };
+
+  const gapPercent = ((ath - ema70) / ema70) * 100;
+  const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+  const rejectionNearEMA = filtered.some(c => Math.abs(c.low - c.ema70) / c.ema70 <= 0.03);
+
+  return {
+    valid: true, ath, ema70,
+    gapPercent: gapPercent.toFixed(2),
+    classification, rejectionNearEMA,
+    candle: athCandle,
+    time: new Date(athCandle.time).toLocaleDateString()
+  };
+}; 
+
+
+        const getATLSignal = (candles, { type }) => {
+  if (!candles || candles.length < 100) return { valid: false, error: 'Need at least 100 candles.' };
+
+  const scope = type === "recent" ? candles.slice(-100) : candles.slice(0, -1);
+  const filtered = scope.filter(c => c.low != null && c.ema70 != null);
+  if (filtered.length === 0) return { valid: false, error: 'No valid candles.' };
+
+  let atlCandle = filtered[0];
+  for (const c of filtered) if (c.low < atlCandle.low) atlCandle = c;
+
+  const atl = atlCandle.low;
+  const ema70 = atlCandle.ema70;
+  if (!ema70) return { valid: false, error: 'Invalid EMA70 at ATL.' };
+
+  const gapPercent = ((ema70 - atl) / ema70) * 100;
+  const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+  const rejectionNearEMA = filtered.some(c => Math.abs(c.high - c.ema70) / c.ema70 <= 0.03);
+
+  return {
+    valid: true, atl, ema70,
+    gapPercent: gapPercent.toFixed(2),
+    classification, rejectionNearEMA,
+    candle: atlCandle,
+    time: new Date(atlCandle.time).toLocaleDateString()
+  };
+};
+        
+
+
+        
 const resolveFinalATHSignal = (candles) => {
   const previous = getATHSignal(candles, { type: "previous" });
   const recent = getATHSignal(candles, { type: "recent" });
