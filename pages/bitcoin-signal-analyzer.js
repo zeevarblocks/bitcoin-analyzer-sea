@@ -269,17 +269,13 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
-                        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
-                                <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Input</h2>
-                                <input
-                                        type="number"
-                                        placeholder="EMA70 (Manual Input)"
-                                        className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                        value={ema70}
-                                        onChange={e => setEma70(e.target.value)}
-                                />
-                        </div>
-                </div>
+    <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
+        <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Value</h2>
+        <p className="bg-gray-800 text-white border border-blue-700 rounded px-4 py-2 w-full">
+            {ema70}
+        </p>
+    </div>
+</div>
 
                 {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
 
