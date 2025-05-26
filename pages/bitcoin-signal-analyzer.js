@@ -190,36 +190,52 @@ const isValid = emaNum !== null && emaNum > 0;
 };
 
         const findRecentATH = (data) => {
-if (!data || data.length < 100) return null;
+  // Ensure there is enough data: must have at least 100 weekly candles
+  if (!data || data.length < 100) {
+    console.warn("Invalid data: at least 100 weekly candles are required.");
+    return null;
+  }
 
-const last100 = data.slice(-100);
-const latestCandle = data[data.length - 1];
+  // Use the most recent 100 candles
+  const last100 = data.slice(-100);
+  const latestCandle = data[data.length - 1];
 
-// Ensure current trend is bullish
-if (latestCandle.ema14 <= latestCandle.ema70) return null;
+  // Ensure the current trend is bullish (EMA14 > EMA70)
+  if (latestCandle.ema14 <= latestCandle.ema70) {
+    console.warn("Trend is not bullish: EMA14 is not above EMA70.");
+    return null;
+  }
 
-let athCandle = last100[0];
-last100.forEach(candle => {
-if (candle.high > athCandle.high) {
-athCandle = candle;
-}
-});
+  // Find the ATH candle (highest high in the last 100 candles)
+  let athCandle = last100[0];
+  last100.forEach(candle => {
+    if (candle.high > athCandle.high) {
+      athCandle = candle;
+    }
+  });
 
-const athPrice = athCandle.high;
-const athEMA70 = athCandle.ema70;
-const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+  const athPrice = athCandle.high;
+  const athEMA70 = athCandle.ema70;
 
-// Apply your custom classification logic
-const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+  // Prevent division by zero
+  if (athEMA70 === 0) {
+    console.warn("Invalid ATH candle: EMA70 is zero.");
+    return null;
+  }
 
-return {
-ath: athPrice,
-ema70: athEMA70,
-gapPercent: gapPercent.toFixed(2),
-classification,
-candle: athCandle // optional: full candle reference
+  const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+
+  // Classify the ATH based on gap percentage
+  const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+
+  return {
+    ath: athPrice,
+    ema70: athEMA70,
+    gapPercent: gapPercent.toFixed(2),
+    classification,
+    candle: athCandle, // optional: full candle reference
+  };
 };
-        };
 
 
         
