@@ -576,9 +576,21 @@ const resolveFinalATLSignal = (candles) => {
                                         </Alert>
                                 ) : (
                                         <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATL Heat Check</h2>
-                                                <p>ATL: ${atlNum.toFixed(2)}</p>
-                                                <p>Gap: {atlGap.toFixed(2)}%</p>
+                                        <h2 className="text-xl font-semibold">ATH Heat Check</h2>
+
+                                        {previousATHInfo && (
+                                                <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
+                                                        <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
+                                                        <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
+                                                        <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
+                                                <p>ATH: ${atHNum.toFixed(2)}</p>
+                                                <p>Gap: {atHGap.toFixed(2)}%</p>
+                                                </div>
+                                        )}
+                                        
+                                        
+                                        
+                                                
                                                 <p>
                                                         Market Zone:{' '}
                                                         <span className={resolveFinalATLSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
