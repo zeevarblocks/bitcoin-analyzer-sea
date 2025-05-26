@@ -11,9 +11,6 @@ export default function Home() {
         const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
     
-import { useEffect, useState } from "react";
-import { startOfWeek } from "date-fns";
-
 const calculateEMA = (data, period) => {
   if (data.length < period) return [];
 
