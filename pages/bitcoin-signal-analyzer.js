@@ -228,31 +228,131 @@ export default function Home() {
     const bearishReversal = computeBearishReversalFromAth();
 
     // Render UI
-    return (
-        <div className="p-8 text-white">
-            <h1 className="text-3xl font-bold text-yellow-400">Bitcoin Signal Analyzer</h1>
-            <p className="text-gray-400 mb-4">EMA70: {ema70}</p>
-            {loading && <p>Loading...</p>}
-            {!loading && (
-                <>
-                    {athInfo && (
-                        <div className="mb-4">
-                            <h2 className="text-xl font-semibold text-green-400">ATH Signal</h2>
-                            <p>ATH Gap: {athGap.toFixed(2)}% — {getAthSignal()}</p>
-                            <p>Entry: ${bullish.entry.toFixed(2)}</p>
-                            <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+    return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
+                <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
+                        Bitcoin Signal Analyzer
+                </h1>
+                <p className="text-lg mb-6 text-gray-300">
+                        <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
+                </p>
+                <div className="border-l-4 border-yellow-400 pl-4 text-sm text-yellow-100 italic">
+                        Plan smarter. Trade better.
+                </div>
+
+                <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
+                        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
+                                <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Input</h2>
+                                <input
+                                        type="number"
+                                        placeholder="EMA70 (Manual Input)"
+                                        className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                                        value={ema70}
+                                        onChange={e => setEma70(e.target.value)}
+                                />
                         </div>
-                    )}
-                    {atlInfo && (
-                        <div>
-                            <h2 className="text-xl font-semibold text-red-400">ATL Signal</h2>
-                            <p>ATL Gap: {atlGap.toFixed(2)}% — {getAtlSignal()}</p>
-                            <p>Entry: ${bearish.entry.toFixed(2)}</p>
-                            <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-                        </div>
-                    )}
-                </>
-            )}
+                </div>
+
+                {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
+
+                {!loading && isValid && (
+                        <>
+                                {/* ATH Analysis */}
+                                {athWeeklyNum === null ? (
+                                        <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300 mt-4">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertTitle className="text-sm font-semibold">ATH Signal Unavailable</AlertTitle>
+                                                <AlertDescription className="text-sm italic">
+                                                        Trend is not currently bullish — EMA14 is not above EMA70 in the most recent week.
+                                                </AlertDescription>
+                                        </Alert>
+                                ) : (
+                                        <div className="space-y-2 text-gray-800">
+                                                <h2 className="text-xl font-semibold">ATH Heat Check</h2>
+
+                                                {previousATHInfo && (
+                                                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
+                                                                <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
+                                                                <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
+                                                                <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
+                                                        </div>
+                                                )}
+
+                                                <p>ATH: ${athNum.toFixed(2)}</p>
+                                                <p>Gap: {athGap.toFixed(2)}%</p>
+                                                <p>
+                                                        Market Zone:{' '}
+                                                        <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
+                                                                {getAthSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
+                                                        </span>
+                                                </p>
+
+                                                {getAthSignal() === 'Bullish Continuation' ? (
+                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+                                                                <p>Entry: ${bullish.entry.toFixed(2)}</p>
+                                                                <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+                                                                <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+                                                        </div>
+                                                ) : (
+                                                        <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
+                                                                <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
+                                                                <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
+                                                                <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
+                                                                <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
+                                                        </div>
+                                                )}
+                                        </div>
+                                )}
+
+                                {/* ATL Analysis */}
+                                {atlWeeklyNum === null ? (
+                                        <Alert variant="default" className="bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300 mt-4">
+                                                <AlertTriangle className="h-4 w-4" />
+                                                <AlertTitle className="text-sm font-semibold">ATL Signal Unavailable</AlertTitle>
+                                                <AlertDescription className="text-sm italic">
+                                                        Trend is not currently bearish — EMA14 is not below EMA70 in the most recent week.
+                                                </AlertDescription>
+                                        </Alert>
+                                ) : (
+                                        <div className="space-y-2 text-gray-800">
+                                                <h2 className="text-xl font-semibold">ATL Heat Check</h2>
+
+                                                {previousATLInfo && (
+                                                        <div className="text-sm bg-gray-800 p-3 rounded-lg border border-gray-700 text-gray-300 space-y-1">
+                                                                <p className="font-semibold text-gray-100">Previous ATL (Historical):</p>
+                                                                <p>Price: ${previousATLInfo.price.toFixed(2)}</p>
+                                                                <p>Date: {previousATLInfo.time}</p>
+                                                        </div>
+                                                )}
+                                                <p>ATL: ${atlNum.toFixed(2)}</p>
+                                                <p>Gap: {atlGap.toFixed(2)}%</p>
+                                                <p>
+                                                        Market Zone:{' '}
+                                                        <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
+                                                                {getAtlSignal() === 'Bearish Continuation' ? '🔻 Still in the Sell Zone' : '🟢 Opportunity: Buy Zone'}
+                                                        </span>
+                                                </p>
+
+                                                {getAtlSignal() === 'Bearish Continuation' ? (
+                                                        <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
+                                                                <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
+                                                                <p>Entry: ${bearish.entry.toFixed(2)}</p>
+                                                                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
+                                                                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
+                                                        </div>
+                                                ) : (
+                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+                                                                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
+                                                                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
+                                                                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
+                                                        </div>
+                                                )}
+                                        </div>
+                                )}
+                        </>
+                )}
         </div>
-    );
-                                            }
+
+        );
+        }
