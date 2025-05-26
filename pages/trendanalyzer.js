@@ -1,6 +1,19 @@
 import axios from 'axios';
 
-// Detect bullish reversal
+// === Helper: Get Previous ATL (excluding last candle) ===
+const getPreviousATL = (candles) => {
+  if (candles.length < 2) return null;
+  const candlesExcludingLast = candles.slice(0, -1);
+  const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+    curr.low < min.low ? curr : min
+  );
+  return {
+    price: prevAtlCandle.low,
+    time: new Date(prevAtlCandle.time).toLocaleDateString(),
+  };
+};
+
+// === Detect Bullish Reversal Setup ===
 const detectBullishReversal = (data) => {
   if (!data || data.length < 3) {
     return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
@@ -14,12 +27,14 @@ const detectBullishReversal = (data) => {
     return { valid: false, error: 'Not in bearish structure (EMA14 >= EMA70).' };
   }
 
+  const previousATL = getPreviousATL(data);
+
   const atlCandle = data.reduce((min, candle) => (candle.low < min.low ? candle : min), data[0]);
   const isCurrentATL = latest.low <= atlCandle.low;
 
   const ema14Decreasing = latest.ema14 < prev.ema14 && prev.ema14 < older.ema14;
   if (!ema14Decreasing) {
-    return { valid: false, error: 'EMA14 is not decreasing in the last 3 candles.' };
+    return { valid: false, error: 'EMA14 is not decreasing in the last 3 candles.', previousATL };
   }
 
   const atlPrice = atlCandle.low;
@@ -29,22 +44,23 @@ const detectBullishReversal = (data) => {
 
   if (isCurrentATL) {
     return {
-  valid: true,
-  signal: 'Bullish Reversal Setup',
-  classification,
-  gapPercent: gapPercent.toFixed(6),
-  atl: atlPrice.toFixed(6),
-  ema14: latest.ema14.toFixed(6),
-  ema70: latest.ema70.toFixed(6),
-  time: new Date(latest.time).toLocaleString(),
-  candle: latest
-};
+      valid: true,
+      signal: 'Bullish Reversal Setup',
+      classification,
+      gapPercent: gapPercent.toFixed(6),
+      atl: atlPrice.toFixed(6),
+      ema14: latest.ema14.toFixed(6),
+      ema70: latest.ema70.toFixed(6),
+      time: new Date(latest.time).toLocaleString(),
+      candle: latest,
+      previousATL
+    };
   }
 
-  return { valid: false, error: 'Current candle is not the ATL.' };
+  return { valid: false, error: 'Current candle is not the ATL.', previousATL };
 };
 
-// Calculate EMA
+// === Calculate EMA ===
 const calculateEMA = (data, period) => {
   const k = 2 / (period + 1);
   let emaArray = [];
@@ -60,7 +76,7 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
-// Fetch 15m candles for a given symbol
+// === Fetch Candle Data ===
 async function fetchCandleData(symbol) {
   try {
     const url = `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`;
@@ -92,7 +108,7 @@ async function fetchCandleData(symbol) {
   }
 }
 
-// Main React component
+// === React Component ===
 export default function Home({ results }) {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -113,9 +129,17 @@ export default function Home({ results }) {
                 <p>EMA14: {result.ema14}</p>
                 <p>EMA70: {result.ema70}</p>
                 <p>Time: {result.time}</p>
+                {result.previousATL && (
+                  <p>Previous ATL: {result.previousATL.price} on {result.previousATL.time}</p>
+                )}
               </>
             ) : (
-              <p className="text-red-600">No valid setup: {result.error}</p>
+              <>
+                <p className="text-red-600">No valid setup: {result.error}</p>
+                {result.previousATL && (
+                  <p>Previous ATL: {result.previousATL.price} on {result.previousATL.time}</p>
+                )}
+              </>
             )}
           </div>
         ))}
@@ -124,7 +148,7 @@ export default function Home({ results }) {
   );
 }
 
-// SSR
+// === SSR ===
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT', 'PI-USDT', 'SOL-USDT', 'ETH-USDT'];
 
@@ -140,4 +164,4 @@ export async function getServerSideProps() {
   );
 
   return { props: { results } };
-                                         }
+      }
