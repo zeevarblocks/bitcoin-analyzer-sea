@@ -65,59 +65,7 @@ export default function Home() {
                 return emaArray;
         };
 
-        const findRecentATL = (data) => {
-                if (!data || data.length < 100) return null;
-
-                const last100 = data.slice(-100);
-                const latestCandle = data[data.length - 1];
-
-                // Ensure current trend is bearish
-                if (latestCandle.ema14 >= latestCandle.ema70) return null;
-
-                let atlCandle = last100[0];
-                last100.forEach(candle => {
-                        if (candle.low < atlCandle.low) {
-                                atlCandle = candle;
-                        }
-                });
-
-                const atlPrice = atlCandle.low;
-                const atlEMA70 = atlCandle.ema70;
-                const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
-
-                return {
-                        atl: atlPrice,
-                        ema70: atlEMA70,
-                        gapPercent: gapPercent.toFixed(2),
-                };
-        };
-
-        const findRecentATH = (data) => {
-                if (!data || data.length < 100) return null;
-
-                const last100 = data.slice(-100);
-                const latestCandle = data[data.length - 1];
-
-                // Ensure current trend is bullish
-                if (latestCandle.ema14 <= latestCandle.ema70) return null;
-
-                let athCandle = last100[0];
-                last100.forEach(candle => {
-                        if (candle.high > athCandle.high) {
-                                athCandle = candle;
-                        }
-                });
-
-                const athPrice = athCandle.high;
-                const athEMA70 = athCandle.ema70;
-                const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
-
-                return {
-                        ath: athPrice,
-                        ema70: athEMA70,
-                        gapPercent: gapPercent.toFixed(2),
-                };
-        };
+        
 
         useEffect(() => {
                 async function fetchMarketData() {
@@ -140,6 +88,212 @@ export default function Home() {
         const emaNum = parseFloat(ema70);
         const isValid = !isNaN(emaNum) && emaNum > 0;
 
+const getPreviousATL = (candles) => {
+  if (!candles || candles.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
+
+  const candlesExcludingLast = candles.slice(0, -1).filter(c => c.low != null && c.ema70 != null);
+  if (candlesExcludingLast.length === 0) {
+    return {
+      error: 'No valid candles found for previous ATL.',
+      valid: false,
+    };
+  }
+
+  const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+    curr.low < min.low ? curr : min
+  );
+
+  const price = prevAtlCandle.low;
+  const ema70 = prevAtlCandle.ema70;
+  if (ema70 === 0) {
+    return {
+      error: 'Invalid EMA70 at previous ATL.',
+      valid: false,
+    };
+  }
+
+  const gapPercent = ((ema70 - price) / ema70) * 100;
+  const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+
+  const rejectionNearEMA = candlesExcludingLast.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.low - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+
+  const bearishSignal = gapPercent > 100 && rejectionNearEMA;
+
+  return {
+    price,
+    ema70,
+    gapPercent: gapPercent.toFixed(2),
+    classification,
+    rejectionNearEMA,
+    bearishSignal,
+    time: new Date(prevAtlCandle.time).toLocaleDateString(),
+    valid: true,
+  };
+};
+
+        const findRecentATL = (data) => {
+  if (!data || data.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
+
+  const last100 = data.slice(-100);
+  const latestCandle = data[data.length - 1];
+
+  if (latestCandle.ema14 >= latestCandle.ema70) {
+    return {
+      error: 'Market is not in a bearish condition (ema14 >= ema70).',
+      valid: false,
+    };
+  }
+
+  let atlCandle = last100[0];
+  last100.forEach(candle => {
+    if (candle.low < atlCandle.low) {
+      atlCandle = candle;
+    }
+  });
+
+  const atlPrice = atlCandle.low;
+  const atlEMA70 = atlCandle.ema70;
+  const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
+  const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+
+  const rejectionNearEMA = last100.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.low - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+
+  const bearishSignal = gapPercent > 100 && rejectionNearEMA;
+
+  return {
+    atl: atlPrice,
+    ema70: atlEMA70,
+    gapPercent: gapPercent.toFixed(2),
+    classification,
+    rejectionNearEMA,
+    bearishSignal,
+    candle: atlCandle,
+    time: new Date(atlCandle.time).toLocaleDateString(),
+    valid: true,
+  };
+};
+        
+        const getPreviousATH = (candles) => {
+  if (!candles || candles.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
+
+  const candlesExcludingLast = candles.slice(0, -1).filter(c => c.high != null && c.ema70 != null);
+  if (candlesExcludingLast.length === 0) {
+    return {
+      error: 'No valid candles found for previous ATH.',
+      valid: false,
+    };
+  }
+
+  const prevAthCandle = candlesExcludingLast.reduce((max, curr) =>
+    curr.high > max.high ? curr : max
+  );
+
+  const price = prevAthCandle.high;
+  const ema70 = prevAthCandle.ema70;
+  if (ema70 === 0) {
+    return {
+      error: 'Invalid EMA70 at previous ATH.',
+      valid: false,
+    };
+  }
+
+  const gapPercent = ((price - ema70) / ema70) * 100;
+  const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+
+  const rejectionNearEMA = candlesExcludingLast.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.high - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+
+  const bullishSignal = gapPercent > 100 && rejectionNearEMA;
+
+  return {
+    price,
+    ema70,
+    gapPercent: gapPercent.toFixed(2),
+    classification,
+    rejectionNearEMA,
+    bullishSignal,
+    time: new Date(prevAthCandle.time).toLocaleDateString(),
+    valid: true,
+  };
+};
+
+        const findRecentATH = (data) => {
+  if (!data || data.length < 100) {
+    return {
+      error: 'Not enough data: need at least 100 weekly candles.',
+      valid: false,
+    };
+  }
+
+  const last100 = data.slice(-100);
+  const latestCandle = data[data.length - 1];
+
+  if (latestCandle.ema14 <= latestCandle.ema70) {
+    return {
+      error: 'Market is not in a bullish condition (ema14 <= ema70).',
+      valid: false,
+    };
+  }
+
+  let athCandle = last100[0];
+  last100.forEach(candle => {
+    if (candle.high > athCandle.high) {
+      athCandle = candle;
+    }
+  });
+
+  const athPrice = athCandle.high;
+  const athEMA70 = athCandle.ema70;
+  const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+  const classification = gapPercent > 100 ? 'Bullish Continuation' : 'Possible Reversal';
+
+  const rejectionNearEMA = last100.some(candle => {
+    if (!candle.ema70) return false;
+    const diff = Math.abs(candle.high - candle.ema70);
+    return diff / candle.ema70 <= 0.03;
+  });
+
+  const bullishSignal = gapPercent > 100 && rejectionNearEMA;
+
+  return {
+    ath: athPrice,
+    ema70: athEMA70,
+    gapPercent: gapPercent.toFixed(2),
+    classification,
+    rejectionNearEMA,
+    bullishSignal,
+    candle: athCandle,
+    time: new Date(athCandle.time).toLocaleDateString(),
+    valid: true,
+  };
+};
+        
         const atlInfo = findRecentATL(weeklyCandles);
         const athInfo = findRecentATH(weeklyCandles);
 
@@ -164,9 +318,72 @@ export default function Home() {
         const athGap = isValid && isValidAth ? ((athNum - emaNum) / emaNum) * 100 : 0;
         const atlGap = isValid && isValidAtl ? ((emaNum - atlWeeklyNum) / atlWeeklyNum) * 100 : 0;
 
-        const getAthSignal = () => (athGap > 100 ? 'Bullish Continuation' : 'Possible Reversal');
-        const getAtlSignal = () => (atlGap > 100 ? 'Bearish Continuation' : 'Possible Reversal');
+const resolveFinalATHSignal = (candles) => {
+  const previous = getATHSignal(candles, { type: "previous" });
+  const recent = getATHSignal(candles, { type: "recent" });
 
+  if (!previous.valid || !recent.valid) {
+    return {
+      error: "Invalid data in one or both ATH signals.",
+      valid: false,
+      previous,
+      recent,
+    };
+  }
+
+  const breakout = recent.ath > previous.ath;
+  const bounce = recent.rejectionNearEMA;
+
+  const strongPrior = previous.classification === "Bullish Continuation";
+  const recentSetupValid = recent.classification === "Possible Reversal" && breakout && bounce;
+
+  const finalClassification =
+    strongPrior && recentSetupValid ? "Bullish Continuation" : "Possible Reversal";
+
+  return {
+    valid: true,
+    finalClassification,
+    previous,
+    recent,
+    breakout,
+    bounce,
+  };
+};
+
+const resolveFinalATLSignal = (candles) => {
+  const previous = getATLSignal(candles, { type: "previous" });
+  const recent = getATLSignal(candles, { type: "recent" });
+
+  if (!previous.valid || !recent.valid) {
+    return {
+      error: "Invalid data in one or both ATL signals.",
+      valid: false,
+      previous,
+      recent,
+    };
+  }
+
+  const breakdown = recent.atl < previous.atl;
+  const bounce = recent.rejectionNearEMA;
+
+  const strongPrior = previous.classification === "Bearish Continuation";
+  const recentSetupValid =
+    recent.classification === "Possible Reversal" && breakdown && bounce;
+
+  const finalClassification =
+    strongPrior && recentSetupValid ? "Bearish Continuation" : "Possible Reversal";
+
+  return {
+    valid: true,
+    finalClassification,
+    previous,
+    recent,
+    breakdown,
+    bounce,
+  };
+};
+       
+        
 
         const computeBullishLevels = () => {
                 const ema = parseFloat(ema70);
@@ -267,12 +484,12 @@ export default function Home() {
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
                                                 <p>
                                                         Market Zone:{' '}
-                                                        <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
-                                                                {getAthSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
+                                                        <span className={resolveFinalATHSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
+                                                                {resolveFinalATHSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
                                                         </span>
                                                 </p>
 
-                                                {getAthSignal() === 'Bullish Continuation' ? (
+                                                {resolveFinalATHSignal() === 'Bullish Continuation' ? (
                                                         <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
                                                                 <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
                                                                 <p>Entry: ${bullish.entry.toFixed(2)}</p>
@@ -306,12 +523,12 @@ export default function Home() {
                                                 <p>Gap: {atlGap.toFixed(2)}%</p>
                                                 <p>
                                                         Market Zone:{' '}
-                                                        <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
-                                                                {getAtlSignal() === 'Bearish Continuation' ? '🔻 Still in the Sell Zone' : '🟢 Opportunity: Buy Zone'}
+                                                        <span className={resolveFinalATLSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
+                                                                {resolveFinalATLSignal() === 'Bearish Continuation' ? '🔻 Still in the Sell Zone' : '🟢 Opportunity: Buy Zone'}
                                                         </span>
                                                 </p>
 
-                                                {getAtlSignal() === 'Bearish Continuation' ? (
+                                                {resolveFinalATLSignal() === 'Bearish Continuation' ? (
                                                         <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
                                                                 <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
                                                                 <p>Entry: ${bearish.entry.toFixed(2)}</p>
