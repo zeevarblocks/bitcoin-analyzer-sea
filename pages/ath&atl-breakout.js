@@ -1,95 +1,128 @@
-import {
-  computeAthBreakoutSignal,
-  computeAtlBreakoutSignal
-} from '../utils/ath&atlBreakout';
-import { useEffect, useState } from 'react';
-import { fetchMarketData } from '../utils/fetchMarketData';
+import axios from 'axios';
 
-export default function BreakoutPage() {
-  const [marketData, setMarketData] = useState({ currentPrice: null, ema70: null });
+// Detect bullish reversal
+const detectBullishReversal = (data) => {
+  if (!data || data.length < 3) {
+    return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
+  }
 
-  useEffect(() => {
-    async function getData() {
-      const data = await fetchMarketData();
-      setMarketData(data);
-    }
-    getData();
-  }, []);
+  const latest = data[data.length - 1];
+  const prev = data[data.length - 2];
+  const older = data[data.length - 3];
 
-  const athResult = computeAthBreakoutSignal({
-    currentPrice: marketData.currentPrice || 73000,
-    previousAth: 69000,
-    ema70: marketData.ema70 || 71000,
-    athBreakoutDate: '2024-03-11',
-    previousAthDate: '2021-11-08'
-  });
+  if (latest.ema14 >= latest.ema70) {
+    return { valid: false, error: 'Not in bearish structure (EMA14 >= EMA70).' };
+  }
 
-  const atlResult = computeAtlBreakoutSignal({
-    currentPrice: marketData.currentPrice || 15000,
-    previousAtl: 17000,
-    ema70: marketData.ema70 || 19000,
-    atlBreakoutDate: '2023-12-01',
-    previousAtlDate: '2022-11-08'
-  });
+  const atlCandle = data.reduce((min, candle) => (candle.low < min.low ? candle : min), data[0]);
+  const isCurrentATL = latest.low <= atlCandle.low;
+
+  const ema14Decreasing = latest.ema14 < prev.ema14 && prev.ema14 < older.ema14;
+  if (!ema14Decreasing) {
+    return { valid: false, error: 'EMA14 is not decreasing in the last 3 candles.' };
+  }
+
+  const atlPrice = atlCandle.low;
+  const atlEMA70 = atlCandle.ema70 || 1;
+  const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
+  const classification = gapPercent > 100 ? 'Bearish Continuation' : 'Possible Reversal';
+
+  if (isCurrentATL) {
+    return {
+      valid: true,
+      signal: 'Bullish Reversal Setup',
+      classification,
+      gapPercent: gapPercent.toFixed(2),
+      atl: atlPrice,
+      ema14: latest.ema14,
+      ema70: latest.ema70,
+      time: new Date(latest.time).toLocaleDateString(),
+      candle: latest
+    };
+  }
+
+  return { valid: false, error: 'Current candle is not the ATL.' };
+};
+
+// Calculate EMA
+const calculateEMA = (data, period) => {
+  const k = 2 / (period + 1);
+  let emaArray = [];
+  let ema = data.slice(0, period).reduce((sum, d) => sum + d.close, 0) / period;
+
+  for (let i = period; i < data.length; i++) {
+    const close = data[i].close;
+    ema = close * k + ema * (1 - k);
+    emaArray.push(ema);
+  }
+
+  const padding = new Array(data.length - emaArray.length).fill(null);
+  return [...padding, ...emaArray];
+};
+
+async function fetchCandleData() {
+  try {
+    const coinId = 'bitcoin';
+    const vsCurrency = 'usd';
+    const days = 30;
+
+    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=${vsCurrency}&days=${days}`;
+    const { data } = await axios.get(url);
+
+    const candles = data.map(c => ({
+      time: c[0],
+      open: c[1],
+      high: c[2],
+      low: c[3],
+      close: c[4]
+    }));
+
+    const ema14Array = calculateEMA(candles, 14);
+    const ema70Array = calculateEMA(candles, 70);
+
+    return candles.map((c, i) => ({
+      ...c,
+      ema14: ema14Array[i] || c.close,
+      ema70: ema70Array[i] || c.close
+    }));
+  } catch (error) {
+    console.error(error);
+    return { error: error.message };
+  }
+}
+
+export default async function Home() {
+  const candles = await fetchCandleData();
+
+  if (candles.error) {
+    return (
+      <main className="p-4 text-red-600">
+        <p>Error fetching data: {candles.error}</p>
+      </main>
+    );
+  }
+
+  const result = detectBullishReversal(candles);
 
   return (
-    <div style={{
-      padding: '2rem',
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f4f4f4',
-      color: '#212529',
-      lineHeight: '1.6',
-      fontSize: '1.05rem'
-    }}>
+    <main className="flex flex-col items-center justify-center min-h-screen p-4">
+      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector</h1>
 
-      <h1 style={{
-        textAlign: 'center',
-        color: '#0d6efd',
-        marginBottom: '2rem',
-        fontSize: '2rem'
-      }}>
-        Bitcoin Signal Analyzer
-      </h1>
-
-      {/* Market Data Section */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '10px',
-        padding: '1.5rem',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-        marginBottom: '2rem'
-      }}>
-        <h2 style={{ color: '#212529', marginBottom: '1rem' }}>Current Market Data</h2>
-        <p><strong>Current Price:</strong> ${marketData.currentPrice?.toLocaleString() || 'Loading...'}</p>
-        <p><strong>EMA70:</strong> ${marketData.ema70?.toLocaleString() || 'Loading...'}</p>
+      <div className="bg-gray-100 p-4 rounded shadow">
+        {result.valid ? (
+          <div>
+            <p className="text-green-600 font-bold">Signal: {result.signal}</p>
+            <p>Classification: {result.classification}</p>
+            <p>Gap %: {result.gapPercent}%</p>
+            <p>ATL: {result.atl}</p>
+            <p>EMA14: {result.ema14}</p>
+            <p>EMA70: {result.ema70}</p>
+            <p>Time: {result.time}</p>
+          </div>
+        ) : (
+          <p className="text-red-600">No valid setup: {result.error}</p>
+        )}
       </div>
-
-      {/* ATH Breakout Section */}
-      <div style={{
-        backgroundColor: '#eafaf1',
-        borderLeft: '5px solid #198754',
-        borderRadius: '10px',
-        padding: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        <h2 style={{ color: '#198754', marginBottom: '1rem' }}>ATH Breakout Signal</h2>
-        <p><strong>Signal:</strong> {athResult.signal}</p>
-        <p><strong>Weeks Since Previous ATH:</strong> {athResult.weeksSincePreviousAth}</p>
-        <p><strong>Exceeds 100 Weeks:</strong> {athResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
-      </div>
-
-      {/* ATL Breakout Section */}
-      <div style={{
-        backgroundColor: '#fbeaea',
-        borderLeft: '5px solid #dc3545',
-        borderRadius: '10px',
-        padding: '1.5rem'
-      }}>
-        <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>ATL Breakout Signal</h2>
-        <p><strong>Signal:</strong> {atlResult.signal}</p>
-        <p><strong>Weeks Since Previous ATL:</strong> {atlResult.weeksSincePreviousAtl}</p>
-        <p><strong>Exceeds 100 Weeks:</strong> {atlResult.exceeds100Weeks ? 'Yes' : 'No'}</p>
-      </div>
-    </div>
+    </main>
   );
-      }
+}
