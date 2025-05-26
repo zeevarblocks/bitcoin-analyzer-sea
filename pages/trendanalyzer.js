@@ -60,10 +60,10 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
-// Fetch 15m candles from OKX
-async function fetchCandleData() {
+// Fetch 15m candles for a given symbol
+async function fetchCandleData(symbol) {
   try {
-    const url = `https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=15m&limit=200`;
+    const url = `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`;
     const { data } = await axios.get(url);
 
     const rawCandles = data.data || [];
@@ -87,63 +87,57 @@ async function fetchCandleData() {
       ema70: ema70Array[i] || c.close
     }));
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to fetch candle data from OKX.');
+    console.error(`Error fetching ${symbol}:`, error.message);
+    return null;
   }
 }
 
 // Main React component
-export default function Home({ candles, result, error }) {
-  if (error) {
-    return (
-      <main className="p-4 text-red-600">
-        <p>Error fetching data: {error}</p>
-      </main>
-    );
-  }
-
+export default function Home({ results }) {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector (15m - OKX BTC-USDT)</h1>
+      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector (15m - OKX)</h1>
 
-      <div className="bg-gray-100 p-4 rounded shadow w-full max-w-md">
-        {result.valid ? (
-          <div>
-            <p className="text-green-600 font-bold">Signal: {result.signal}</p>
-            <p>Classification: {result.classification}</p>
-            <p>Gap %: {result.gapPercent}%</p>
-            <p>ATL: {result.atl}</p>
-            <p>EMA14: {result.ema14}</p>
-            <p>EMA70: {result.ema70}</p>
-            <p>Time: {result.time}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+        {results.map(({ symbol, result, error }) => (
+          <div key={symbol} className="bg-gray-100 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold mb-2">{symbol}</h2>
+            {error ? (
+              <p className="text-red-600">Error: {error}</p>
+            ) : result.valid ? (
+              <>
+                <p className="text-green-600 font-bold">Signal: {result.signal}</p>
+                <p>Classification: {result.classification}</p>
+                <p>Gap %: {result.gapPercent}%</p>
+                <p>ATL: {result.atl}</p>
+                <p>EMA14: {result.ema14}</p>
+                <p>EMA70: {result.ema70}</p>
+                <p>Time: {result.time}</p>
+              </>
+            ) : (
+              <p className="text-red-600">No valid setup: {result.error}</p>
+            )}
           </div>
-        ) : (
-          <p className="text-red-600">No valid setup: {result.error}</p>
-        )}
+        ))}
       </div>
     </main>
   );
 }
 
-// Use Next.js getServerSideProps for SSR
+// SSR
 export async function getServerSideProps() {
-  try {
-    const candles = await fetchCandleData();
-    const result = detectBullishReversal(candles);
+  const symbols = ['BTC-USDT', 'PI-USDT', 'SOL-USDT', 'ETH-USDT'];
 
-    return {
-      props: {
-        candles,
-        result
+  const results = await Promise.all(
+    symbols.map(async (symbol) => {
+      const candles = await fetchCandleData(symbol);
+      if (!candles) {
+        return { symbol, result: {}, error: 'Failed to fetch candle data' };
       }
-    };
-  } catch (error) {
-    return {
-      props: {
-        candles: [],
-        result: { valid: false, error: 'Could not determine reversal setup.' },
-        error: error.message
-      }
-    };
-  }
-      }
+      const result = detectBullishReversal(candles);
+      return { symbol, result };
+    })
+  );
+
+  return { props: { results } };
+                                         }
