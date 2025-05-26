@@ -344,7 +344,6 @@ const getPreviousATL = (candles) => {
     time: new Date(athCandle.time).toLocaleDateString()
   };
 }; 
-        const { previous, recent, finalClassification } = resolveFinalATHSignal(candles);
 
 
         const getATLSignal = (candles, { type }) => {
@@ -373,12 +372,12 @@ const getPreviousATL = (candles) => {
     time: new Date(atlCandle.time).toLocaleDateString()
   };
 };
-const { previous, recent, finalClassification } = resolveFinalATLSignal(candles);
+
         
 
 
         
-const resolveFinalATHSignal = (candles) => {
+const resolveFinalATHSignal = (weeklyData) => {
   const previous = getATHSignal(candles, { type: "previous" });
   const recent = getATHSignal(candles, { type: "recent" });
 
@@ -409,8 +408,24 @@ const resolveFinalATHSignal = (candles) => {
     bounce,
   };
 };
+        const athSignal = resolveFinalATHSignal(weeklyData);
 
-const resolveFinalATLSignal = (candles) => {
+let bullish = {};
+if (athSignal.valid) {
+  const ema = parseFloat(athSignal.recent.ema70);
+  const ath = parseFloat(athSignal.recent.ath);
+  if (!isNaN(ema) && !isNaN(ath)) {
+    bullish = {
+      entry: ema * 1.02,
+      stopLoss: ema * 0.97,
+      takeProfit1: ath * 0.98,
+      takeProfit2: ath * 1.05,
+    };
+  }
+}
+        
+
+const resolveFinalATLSignal = (weeklyData) => {
   const previous = getATLSignal(candles, { type: "previous" });
   const recent = getATLSignal(candles, { type: "recent" });
 
@@ -445,17 +460,7 @@ const resolveFinalATLSignal = (candles) => {
        
         
 
-        const computeBullishLevels = () => {
-                const ema = parseFloat(ema70);
-                const athNum = parseFloat(ath);
-                if (isNaN(ema) || isNaN(athNum)) return {};
-                return {
-                        entry: ema * 1.02,
-                        stopLoss: ema * 0.97,
-                        takeProfit1: athNum * 0.98,
-                        takeProfit2: athNum * 1.05,
-                };
-        };
+        
 
         const computeBearishLevels = () => {
                 const ema = parseFloat(ema70);
@@ -497,7 +502,7 @@ const resolveFinalATLSignal = (candles) => {
         const bullishReversal = computeBullishReversalFromAtl();
         const bearishReversal = computeBearishReversalFromAth();
 
-        const bullish = computeBullishLevels();
+        
         const bearish = computeBearishLevels();
 
         return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
@@ -542,28 +547,29 @@ const resolveFinalATLSignal = (candles) => {
                                                 <h2 className="text-xl font-semibold">ATH Heat Check</h2>
                                                 <p>ATH: ${athNum.toFixed(2)}</p>
                                                 <p>Gap: {athGap.toFixed(2)}%</p>
-                                                <p>
-                                                        Market Zone:{' '}
-                                                        <span className={resolveFinalATHSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
-                                                                {resolveFinalATHSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
-                                                        </span>
-                                                </p>
+                                                
+                                                       <p>
+  Market Zone:{' '}
+  <span className={
+    athSignal.finalClassification === 'Bullish Continuation'
+      ? 'text-green-700 font-bold'
+      : 'text-yellow-700 font-bold'
+  }>
+    {athSignal.finalClassification === 'Bullish Continuation'
+      ? '🔥 Still in the Buy Zone'
+      : '⚠️ Caution: Sell Zone'}
+  </span>
+</p>
 
-                                                {resolveFinalATHSignal() === 'Bullish Continuation' ? (
-                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
-                                                        </div>
-                                                ) : (
-                                                        <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
-                                                                <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
-                                                        </div>
-                                                )}
+{athSignal.finalClassification === 'Bullish Continuation' && bullish.entry ? (
+  <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+    <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+    <p>Entry: ${bullish.entry.toFixed(2)}</p>
+    <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
+    <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+  </div>
+) : null} 
+
                                         </div>
                                 )}
 
