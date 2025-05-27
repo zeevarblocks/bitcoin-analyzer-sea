@@ -7,7 +7,7 @@ export default function Home() {
     
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         {/* Ad-Safe Placement */}
-        <div className="bg-neutral-800 p-4 rounded-xl shadow-md text-center text-white">
+        <div className="bg-neutral-800 p-4 rounded-xl shadow-md text-center text-gray-300">
           [ Advertisement Space ]
         </div>
 
