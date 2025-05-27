@@ -10,7 +10,7 @@ function MyApp({ Component, pageProps }) {
     <>
       <Navbar />
       <main className="min-h-screen p-6 flex justify-center items-start">
-        <div className="container bg-black/60 backdrop-blur-md text-white rounded-2xl shadow-lg w-full max-w-4xl">
+        <div className="container bg-black/60 backdrop-blur-md text-gray rounded-2xl shadow-lg w-full max-w-4xl">
           <Component {...pageProps} />
         </div>
       </main>
