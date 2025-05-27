@@ -28,12 +28,6 @@ export default function About() {
           <p className="text-lg leading-relaxed text-gray-200">
             Whether you're a seasoned trader or just starting out, <span className="text-white font-semibold">Bitcoin Signal Analyzer</span> empowers you with the tools and insights you need to navigate the market confidently.
           </p>
-
-          <div className="border-t border-gray-700 pt-4">
-            <p className="text-sm text-gray-400 text-center">
-              Built with React, Tailwind CSS, Chart.js, Binance API, and CoinGecko API.
-            </p>
-          </div>
         </div>
       </div>
     </div>
