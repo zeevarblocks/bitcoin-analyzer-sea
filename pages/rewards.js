@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Rewards() {
   return (
-    <div className="bg-gray-800 text-center rounded-2xl p-8 shadow-lg space-y-6">
+    <div className="bg-transparent text-center rounded-2xl p-8 shadow-lg space-y-6">
       {/* Binance Reward Section */}
       <h1 className="text-3xl font-bold mb-4">Claim Your Binance Mystery Box</h1>
       <p className="text-lg mb-6">
