@@ -260,7 +260,7 @@ export default function Home() {
         const bullish = computeBullishLevels();
         const bearish = computeBearishLevels();
 
-        return ( <div
+        return ( <div>
                 <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
                         Bitcoin Signal Analyzer
                 </h1>
