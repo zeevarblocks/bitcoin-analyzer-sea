@@ -318,19 +318,21 @@ export default function Home() {
                                                 </p>
 
                                                 {getAthSignal() === 'Bullish Continuation' ? (
-                                                        <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
-                                                        </div>
-                                                ) : (
-                                                        <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
-                                                                <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
-                                                        </div>
+  // === Bullish Trade Setup ===
+  <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
+    <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+    <p>Entry: ${bullish.entry.toFixed(2)}</p>
+    <p>Stop-Loss: ${bullish.stopLoss.toFixed(2)}</p>
+    <p>Take-Profit: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
+  </div>
+) : (
+  // === Bearish Trade Setup ===
+  <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
+    <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
+    <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
+    <p>Stop-Loss: ${bearishReversal.stopLoss.toFixed(2)}</p>
+    <p>Take-Profit: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
+  </div>
                                                 )}
                                         </div>
                                 )}
@@ -345,18 +347,23 @@ export default function Home() {
                                                 </AlertDescription>
                                         </Alert>
                                 ) : (
-                                        <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATL Heat Check</h2>
+                                        <div className="space-y-4 bg-gray-900 p-6 rounded-xl shadow-lg text-gray-100 border border-gray-700">
+  <h2 className="text-xl font-semibold text-green-400">ATL Heat Check</h2>
 
-                                                {previousATLInfo && (
-                                                        <div className="text-sm bg-gray-800 p-3 rounded-lg border border-gray-700 text-gray-300 space-y-1">
-                                                                <p className="font-semibold text-gray-100">Previous ATL (Historical):</p>
-                                                                <p>Price: ${previousATLInfo.price.toFixed(2)}</p>
-                                                                <p>Date: {previousATLInfo.time}</p>
-                                                        </div>
-                                                )}
-                                                <p>ATL: ${atlNum.toFixed(2)}</p>
-                                                <p>Gap: {atlGap.toFixed(2)}%</p>
+  {previousATLInfo && (
+    <div className="bg-gray-800 p-4 rounded-lg border border-green-500 shadow-inner">
+      <h3 className="text-lg font-bold mb-2">Previous ATL Reference</h3>
+      <p className="text-sm">Price: ${previousATLInfo.price.toFixed(2)}</p>
+      <p className="text-sm text-gray-400">Occurred on: {previousATLInfo.time}</p>
+    </div>
+  )}
+
+  <div className="bg-gray-800 p-4 rounded-lg border border-blue-600 space-y-2">
+    <p className="text-sm">Current ATL: <span className="font-medium text-blue-300">${atlNum.toFixed(2)}</span></p>
+    <p className="text-sm">Gap from EMA70: <span className="font-medium text-orange-400">{atlGap.toFixed(2)}%</span></p>
+  </div>
+                                                
+                                        
                                                 <p>
                                                         Market Zone:{' '}
                                                         <span className={getAtlSignal() === 'Bearish Continuation' ? 'text-red-700 font-bold' : 'text-green-700 font-bold'}>
