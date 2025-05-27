@@ -13,7 +13,6 @@ export default function Navbar() {
     { href: '/trendanalyzer', label: 'Trend Detector' },
     { href: '/btcreversalpanel', label: 'ATH/ATL vs EMA' },
     { href: '/rewards', label: 'Rewards' },
-    { href: '/tradinzones', label: 'Trading Set-up' },
     { href: '/about', label: 'About' },
   ];
 
@@ -75,4 +74,4 @@ export default function Navbar() {
       </div>
     </nav>
   );
-    }
+          }
