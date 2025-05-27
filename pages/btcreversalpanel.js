@@ -92,6 +92,7 @@ export default function BitcoinSignalAnalyzer() {
           maxWidth: '600px',
           width: '100%',
           textAlign: 'center',
+        	text-white
         }}
       >
             <h1 className="text-3xl font-bold text-center text-gray-900"> ATH/ATL vs EMA70 </h1>
