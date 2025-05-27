@@ -121,7 +121,6 @@ async function fetchCandleData(symbol) {
 
 // === React Component ===
 export default function Home({ results }) {
-export default function Home({ results }) {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-gray-800">
       <h1 className="text-4xl font-bold mb-6 text-indigo-700">Reversal Detector (15m - OKX)</h1>
