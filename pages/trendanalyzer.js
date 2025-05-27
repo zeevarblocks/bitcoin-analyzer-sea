@@ -146,14 +146,14 @@ export default function Home({ results }) {
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           padding: '2rem',
           borderRadius: '16px',
-          color: 'white',
+          color: 'gray',
           maxWidth: '600px',
           width: '100%',
           textAlign: 'center',
         }}
       >
         <TradingViewWidget />
-      <h1 className="text-4xl font-bold mb-6 text-indigo-700">Reversal Detector (15m - OKX)</h1>
+      <h1 className="text-4xl font-bold mb-6 text-gold">Reversal Detector (15m - OKX)</h1>
 
         {results.map(({ symbol, result, error }) => (
           <div
