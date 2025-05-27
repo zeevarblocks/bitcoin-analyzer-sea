@@ -6,10 +6,10 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-900 text-gray-100">
+    <div>
       <Navbar />
 
-      <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+      <main>
         <div className="bg-neutral-800 rounded-2xl shadow-xl p-6 md:p-10">
           <Component {...pageProps} />
         </div>
