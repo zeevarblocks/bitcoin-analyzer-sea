@@ -268,12 +268,10 @@ export default function Home() {
           color: 'white',
           maxWidth: '600px',
           width: '100%',
-          textAlign: 'center',
         }}
       >                
                         
-                <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
-                        Bitcoin Signal Analyzer
+
                 </h1>
                 <p className="text-lg mb-6 text-gray-300">
                         <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using 1W timeframe data, tracking ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
