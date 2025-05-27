@@ -6,11 +6,11 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+    <div className="min-h-screen flex flex-col bg-neutral-900 text-gray-100">
       <Navbar />
-      
-      <main className="flex-grow container mx-auto px-4 py-6 max-w-7xl">
-        <div className="bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl p-6">
+
+      <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+        <div className="bg-neutral-800 rounded-2xl shadow-xl p-6 md:p-10">
           <Component {...pageProps} />
         </div>
       </main>
