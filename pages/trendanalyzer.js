@@ -1,7 +1,6 @@
 import axios from 'axios';
 import TradingViewWidget from './tradingviewwidget';
 
-const getPreviousExtreme = (candles, type = 'low', lookback = 100) => { if (candles.length <= 1) return null; const candlesExcludingLast = candles.slice(0, -1); const recentCandles = candlesExcludingLast.slice(-lookback);
 const getPreviousExtreme = (candles, type = 'low', lookback = 100) => {
   if (candles.length <= 1) return null;
   const candlesExcludingLast = candles.slice(0, -1);
