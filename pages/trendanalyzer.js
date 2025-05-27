@@ -143,7 +143,7 @@ export default function Home({ results }) {
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-gray-800">
       <h1 className="text-4xl font-bold mb-6 text-indigo-700">Reversal Detector (15m - OKX)</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-6xl">
+      <div className="bg-gray-800 rounded-2xl p-8 shadow-lg space-y-6">
         {results.map(({ symbol, result, error }) => (
           <div
             key={symbol}
