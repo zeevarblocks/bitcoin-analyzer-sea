@@ -93,11 +93,11 @@ export default function BitcoinSignalAnalyzer() {
           width: '100%',
           textAlign: 'center',	
         }}
-className="text-white"
+className="text-gray-300"
       >
-            <h1 className="text-3xl font-bold text-center text-white"> ATH/ATL vs EMA70 </h1>
+            <h1 className="text-3xl font-bold text-center"> ATH/ATL vs EMA70 </h1>
 
-            <p className="text-white text-center">
+            <p className="text-center">
                 Analyze the Bitcoin market using ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
             </p>
 
@@ -108,7 +108,7 @@ className="text-white"
             </div>
 
             {/* Grouped Input Sections (Dark Mode) */}
-            <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
+            <div className="space-y-6 bg-gray-950 p-6 rounded-xl">
 
                 {/* ATH (Bullish) Inputs */}
                 <div className="bg-gray-900 p-4 rounded-lg border border-green-600">
@@ -154,8 +154,8 @@ className="text-white"
             </div>
 
             {/* ATH Signal Block */}
-            <div className="space-y-2 text-white">
-                <h2 className="text-xl font-semibold text-white">ATH vs EMA70</h2>
+            <div className="space-y-2">
+                <h2 className="text-xl font-semibold">ATH vs EMA70</h2>
                 <p>Gap: {computeAthGap().toFixed(2)}%</p>
                 <p>
                     Signal:{' '}
@@ -163,7 +163,7 @@ className="text-white"
                         {getAthSignal()}
                     </span>
                 </p>
-                <p className="text-sm text-white">
+                <p className="text-sm">
                     {getAthSignal() === 'Bullish Continuation'
                         ? 'Price is trending above long-term resistance. Momentum is strong; consider watching for breakout confirmations.'
                         : 'Price may be weakening. A pullback or trend reversal could be developing. Monitor weekly candles closely.'}
@@ -188,7 +188,7 @@ className="text-white"
             </div>
 
             {/* ATL Signal Block */}
-            <div className="space-y-2 text-white">
+            <div className="space-y-2">
                 <h2 className="text-xl font-semibold">ATL vs EMA70</h2>
                 <p>Gap: {computeAtlGap().toFixed(2)}%</p>
                 <p>
@@ -197,7 +197,7 @@ className="text-white"
                         {getAtlSignal()}
                     </span>
                 </p>
-                <p className="text-sm text-white">
+                <p className="text-sm">
                     {getAtlSignal() === 'Bearish Continuation'
                         ? 'Price remains under long-term pressure. Trend continuation likely unless strong reversal patterns emerge.'
                         : 'Price may be rebounding from historic lows. Watch for a higher low structure and rising EMA support.'}
