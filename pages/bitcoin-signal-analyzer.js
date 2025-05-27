@@ -320,19 +320,33 @@ export default function Home() {
                                                 {getAthSignal() === 'Bullish Continuation' ? (
   // === Bullish Trade Setup ===
   <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-    <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-    <p>Entry: ${bullish.entry.toFixed(2)}</p>
-    <p>Stop-Loss: ${bullish.stopLoss.toFixed(2)}</p>
-    <p>Take-Profit: ${bullish.takeProfit1.toFixed(2)} to ${bullish.takeProfit2.toFixed(2)}</p>
-  </div>
+  <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+  <p>
+    Entry: <span className="text-blue-700">${bullish.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Stop-Loss: <span className="text-red-700">${bullish.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Take-Profit: <span className="text-green-700">${bullish.takeProfit1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> 
+    to <span className="text-green-700">${bullish.takeProfit2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+</div>
 ) : (
   // === Bearish Trade Setup ===
   <div className="text-sm bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1">
-    <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
-    <p>Entry: ${bearishReversal.entry.toFixed(2)}</p>
-    <p>Stop-Loss: ${bearishReversal.stopLoss.toFixed(2)}</p>
-    <p>Take-Profit: ${bearishReversal.takeProfit2.toFixed(2)} to ${bearishReversal.takeProfit1.toFixed(2)}</p>
-  </div>
+  <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
+  <p>
+    Entry: <span className="text-blue-700">${bearishReversal.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Stop-Loss: <span className="text-red-700">${bearishReversal.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Take-Profit: <span className="text-green-700">${bearishReversal.takeProfit2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> 
+    to <span className="text-green-700">${bearishReversal.takeProfit1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+</div>
                                                 )}
                                         </div>
                                 )}
@@ -373,18 +387,34 @@ export default function Home() {
 
                                                 {getAtlSignal() === 'Bearish Continuation' ? (
                                                         <div className="text-sm bg-red-50 p-3 rounded-lg border border-red-200 space-y-1">
-                                                                <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
-                                                                <p>Entry: ${bearish.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bearish.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bearish.takeProfit2.toFixed(2)} to ${bearish.takeProfit1.toFixed(2)}</p>
-                                                        </div>
+  <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
+  <p>
+    Entry: <span className="text-blue-700">${bearish.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Stop-Loss: <span className="text-red-700">${bearish.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Take-Profit: <span className="text-green-700">${bearish.takeProfit2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+    {" "}to{" "}
+    <span className="text-green-700">${bearish.takeProfit1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+</div>
                                                 ) : (
                                                         <div className="text-sm bg-green-50 p-3 rounded-lg border border-green-200 space-y-1">
-                                                                <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
-                                                                <p>Entry: ${bullishReversal.entry.toFixed(2)}</p>
-                                                                <p>SL: ${bullishReversal.stopLoss.toFixed(2)}</p>
-                                                                <p>TP: ${bullishReversal.takeProfit1.toFixed(2)} to ${bullishReversal.takeProfit2.toFixed(2)}</p>
-                                                        </div>
+  <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
+  <p>
+    Entry: <span className="text-blue-700">${bullishReversal.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Stop-Loss: <span className="text-red-700">${bullishReversal.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+  <p>
+    Take-Profit: <span className="text-green-700">${bullishReversal.takeProfit1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+    {" "}to{" "}
+    <span className="text-green-700">${bullishReversal.takeProfit2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+  </p>
+</div>
                                                 )}
                                         </div>
                                 )}
