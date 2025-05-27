@@ -1,9 +1,10 @@
 import axios from 'axios';
 import TradingViewWidget from './tradingviewwidget';
 
+// === Helper Functions ===
+
 const getPreviousExtreme = (candles, type = 'low', lookback = 100) => {
   if (candles.length <= 1) return null;
-
   const candlesExcludingLast = candles.slice(0, -1);
   const recentCandles = candlesExcludingLast.slice(-lookback);
 
@@ -58,7 +59,6 @@ const detectReversal = (data) => {
   const prevATL = getPreviousExtreme(data, 'low');
   const prevATH = getPreviousExtreme(data, 'high');
 
-  // === Bullish Reversal Check ===
   if (latest.ema14 < latest.ema70 && ema14Decreasing && isATL) {
     const gap = ((atlCandle.ema70 - atlCandle.low) / atlCandle.ema70) * 100;
     return {
@@ -71,11 +71,10 @@ const detectReversal = (data) => {
       ema14: latest.ema14.toFixed(6),
       ema70: latest.ema70.toFixed(6),
       time: new Date(latest.time).toLocaleString(),
-      previous: prevATL
+      previous: prevATL,
     };
   }
 
-  // === Bearish Reversal Check ===
   if (latest.ema14 > latest.ema70 && ema14Increasing && isATH) {
     const gap = ((athCandle.high - athCandle.ema70) / athCandle.ema70) * 100;
     return {
@@ -88,11 +87,53 @@ const detectReversal = (data) => {
       ema14: latest.ema14.toFixed(6),
       ema70: latest.ema70.toFixed(6),
       time: new Date(latest.time).toLocaleString(),
-      previous: prevATH
+      previous: prevATH,
     };
   }
 
-  return { valid: false, error: 'No valid reversal detected.', previousATL: prevATL, previousATH: prevATH };
+  return {
+    valid: false,
+    error: 'No valid reversal detected.',
+    previousATL: prevATL,
+    previousATH: prevATH,
+  };
+};
+
+const trackRollingATHAndATL = (candles) => {
+  if (!candles || candles.length < 100) return null;
+
+  const last100 = candles.slice(-100);
+  let previousATH = null, currentATH = null, prevATHTime = null, currATHTime = null;
+  let previousATL = null, currentATL = null, prevATLTime = null, currATLTime = null;
+
+  last100.forEach(candle => {
+    const { high, low, ema14, ema70, time } = candle;
+
+    if (ema14 > ema70 && (currentATH === null || high > currentATH)) {
+      previousATH = currentATH;
+      prevATHTime = currATHTime;
+      currentATH = high;
+      currATHTime = time;
+    }
+
+    if (ema14 < ema70 && (currentATL === null || low < currentATL)) {
+      previousATL = currentATL;
+      prevATLTime = currATLTime;
+      currentATL = low;
+      currATLTime = time;
+    }
+  });
+
+  return {
+    ATH: currentATH ? {
+      current: { price: currentATH, time: new Date(currATHTime).toLocaleString() },
+      previous: previousATH ? { price: previousATH, time: new Date(prevATHTime).toLocaleString() } : null,
+    } : null,
+    ATL: currentATL ? {
+      current: { price: currentATL, time: new Date(currATLTime).toLocaleString() },
+      previous: previousATL ? { price: previousATL, time: new Date(prevATLTime).toLocaleString() } : null,
+    } : null,
+  };
 };
 
 async function fetchCandleData(symbol) {
@@ -101,15 +142,13 @@ async function fetchCandleData(symbol) {
     const { data } = await axios.get(url);
     const rawCandles = data.data || [];
 
-    const candles = rawCandles
-      .reverse()
-      .map(c => ({
-        time: Number(c[0]),
-        open: parseFloat(c[1]),
-        high: parseFloat(c[2]),
-        low: parseFloat(c[3]),
-        close: parseFloat(c[4])
-      }));
+    const candles = rawCandles.reverse().map(c => ({
+      time: Number(c[0]),
+      open: parseFloat(c[1]),
+      high: parseFloat(c[2]),
+      low: parseFloat(c[3]),
+      close: parseFloat(c[4])
+    }));
 
     const ema14Array = calculateEMA(candles, 14);
     const ema70Array = calculateEMA(candles, 70);
@@ -125,115 +164,9 @@ async function fetchCandleData(symbol) {
   }
 }
 
-// === Main function to fetch data and detect reversal ===
-async function analyzeReversal(symbol) {
-  const data = await fetchCandleData(symbol);
-  if (!data) {
-    console.error('Failed to fetch candle data.');
-    return;
-  }
-
-  const result = detectReversal(data);
-  console.log(`Reversal Analysis for ${symbol}:`, result);
-  return result;
-              }
-
-// === React Component ===
-export default function Home({ results }) {
-  return (
-    <div
-        style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          padding: '2rem',
-          borderRadius: '16px',
-          color: 'gray',
-          maxWidth: '600px',
-          width: '100%',
-          textAlign: 'center',
-        }}
-      >
-        <TradingViewWidget />
-      <h1 className="text-4xl font-bold mb-6">Reversal Detector (15m - OKX)</h1>
-
-        {results.map(({ symbol, result, error }) => (
-          <div
-            key={symbol}
-            className="bg-transparent border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl"
-          >
-            <h2 className="text-2xl font-semibold mb-4 text-indigo-600">{symbol}</h2>
-
-            {error ? (
-              <p className="text-red-600 font-medium">Error: {error}</p>
-            ) : result.valid ? (
-              <>
-                <p className={`font-semibold ${result.type === 'Bullish' ? 'text-green-600' : 'text-red-600'}`}>
-                  Signal: {result.signal}
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">Type:</span>{' '}
-                  <span className={result.type === 'Bullish' ? 'text-green-700' : 'text-red-700'}>
-                    {result.type}
-                  </span>
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">Classification:</span>{' '}
-                  <span className="text-blue-600">{result.classification}</span>
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">Gap %:</span>{' '}
-                  <span className="text-orange-500">{result.gapPercent}%</span>
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">
-                    {result.type === 'Bullish' ? 'ATL' : 'ATH'}:
-                  </span>{' '}
-                  {result.level}
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">EMA14:</span> {result.ema14}
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">EMA70:</span> {result.ema70}
-                </p>
-                <p>
-                  <span className="font-medium text-gray-600">Time:</span> {result.time}
-                </p>
-                {result.previous && (
-                  <p>
-                    <span className="font-medium text-gray-600">
-                      Previous {result.type === 'Bullish' ? 'ATL' : 'ATH'}:
-                    </span>{' '}
-                    {result.previous.price} on {result.previous.time}
-                  </p>
-                )}
-              </>
-            ) : (
-              <>
-                <p className="text-gray-500">No valid setup: {result.error}</p>
-                {result.previousATL && (
-                  <p className="text-blue-500">
-                    Previous ATL: {result.previousATL.price} on {result.previousATL.time}
-                  </p>
-                )}
-                {result.previousATH && (
-                  <p className="text-purple-500">
-                    Previous ATH: {result.previousATH.price} on {result.previousATH.time}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-  );
-              }
-
-// === SSR ===
 export async function getServerSideProps() {
-  // List of trading pairs to analyze
   const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT'];
 
-  // Process each symbol and analyze candle data
   const results = await Promise.all(
     symbols.map(async (symbol) => {
       const candles = await fetchCandleData(symbol);
@@ -247,18 +180,91 @@ export async function getServerSideProps() {
       }
 
       const result = detectReversal(candles);
+      const rollingHighLow = trackRollingATHAndATL(candles);
 
       return {
         symbol,
         result,
+        rollingHighLow,
       };
     })
   );
 
-  // Return results as props to the page
   return {
     props: {
       results,
     },
   };
 }
+
+// === React Component ===
+export default function Home({ results }) {
+  return (
+    <div
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        padding: '2rem',
+        borderRadius: '16px',
+        color: 'gray',
+        maxWidth: '600px',
+        width: '100%',
+        textAlign: 'center',
+      }}
+    >
+      <TradingViewWidget />
+      <h1 className="text-4xl font-bold mb-6">Reversal Detector (15m - OKX)</h1>
+
+      {results.map(({ symbol, result, error, rollingHighLow }) => (
+        <div
+          key={symbol}
+          className="bg-transparent border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl mb-4"
+        >
+          <h2 className="text-2xl font-semibold mb-4 text-indigo-600">{symbol}</h2>
+
+          {error ? (
+            <p className="text-red-600 font-medium">Error: {error}</p>
+          ) : result.valid ? (
+            <>
+              <p className={`font-semibold ${result.type === 'Bullish' ? 'text-green-600' : 'text-red-600'}`}>
+                Signal: {result.signal}
+              </p>
+              <p>Type: <span className={result.type === 'Bullish' ? 'text-green-700' : 'text-red-700'}>{result.type}</span></p>
+              <p>Classification: <span className="text-blue-600">{result.classification}</span></p>
+              <p>Gap %: <span className="text-orange-500">{result.gapPercent}%</span></p>
+              <p>{result.type === 'Bullish' ? 'ATL' : 'ATH'}: {result.level}</p>
+              <p>EMA14: {result.ema14}</p>
+              <p>EMA70: {result.ema70}</p>
+              <p>Time: {result.time}</p>
+              {result.previous && (
+                <p>Previous {result.type === 'Bullish' ? 'ATL' : 'ATH'}: {result.previous.price} on {result.previous.time}</p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-gray-500">No valid setup: {result.error}</p>
+              {result.previousATL && (
+                <p className="text-blue-500">Previous ATL: {result.previousATL.price} on {result.previousATL.time}</p>
+              )}
+              {result.previousATH && (
+                <p className="text-purple-500">Previous ATH: {result.previousATH.price} on {result.previousATH.time}</p>
+              )}
+            </>
+          )}
+
+          {rollingHighLow && (
+            <div className="mt-4 text-sm text-gray-400">
+              <p>Rolling ATH: {rollingHighLow.ATH?.current?.price} ({rollingHighLow.ATH?.current?.time})</p>
+              {rollingHighLow.ATH?.previous && (
+                <p>Previous ATH: {rollingHighLow.ATH.previous.price} ({rollingHighLow.ATH.previous.time})</p>
+              )}
+              <p>Rolling ATL: {rollingHighLow.ATL?.current?.price} ({rollingHighLow.ATL?.current?.time})</p>
+              {rollingHighLow.ATL?.previous && (
+                <p>Previous ATL: {rollingHighLow.ATL.previous.price} ({rollingHighLow.ATL.previous.time})</p>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+      }
