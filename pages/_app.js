@@ -10,9 +10,9 @@ function MyApp({ Component, pageProps }) {
       <Navbar />
 
       <main>
-        <div className="bg-neutral-800 rounded-2xl shadow-xl p-6 md:p-10">
+      
           <Component {...pageProps} />
-        </div>
+        
       </main>
 
       <FloatingButton />
