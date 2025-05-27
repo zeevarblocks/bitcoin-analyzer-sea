@@ -1,19 +1,42 @@
 import axios from 'axios';
 
 // === Helper: Get Previous ATL and ATH (excluding last candle) ===
-const getPreviousExtreme = (candles, type = 'low') => {
-  if (candles.length < 2) return null;
+const getPreviousExtreme = (cand, type = 'low', lookback = 100) => {
+  if (candles.length <= 1) return null;
+
   const candlesExcludingLast = candles.slice(0, -1);
-  const extremeCandle = candlesExcludingLast.reduce((extreme, curr) =>
-    type === 'low' ? (curr.low < extreme.low ? curr : extreme) : (curr.high > extreme.high ? curr : extreme)
+  const recentCandles = candlesExcludingLast.slice(-lookback);
+
+  if (recentCandles.length === 0) return null;
+
+  const extremeCandle = recentCandles.reduce((extreme, curr) =>
+    type === 'low'
+      ? curr.low < extreme.low ? curr : extreme
+      : curr.high > extreme.high ? curr : extreme
   );
+
   return {
     price: type === 'low' ? extremeCandle.low : extremeCandle.high,
-    time: new Date(extremeCandle.time).toLocaleDateString(),
+    time: new Date(extremeCandle.time).toLocaleString(),
+    candle: extremeCandle,
   };
 };
 
-// === Detect Reversal ===
+const calculateEMA = (data, period) => {
+  const k = 2 / (period + 1);
+  let emaArray = [];
+  let ema = data.slice(0, period).reduce((sum, d) => sum + d.close, 0) / period;
+
+  for (let i = period; i < data.length; i++) {
+    const close = data[i].close;
+    ema = close * k + ema * (1 - k);
+    emaArray.push(ema);
+  }
+
+  const padding = new Array(data.length - emaArray.length).fill(null);
+  return [...padding, ...emaArray];
+};
+
 const detectReversal = (data) => {
   if (!data || data.length < 3) {
     return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
@@ -72,23 +95,6 @@ const detectReversal = (data) => {
   return { valid: false, error: 'No valid reversal detected.', previousATL: prevATL, previousATH: prevATH };
 };
 
-// === Calculate EMA ===
-const calculateEMA = (data, period) => {
-  const k = 2 / (period + 1);
-  let emaArray = [];
-  let ema = data.slice(0, period).reduce((sum, d) => sum + d.close, 0) / period;
-
-  for (let i = period; i < data.length; i++) {
-    const close = data[i].close;
-    ema = close * k + ema * (1 - k);
-    emaArray.push(ema);
-  }
-
-  const padding = new Array(data.length - emaArray.length).fill(null);
-  return [...padding, ...emaArray];
-};
-
-// === Fetch Candle Data ===
 async function fetchCandleData(symbol) {
   try {
     const url = `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`;
@@ -117,6 +123,20 @@ async function fetchCandleData(symbol) {
     console.error(`Error fetching ${symbol}:`, error.message);
     return null;
   }
+}
+
+// === Main function to fetch data and detect reversal ===
+async function analyzeReversal(symbol) {
+  const data = await fetchCandleData(symbol);
+  if (!data) {
+    console.error('Failed to fetch candle data.');
+    return;
+  }
+
+  const result = detectReversal(data);
+  console.log(`Reversal Analysis for ${symbol}:`, result);
+  return result;
+    }
 }
 
 // === React Component ===
