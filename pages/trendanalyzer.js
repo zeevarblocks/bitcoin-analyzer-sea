@@ -139,11 +139,8 @@ const detectReversal = (data) => {
     crossover: previousCrossover,
   };
 };
-
-export { calculateEMA, getPreviousExtreme, detectReversal };
       
     
-
 async function fetchCandleData(symbol) {
   try {
     const url = `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`;
