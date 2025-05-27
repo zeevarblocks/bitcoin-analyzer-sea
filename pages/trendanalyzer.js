@@ -146,7 +146,7 @@ export default function Home({ results }) {
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           padding: '2rem',
           borderRadius: '16px',
-          color: 'gray',
+          color: 'white',
           maxWidth: '600px',
           width: '100%',
           textAlign: 'center',
@@ -158,7 +158,7 @@ export default function Home({ results }) {
         {results.map(({ symbol, result, error }) => (
           <div
             key={symbol}
-            className="bg-white border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl"
+            className="bg-transparent border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl"
           >
             <h2 className="text-2xl font-semibold mb-4 text-indigo-600">{symbol}</h2>
 
