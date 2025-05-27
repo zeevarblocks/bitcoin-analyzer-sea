@@ -260,7 +260,7 @@ export default function Home() {
         const bullish = computeBullishLevels();
         const bearish = computeBearishLevels();
 
-        return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
+        return (<div className="bg-gradient-to-r from-gray-900 via-black to-gray-900 text-gray-800 p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto mt-10">
                 <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
                         Bitcoin Signal Analyzer
                 </h1>
