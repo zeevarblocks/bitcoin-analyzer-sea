@@ -1,4 +1,3 @@
-// Updated Full Version with Trading Setup, More Indicators, and UI Info
 import axios from 'axios';
 
 // Get Previous ATL (only if bearish structure)
@@ -27,24 +26,6 @@ const getPreviousATH = (candles) => {
   };
 };
 
-// Trading setup for ATL reversal
-const getATLTradingSetup = (atl, ath) => {
-  const entry = atl * 1.01;
-  const stopLoss = atl * 0.995;
-  const takeProfit1 = atl * 1.1;
-  const takeProfit2 = atl * 1.2;
-  return { entry, stopLoss, takeProfit1, takeProfit2 };
-};
-
-// Trading setup for ATH reversal
-const getATHTradingSetup = (ath) => {
-  const entry = ath * 0.99;
-  const stopLoss = ath * 1.005;
-  const takeProfit1 = ath * 0.9;
-  const takeProfit2 = ath * 0.8;
-  return { entry, stopLoss, takeProfit1, takeProfit2 };
-};
-
 // Detect bullish reversal
 const detectBullishReversal = (data) => {
   if (!data || data.length < 3) {
@@ -60,13 +41,12 @@ const detectBullishReversal = (data) => {
   }
 
   const atlCandle = data.reduce((min, candle) => (candle.low < min.low ? candle : min), data[0]);
-  const athCandle = data.reduce((max, candle) => (candle.high > max.high ? candle : max), data[0]);
-
   const isCurrentATL = latest.low <= atlCandle.low;
-  const isCurrentATH = latest.high >= athCandle.high;
 
   const ema14Decreasing = latest.ema14 < prev.ema14 && prev.ema14 < older.ema14;
-  const ema14Increasing = latest.ema14 > prev.ema14 && prev.ema14 > older.ema14;
+  if (!ema14Decreasing) {
+    return { valid: false, error: 'EMA14 is not decreasing in the last 3 candles.' };
+  }
 
   const atlPrice = atlCandle.low;
   const atlEMA70 = atlCandle.ema70 || 1;
@@ -76,31 +56,23 @@ const detectBullishReversal = (data) => {
   const previousATL = getPreviousATL(data);
   const previousATH = getPreviousATH(data);
 
-  const result = {
-    valid: true,
-    signal: isCurrentATL ? 'Bullish Reversal at ATL' : isCurrentATH ? 'Bearish Reversal at ATH' : 'No Reversal',
-    classification,
-    gapPercent: gapPercent.toFixed(6),
-    atl: atlPrice.toFixed(6),
-    ath: athCandle.high.toFixed(6),
-    ema14: latest.ema14.toFixed(6),
-    ema70: latest.ema70.toFixed(6),
-    time: new Date(latest.time).toLocaleString(),
-    previousATL,
-    previousATH,
-    candle: latest,
-  };
-
-  if (isCurrentATL && ema14Decreasing) {
-    result.tradingSetup = getATLTradingSetup(atlPrice, athCandle.high);
-  } else if (isCurrentATH && ema14Increasing) {
-    result.tradingSetup = getATHTradingSetup(athCandle.high);
-  } else {
-    result.valid = false;
-    result.error = 'No confirmed ATL/ATH reversal pattern.';
+  if (isCurrentATL) {
+    return {
+      valid: true,
+      signal: 'Bullish Reversal Setup',
+      classification,
+      gapPercent: gapPercent.toFixed(6),
+      atl: atlPrice.toFixed(6),
+      ema14: latest.ema14.toFixed(6),
+      ema70: latest.ema70.toFixed(6),
+      time: new Date(latest.time).toLocaleString(),
+      previousATL,
+      previousATH,
+      candle: latest
+    };
   }
 
-  return result;
+  return { valid: false, error: 'Current candle is not the ATL.' };
 };
 
 // Calculate EMA
@@ -151,11 +123,11 @@ async function fetchCandleData(symbol) {
   }
 }
 
-// React UI
+// Main React Component
 export default function Home({ results }) {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Reversal Detector (15m - OKX)</h1>
+      <h1 className="text-3xl font-bold mb-4">Bullish Reversal Detector (15m - OKX)</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
         {results.map(({ symbol, result, error }) => (
@@ -169,21 +141,11 @@ export default function Home({ results }) {
                 <p>Classification: {result.classification}</p>
                 <p>Gap %: {result.gapPercent}%</p>
                 <p>ATL: {result.atl}</p>
-                <p>ATH: {result.ath}</p>
                 <p>EMA14: {result.ema14}</p>
                 <p>EMA70: {result.ema70}</p>
                 <p>Time: {result.time}</p>
                 <p>Previous ATL: {result.previousATL?.price} ({result.previousATL?.time})</p>
                 <p>Previous ATH: {result.previousATH?.price} ({result.previousATH?.time})</p>
-                {result.tradingSetup && (
-                  <div className="mt-2">
-                    <p className="font-semibold">Trading Setup:</p>
-                    <p>Entry: {result.tradingSetup.entry.toFixed(4)}</p>
-                    <p>Stop Loss: {result.tradingSetup.stopLoss.toFixed(4)}</p>
-                    <p>Take Profit 1: {result.tradingSetup.takeProfit1.toFixed(4)}</p>
-                    <p>Take Profit 2: {result.tradingSetup.takeProfit2.toFixed(4)}</p>
-                  </div>
-                )}
               </>
             ) : (
               <p className="text-red-600">No valid setup: {result.error}</p>
@@ -195,7 +157,7 @@ export default function Home({ results }) {
   );
 }
 
-// Server-side rendering
+// SSR
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT', 'PI-USDT', 'SOL-USDT', 'ETH-USDT'];
 
@@ -211,5 +173,4 @@ export async function getServerSideProps() {
   );
 
   return { props: { results } };
-      }
-  
+                                     }
