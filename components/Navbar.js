@@ -10,10 +10,10 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Home' },
+    { href: '/trendanalyzer', label: 'Trend Detector' },
+    { href: '/btcreversalpanel', label: 'ATH/ATL vs EMA' },
     { href: '/rewards', label: 'Rewards' },
     { href: '/about', label: 'About' },
-    { href: '/trendanalyzer', label: 'Trend Detector' },
-    { href: '/btcreversalpanel', label: 'BTC Reversal Panel' },
   ];
 
   const linkClass = (path) =>
@@ -28,7 +28,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold tracking-wide hover:text-yellow-400 transition">
           {/* Optional Logo */}
           <Image src="/logo.png" alt="Logo" width={40} height={40} />
-          Bitcoin Analyzer
+          Bitcoin Signal Analyzer
         </Link>
 
         {/* Mobile Menu Toggle */}
