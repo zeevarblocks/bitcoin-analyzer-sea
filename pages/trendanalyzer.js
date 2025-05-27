@@ -1,4 +1,5 @@
 import axios from 'axios';
+import TradingViewWidget from './tradingviewwidget';
 
 const getPreviousExtreme = (candles, type = 'low', lookback = 100) => {
   if (candles.length <= 1) return null;
@@ -140,7 +141,18 @@ async function analyzeReversal(symbol) {
 // === React Component ===
 export default function Home({ results }) {
   return (
-    <div>
+    <div
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          padding: '2rem',
+          borderRadius: '16px',
+          color: 'white',
+          maxWidth: '600px',
+          width: '100%',
+          textAlign: 'center',
+        }}
+      >
+        <TradingViewWidget />
       <h1 className="text-4xl font-bold mb-6 text-indigo-700">Reversal Detector (15m - OKX)</h1>
 
         {results.map(({ symbol, result, error }) => (
