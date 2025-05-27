@@ -58,6 +58,8 @@ const getPreviousEMACross = (candles) => {
   return null;
 };
 
+let lastReversal = null;
+
 const detectReversal = (data) => {
   if (!data || data.length < 3) {
     return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
@@ -80,10 +82,23 @@ const detectReversal = (data) => {
   const prevATH = getPreviousExtreme(data, 'high');
 
   const previousCrossover = getPreviousEMACross(data);
-
   const atlAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
   const athAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
 
+  // === 1. Signal persistence logic ===
+  if (lastReversal) {
+    const stillValid =
+      (lastReversal.type === 'Bullish' && latest.low >= lastReversal.level) ||
+      (lastReversal.type === 'Bearish' && latest.high <= lastReversal.level);
+
+    if (stillValid) {
+      return lastReversal;
+    } else {
+      lastReversal = null; // Breakout happened, reset
+    }
+  }
+
+  // === 2. Fresh signal evaluation ===
   if (
     latest.ema14 < latest.ema70 &&
     ema14Decreasing &&
@@ -92,7 +107,7 @@ const detectReversal = (data) => {
     atlAfterCrossover
   ) {
     const gap = ((atlCandle.ema70 - atlCandle.low) / atlCandle.ema70) * 100;
-    return {
+    lastReversal = {
       valid: true,
       type: 'Bullish',
       signal: 'Bullish Reversal Setup',
@@ -105,6 +120,7 @@ const detectReversal = (data) => {
       previous: prevATL,
       crossover: previousCrossover,
     };
+    return lastReversal;
   }
 
   if (
@@ -115,7 +131,7 @@ const detectReversal = (data) => {
     athAfterCrossover
   ) {
     const gap = ((athCandle.high - athCandle.ema70) / athCandle.ema70) * 100;
-    return {
+    lastReversal = {
       valid: true,
       type: 'Bearish',
       signal: 'Bearish Reversal Setup',
@@ -128,6 +144,7 @@ const detectReversal = (data) => {
       previous: prevATH,
       crossover: previousCrossover,
     };
+    return lastReversal;
   }
 
   return {
