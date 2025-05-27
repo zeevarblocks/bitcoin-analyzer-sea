@@ -231,6 +231,7 @@ async function fetchCandleData(symbol) {
 
     const ema14Array = calculateEMA(candles, 14);
     const ema70Array = calculateEMA(candles, 70);
+      const rsi14Array = calculateRSI(candles, 14); 
 
     return candles.map((c, i) => ({
       ...c,
