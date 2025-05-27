@@ -235,7 +235,7 @@ async function fetchCandleData(symbol) {
     return candles.map((c, i) => ({
       ...c,
       ema14: ema14Array[i] || c.close,
-      ema70: ema70Array[i] || c.close
+      ema70: ema70Array[i] || c.close,
        rsi14: rsi14Array[i] || 50
     }));
   } catch (error) {
