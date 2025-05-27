@@ -14,6 +14,7 @@ export default function Navbar() {
     { href: '/btcreversalpanel', label: 'ATH/ATL vs EMA' },
     { href: '/rewards', label: 'Rewards' },
     { href: '/about', label: 'About' },
+    { href: '/tradinzones', label: 'Trading Set-up' },
   ];
 
   const linkClass = (path) =>
