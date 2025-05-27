@@ -83,7 +83,7 @@ export default function BitcoinSignalAnalyzer() {
 
     return (
 
-        <div className="max-w-4xl mx-auto bg-gray-100 text-gray-900 rounded-xl shadow-xl p-6 space-y-6">
+        <div className="bg-gray-800 rounded-2xl p-8 shadow-lg space-y-6">
             <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
 
             <p className="text-gray-700 text-center">
