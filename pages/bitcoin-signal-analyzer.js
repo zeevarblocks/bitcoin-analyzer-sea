@@ -310,7 +310,6 @@ export default function Home() {
     <p className="text-sm">Current ATH: <span className="font-medium text-blue-300">${athNum.toFixed(2)}</span></p>
     <p className="text-sm">Gap from EMA70: <span className="font-medium text-orange-400">{athGap.toFixed(2)}%</span></p>
   </div>
-</div>
                                                 <p>
                                                         Market Zone:{' '}
                                                         <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
