@@ -1,7 +1,6 @@
 export default function About() {
   return (
     <div className="min-h-screen bg-gray-900 text-white px-6 py-12">
-      <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-6 text-center text-yellow-400">About Bitcoin Signal Analyzer</h1>
         
         <div className="bg-gray-800 rounded-2xl p-8 shadow-lg space-y-6">
@@ -30,6 +29,5 @@ export default function About() {
           </p>
         </div>
       </div>
-    </div>
   );
       }
