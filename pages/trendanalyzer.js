@@ -170,17 +170,35 @@ return {
 }
 
 // === Main function to fetch data and detect reversal ===
-async function analyzeReversal(symbol) {
-  const data = await fetchCandleData(symbol);
-  if (!data) {
-    console.error('Failed to fetch candle data.');
-    return;
-  }
+async function fetchCandleData(symbol) {
+  try {
+    const response = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`);
+    const json = await response.json();
+    const rawCandles = json.data || [];
 
-  const result = detectReversal(data);
-  console.log(`Reversal Analysis for ${symbol}:`, result);
-  return result;
-              }
+    const candles = rawCandles.reverse().map(c => ({
+      time: Number(c[0]),
+      open: parseFloat(c[1]),
+      high: parseFloat(c[2]),
+      low: parseFloat(c[3]),
+      close: parseFloat(c[4])
+    }));
+
+    const ema14Array = calculateEMA(candles, 14);
+    const ema70Array = calculateEMA(candles, 70);
+    const rsi14Array = calculateRSI(candles, 14);
+
+    return candles.map((c, i) => ({
+      ...c,
+      ema14: ema14Array[i] || c.close,
+      ema70: ema70Array[i] || c.close,
+      rsi14: rsi14Array[i] || 50
+    }));
+  } catch (error) {
+    console.error(`Failed to fetch data for ${symbol}:`, error.message);
+    return null;
+  }
+}
 
 // === React Component ===
 export default function Home({ results }) {
