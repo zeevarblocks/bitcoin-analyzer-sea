@@ -121,40 +121,76 @@ async function fetchCandleData(symbol) {
 
 // === React Component ===
 export default function Home({ results }) {
+export default function Home({ results }) {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Reversal Detector (15m - OKX)</h1>
+    <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-gray-800">
+      <h1 className="text-4xl font-bold mb-6 text-indigo-700">Reversal Detector (15m - OKX)</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-6xl">
         {results.map(({ symbol, result, error }) => (
-          <div key={symbol} className="bg-gray-100 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold mb-2">{symbol}</h2>
+          <div
+            key={symbol}
+            className="bg-white border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl"
+          >
+            <h2 className="text-2xl font-semibold mb-4 text-indigo-600">{symbol}</h2>
+
             {error ? (
-              <p className="text-red-600">Error: {error}</p>
+              <p className="text-red-600 font-medium">Error: {error}</p>
             ) : result.valid ? (
               <>
-                <p className={result.type === 'Bullish' ? 'text-green-600' : 'text-red-600'}>
+                <p className={`font-semibold ${result.type === 'Bullish' ? 'text-green-600' : 'text-red-600'}`}>
                   Signal: {result.signal}
                 </p>
-                <p>Type: {result.type}</p>
-                <p>Classification: {result.classification}</p>
-                <p>Gap %: {result.gapPercent}%</p>
-                <p>{result.type === 'Bullish' ? 'ATL' : 'ATH'}: {result.level}</p>
-                <p>EMA14: {result.ema14}</p>
-                <p>EMA70: {result.ema70}</p>
-                <p>Time: {result.time}</p>
+                <p>
+                  <span className="font-medium text-gray-600">Type:</span>{' '}
+                  <span className={result.type === 'Bullish' ? 'text-green-700' : 'text-red-700'}>
+                    {result.type}
+                  </span>
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">Classification:</span>{' '}
+                  <span className="text-blue-600">{result.classification}</span>
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">Gap %:</span>{' '}
+                  <span className="text-orange-500">{result.gapPercent}%</span>
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">
+                    {result.type === 'Bullish' ? 'ATL' : 'ATH'}:
+                  </span>{' '}
+                  {result.level}
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">EMA14:</span> {result.ema14}
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">EMA70:</span> {result.ema70}
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">Time:</span> {result.time}
+                </p>
                 {result.previous && (
-                  <p>Previous {result.type === 'Bullish' ? 'ATL' : 'ATH'}: {result.previous.price} on {result.previous.time}</p>
+                  <p>
+                    <span className="font-medium text-gray-600">
+                      Previous {result.type === 'Bullish' ? 'ATL' : 'ATH'}:
+                    </span>{' '}
+                    {result.previous.price} on {result.previous.time}
+                  </p>
                 )}
               </>
             ) : (
               <>
-                <p className="text-gray-700">No valid setup: {result.error}</p>
+                <p className="text-gray-500">No valid setup: {result.error}</p>
                 {result.previousATL && (
-                  <p>Previous ATL: {result.previousATL.price} on {result.previousATL.time}</p>
+                  <p className="text-blue-500">
+                    Previous ATL: {result.previousATL.price} on {result.previousATL.time}
+                  </p>
                 )}
                 {result.previousATH && (
-                  <p>Previous ATH: {result.previousATH.price} on {result.previousATH.time}</p>
+                  <p className="text-purple-500">
+                    Previous ATH: {result.previousATH.price} on {result.previousATH.time}
+                  </p>
                 )}
               </>
             )}
@@ -163,22 +199,39 @@ export default function Home({ results }) {
       </div>
     </main>
   );
-}
+              }
 
 // === SSR ===
 export async function getServerSideProps() {
+  // List of trading pairs to analyze
   const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT'];
 
+  // Process each symbol and analyze candle data
   const results = await Promise.all(
     symbols.map(async (symbol) => {
       const candles = await fetchCandleData(symbol);
+
       if (!candles) {
-        return { symbol, result: {}, error: 'Failed to fetch candle data' };
+        return {
+          symbol,
+          result: {},
+          error: 'Failed to fetch candle data',
+        };
       }
+
       const result = detectReversal(candles);
-      return { symbol, result };
+
+      return {
+        symbol,
+        result,
+      };
     })
   );
 
-  return { props: { results } };
-      }
+  // Return results as props to the page
+  return {
+    props: {
+      results,
+    },
+  };
+}
