@@ -1,8 +1,9 @@
 export default function About() {
   return (
-    <div className="min-h-screen bg-gray-900 text-white px-6 py-12">
+<div className="bg-transparent rounded-2xl p-8 shadow-lg space-y-6">
         <h1 className="text-4xl font-bold mb-6 text-center text-yellow-400">About Bitcoin Signal Analyzer</h1>
         
+    
           <p className="text-lg leading-relaxed text-gray-200">
             <span className="font-semibold text-white">Bitcoin Signal Analyzer</span> is a smart trading companion designed to help you make data-driven decisions in the Bitcoin market. This app fetches real-time Bitcoin weekly candle data and analyzes key market metrics including:
           </p>
