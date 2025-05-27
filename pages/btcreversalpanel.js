@@ -83,11 +83,21 @@ export default function BitcoinSignalAnalyzer() {
 
     return (
 
-        <div className="bg-gray-800 rounded-2xl p-8 shadow-lg space-y-6">
-            <h1 className="text-3xl font-bold text-center text-gray-900">Bitcoin Signal Analyzer</h1>
+        <div
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          padding: '2rem',
+          borderRadius: '16px',
+          color: 'white',
+          maxWidth: '600px',
+          width: '100%',
+          textAlign: 'center',
+        }}
+      >
+            <h1 className="text-3xl font-bold text-center text-gray-900"> ATH/ATL vs EMA70 </h1>
 
             <p className="text-gray-700 text-center">
-                Analyze the Bitcoin market using the vertical relationship between ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
+                Analyze the Bitcoin market using ATH, ATL, and the 70 EMA on the 1W timeframe. This tool generates a signal—either bullish continuation or possible reversal—based on macro price behavior.
             </p>
 
             {/* Ad-Safe Placement */}
