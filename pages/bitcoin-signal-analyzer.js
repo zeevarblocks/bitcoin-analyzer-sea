@@ -319,7 +319,7 @@ export default function Home() {
 
                                                 {getAthSignal() === 'Bullish Continuation' ? (
   // === Bullish Trade Setup ===
-  <div className="text-gold-900 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
+  <div className="text-slate-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
   <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
   <p>
     Entry: <span className="text-blue-700">${bullish.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -334,7 +334,7 @@ export default function Home() {
 </div>
 ) : (
   // === Bearish Trade Setup ===
-  <div className="text-gold-900 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
+  <div className="text-slate-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
   <p className="font-semibold text-yellow-800">Trade Setup (Sell Zone):</p>
   <p>
     Entry: <span className="text-blue-700">${bearishReversal.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -386,7 +386,7 @@ export default function Home() {
                                                 </p>
 
                                                 {getAtlSignal() === 'Bearish Continuation' ? (
-                                                        <div className="text-gold-900 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
+                                                        <div className="text-slate-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
   <p className="font-semibold text-red-800">Trade Setup (Sell Zone):</p>
   <p>
     Entry: <span className="text-blue-700">${bearish.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -401,7 +401,7 @@ export default function Home() {
   </p>
 </div>
                                                 ) : (
-                                                        <div className="text-gold-900 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
+                                                        <div className="text-slate-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 space-y-1 font-semibold">
   <p className="font-semibold text-green-800">Trade Setup (Buy Zone):</p>
   <p>
     Entry: <span className="text-blue-700">${bullishReversal.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
