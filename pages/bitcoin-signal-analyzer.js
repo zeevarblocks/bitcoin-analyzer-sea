@@ -265,7 +265,7 @@ export default function Home() {
                         Bitcoin Signal Analyzer
                 </h1>
                 <p className="text-lg mb-6 text-gray-300">
-                        <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
+                        <span className="font-semibold text-white">Smart Bitcoin Trading Starts Here.</span> Instantly analyze Bitcoin's market status using 1W timeframe data, tracking ATH, ATL, and EMA70 trends. This tool gives you actionable trade setups, identifies market zones (Buy or Sell), and provides real-time insights—all in one simple interface.
                 </p>
                 <div className="border-l-4 border-yellow-400 pl-4 text-sm text-yellow-100 italic">
                         Plan smarter. Trade better.
