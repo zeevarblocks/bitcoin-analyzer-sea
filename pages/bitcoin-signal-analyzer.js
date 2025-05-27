@@ -272,17 +272,14 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-6 bg-gray-950 p-6 rounded-xl text-white">
-                        <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
-                                <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Input</h2>
-                                <input
-                                        type="number"
-                                        placeholder="EMA70 (Manual Input)"
-                                        className="bg-gray-800 text-white placeholder-gray-500 border border-blue-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                        value={ema70}
-                                        onChange={e => setEma70(e.target.value)}
-                                />
-                        </div>
-                </div>
+  <div className="bg-gray-900 p-4 rounded-lg border border-blue-600">
+    <h2 className="text-lg font-semibold text-blue-400 mb-2">EMA70 Value</h2>
+    <div className="bg-gray-800 text-blue-300 border border-blue-700 rounded px-4 py-2">
+      {ema70}
+    </div>
+  </div>
+</div>
+
 
                 {loading && <p className="text-center text-gray-500">Fetching market data...</p>}
 
@@ -298,23 +295,26 @@ export default function Home() {
                                                 </AlertDescription>
                                         </Alert>
                                 ) : (
-                                        <div className="space-y-2 text-gray-800">
-                                                <h2 className="text-xl font-semibold">ATH Heat Check</h2>
+                                        <div className="space-y-4 bg-gray-900 p-6 rounded-xl shadow-lg text-gray-100 border border-gray-700">
+  <h2 className="text-xl font-semibold text-yellow-400">ATH Heat Check</h2>
 
-                                                {previousATHInfo && (
-                                                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-4 rounded-xl shadow-inner border border-gray-700 mt-4">
-                                                                <h3 className="text-lg font-bold text-yellow-400 mb-2">Previous ATH Reference</h3>
-                                                                <p className="text-sm text-gray-300">Price: ${previousATHInfo.price.toFixed(2)}</p>
-                                                                <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
-                                                        </div>
-                                                )}
+  {previousATHInfo && (
+    <div className="bg-gray-800 p-4 rounded-lg border border-yellow-500 shadow-inner">
+      <h3 className="text-lg font-bold mb-2">Previous ATH Reference</h3>
+      <p className="text-sm">Price: ${previousATHInfo.price.toFixed(2)}</p>
+      <p className="text-sm text-gray-400">Occurred on: {previousATHInfo.time}</p>
+    </div>
+  )}
 
-                                                <p>ATH: ${athNum.toFixed(2)}</p>
-                                                <p>Gap: {athGap.toFixed(2)}%</p>
+  <div className="bg-gray-800 p-4 rounded-lg border border-blue-600 space-y-2">
+    <p className="text-sm">Current ATH: <span className="font-medium text-blue-300">${athNum.toFixed(2)}</span></p>
+    <p className="text-sm">Gap from EMA70: <span className="font-medium text-orange-400">{athGap.toFixed(2)}%</span></p>
+  </div>
+</div>
                                                 <p>
                                                         Market Zone:{' '}
                                                         <span className={getAthSignal() === 'Bullish Continuation' ? 'text-green-700 font-bold' : 'text-yellow-700 font-bold'}>
-                                                                {getAthSignal() === 'Bullish Continuation' ? '🔥 Still in the Buy Zone' : '⚠️ Caution: Sell Zone'}
+                                                                {getAthSignal() === 'Bullish Continuation' ? '🔥 Buying Zone' : '⚠️ Caution: Selling Zone'}
                                                         </span>
                                                 </p>
 
