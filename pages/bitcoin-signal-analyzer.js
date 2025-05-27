@@ -260,7 +260,15 @@ export default function Home() {
         const bullish = computeBullishLevels();
         const bearish = computeBearishLevels();
 
-        return ( <div>
+        return 
+        	( <div>
+                        
+<div style={{ margin: '2rem 0', backgroundColor: '#fff', padding: '1rem', borderRadius: '8px' }}>
+                {/* Example ad placeholder — replace with real ad component */}
+                <p style={{ textAlign: 'center', color: '#888' }}>[ Advertisement Space ]</p>
+            </div>
+                        
+                        
                 <h1 className="text-4xl font-extrabold mb-4 text-yellow-400">
                         Bitcoin Signal Analyzer
                 </h1>
