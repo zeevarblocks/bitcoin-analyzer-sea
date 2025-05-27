@@ -90,7 +90,7 @@ const detectReversal = (data) => {
       time: new Date(latest.time).toLocaleString(),
       previous: prevATH
     };
-  }
+  
 
   return { valid: false, error: 'No valid reversal detected.', previousATL: prevATL, previousATH: prevATH };
 };
