@@ -88,7 +88,7 @@ export default function BitcoinSignalAnalyzer() {
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           padding: '2rem',
           borderRadius: '16px',
-          color: 'white',
+          color: 'gray',
           maxWidth: '600px',
           width: '100%',
           textAlign: 'center',	
