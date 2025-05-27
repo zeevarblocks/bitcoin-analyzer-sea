@@ -13,8 +13,8 @@ export default function Navbar() {
     { href: '/trendanalyzer', label: 'Trend Detector' },
     { href: '/btcreversalpanel', label: 'ATH/ATL vs EMA' },
     { href: '/rewards', label: 'Rewards' },
-    { href: '/about', label: 'About' },
     { href: '/tradinzones', label: 'Trading Set-up' },
+    { href: '/about', label: 'About' },
   ];
 
   const linkClass = (path) =>
