@@ -36,6 +36,36 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
+const calculateRSI = (data, period = 14) => {
+  let gains = 0, losses = 0;
+  const rsiArray = [];
+
+  for (let i = 1; i <= period; i++) {
+    const change = data[i].close - data[i - 1].close;
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
+
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  rsiArray[period] = 100 - (100 / (1 + avgGain / avgLoss));
+
+  for (let i = period + 1; i < data.length; i++) {
+    const change = data[i].close - data[i - 1].close;
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? -change : 0;
+
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+
+    const rs = avgGain / avgLoss;
+    rsiArray[i] = 100 - (100 / (1 + rs));
+  }
+
+  const padding = new Array(period).fill(null);
+  return [...padding, ...rsiArray.slice(period)];
+};
+
 const getPreviousEMACross = (candles) => {
   for (let i = candles.length - 2; i >= 1; i--) {
     const prev = candles[i - 1];
@@ -57,6 +87,8 @@ const getPreviousEMACross = (candles) => {
   }
   return null;
 };
+
+let lastReversal = null;
 
 const detectReversal = (data) => {
   if (!data || data.length < 3) {
@@ -80,19 +112,44 @@ const detectReversal = (data) => {
   const prevATH = getPreviousExtreme(data, 'high');
 
   const previousCrossover = getPreviousEMACross(data);
-
   const atlAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
   const athAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
+
+  const rsiATL = atlCandle.rsi14;
+  const rsiATH = athCandle.rsi14;
+
+  const lastLowRSI = data.slice(0, -1).reduce((min, c) =>
+    c.low < latest.low ? min : (c.rsi14 < min.rsi14 ? c : min), data[0]
+  );
+  const lastHighRSI = data.slice(0, -1).reduce((max, c) =>
+    c.high > latest.high ? max : (c.rsi14 > max.rsi14 ? c : max), data[0]
+  );
+
+  const bullishDivergence = isATL && latest.rsi14 > lastLowRSI.rsi14;
+  const bearishDivergence = isATH && latest.rsi14 < lastHighRSI.rsi14;
+
+  if (lastReversal) {
+    const stillValid =
+      (lastReversal.type === 'Bullish' && latest.low >= lastReversal.level) ||
+      (lastReversal.type === 'Bearish' && latest.high <= lastReversal.level);
+
+    if (stillValid) {
+      return lastReversal;
+    } else {
+      lastReversal = null;
+    }
+  }
 
   if (
     latest.ema14 < latest.ema70 &&
     ema14Decreasing &&
     isATL &&
     previousCrossover?.type === 'Bullish' &&
-    atlAfterCrossover
+    atlAfterCrossover &&
+    bullishDivergence
   ) {
     const gap = ((atlCandle.ema70 - atlCandle.low) / atlCandle.ema70) * 100;
-    return {
+    lastReversal = {
       valid: true,
       type: 'Bullish',
       signal: 'Bullish Reversal Setup',
@@ -101,10 +158,13 @@ const detectReversal = (data) => {
       level: atlCandle.low.toFixed(6),
       ema14: latest.ema14.toFixed(6),
       ema70: latest.ema70.toFixed(6),
+      rsi14: latest.rsi14.toFixed(2),
+      rsiDivergence: true,
       time: new Date(latest.time).toLocaleString(),
       previous: prevATL,
       crossover: previousCrossover,
     };
+    return lastReversal;
   }
 
   if (
@@ -112,10 +172,11 @@ const detectReversal = (data) => {
     ema14Increasing &&
     isATH &&
     previousCrossover?.type === 'Bearish' &&
-    athAfterCrossover
+    athAfterCrossover &&
+    bearishDivergence
   ) {
     const gap = ((athCandle.high - athCandle.ema70) / athCandle.ema70) * 100;
-    return {
+    lastReversal = {
       valid: true,
       type: 'Bearish',
       signal: 'Bearish Reversal Setup',
@@ -124,10 +185,13 @@ const detectReversal = (data) => {
       level: athCandle.high.toFixed(6),
       ema14: latest.ema14.toFixed(6),
       ema70: latest.ema70.toFixed(6),
+      rsi14: latest.rsi14.toFixed(2),
+      rsiDivergence: true,
       time: new Date(latest.time).toLocaleString(),
       previous: prevATH,
       crossover: previousCrossover,
     };
+    return lastReversal;
   }
 
   return {
@@ -138,6 +202,17 @@ const detectReversal = (data) => {
     crossover: previousCrossover,
   };
 };
+                                     
+
+
+  
+
+    
+
+
+
+
+  
   
 
 // === Main function to fetch data and detect reversal ===
