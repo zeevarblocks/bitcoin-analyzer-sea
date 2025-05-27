@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// === Helper: Get Previous ATL and ATH (excluding last candle) ===
-const getPreviousExtreme = (cand, type = 'low', lookback = 100) => {
+const getPreviousExtreme = (candles, type = 'low', lookback = 100) => {
   if (candles.length <= 1) return null;
 
   const candlesExcludingLast = candles.slice(0, -1);
@@ -90,7 +89,7 @@ const detectReversal = (data) => {
       time: new Date(latest.time).toLocaleString(),
       previous: prevATH
     };
-  
+  }
 
   return { valid: false, error: 'No valid reversal detected.', previousATL: prevATL, previousATH: prevATH };
 };
@@ -136,8 +135,7 @@ async function analyzeReversal(symbol) {
   const result = detectReversal(data);
   console.log(`Reversal Analysis for ${symbol}:`, result);
   return result;
-    }
-}
+              }
 
 // === React Component ===
 export default function Home({ results }) {
