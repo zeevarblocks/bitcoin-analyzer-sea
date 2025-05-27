@@ -162,7 +162,7 @@ return {
   crossover: previousCrossover,
 };
 
-} catch (e) { return { valid: false, error: Detection error: ${e.message}, }; } };
+} catch (e) { return { valid: false, error: Detection error: ${e.message}, }; } 
 
 
 // === Main function to fetch data and detect reversal ===
