@@ -4,7 +4,7 @@ import BitcoinSignalAnalyzer from './bitcoin-signal-analyzer';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-900 text-gray-100">
+    
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         {/* Ad-Safe Placement */}
         <div className="bg-neutral-800 p-4 rounded-xl shadow-md text-center text-gray-400">
@@ -13,7 +13,7 @@ export default function Home() {
 
         <BitcoinSignalAnalyzer />
         <TradingViewWidget />
-      </div>
+      
 
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
         <p>
