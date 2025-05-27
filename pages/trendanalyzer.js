@@ -143,7 +143,6 @@ export default function Home({ results }) {
     <div>
       <h1 className="text-4xl font-bold mb-6 text-indigo-700">Reversal Detector (15m - OKX)</h1>
 
-      <div className="bg-gray-800 rounded-2xl p-8 shadow-lg space-y-6">
         {results.map(({ symbol, result, error }) => (
           <div
             key={symbol}
@@ -214,7 +213,6 @@ export default function Home({ results }) {
           </div>
         ))}
       </div>
-    </div>
   );
               }
 
