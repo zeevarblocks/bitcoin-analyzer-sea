@@ -1,9 +1,9 @@
 import axios from 'axios';
 import TradingViewWidget from './tradingviewwidget';
 
+const getPreviousExtreme = (candles, type = 'low', lookback = 100) => { if (candles.length <= 1) return null; const candlesExcludingLast = candles.slice(0, -1); const recentCandles = candlesExcludingLast.slice(-lookback);
 const getPreviousExtreme = (candles, type = 'low', lookback = 100) => {
   if (candles.length <= 1) return null;
-
   const candlesExcludingLast = candles.slice(0, -1);
   const recentCandles = candlesExcludingLast.slice(-lookback);
 
@@ -37,6 +37,28 @@ const calculateEMA = (data, period) => {
   return [...padding, ...emaArray];
 };
 
+const getPreviousEMACross = (candles) => {
+  for (let i = candles.length - 2; i >= 1; i--) {
+    const prev = candles[i - 1];
+    const curr = candles[i];
+
+    if (!prev.ema14 || !prev.ema70 || !curr.ema14 || !curr.ema70) continue;
+
+    const prevDiff = prev.ema14 - prev.ema70;
+    const currDiff = curr.ema14 - curr.ema70;
+
+    if (prevDiff * currDiff < 0) {
+      return {
+        type: currDiff > 0 ? 'Bullish' : 'Bearish',
+        time: new Date(curr.time).toLocaleString(),
+        price: curr.close,
+        index: i,
+      };
+    }
+  }
+  return null;
+};
+
 const detectReversal = (data) => {
   if (!data || data.length < 3) {
     return { valid: false, error: 'Insufficient candle data (need at least 3 candles).' };
@@ -58,8 +80,18 @@ const detectReversal = (data) => {
   const prevATL = getPreviousExtreme(data, 'low');
   const prevATH = getPreviousExtreme(data, 'high');
 
-  // === Bullish Reversal Check ===
-  if (latest.ema14 < latest.ema70 && ema14Decreasing && isATL) {
+  const previousCrossover = getPreviousEMACross(data);
+
+  const atlAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
+  const athAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
+
+  if (
+    latest.ema14 < latest.ema70 &&
+    ema14Decreasing &&
+    isATL &&
+    previousCrossover?.type === 'Bullish' &&
+    atlAfterCrossover
+  ) {
     const gap = ((atlCandle.ema70 - atlCandle.low) / atlCandle.ema70) * 100;
     return {
       valid: true,
@@ -71,12 +103,18 @@ const detectReversal = (data) => {
       ema14: latest.ema14.toFixed(6),
       ema70: latest.ema70.toFixed(6),
       time: new Date(latest.time).toLocaleString(),
-      previous: prevATL
+      previous: prevATL,
+      crossover: previousCrossover,
     };
   }
 
-  // === Bearish Reversal Check ===
-  if (latest.ema14 > latest.ema70 && ema14Increasing && isATH) {
+  if (
+    latest.ema14 > latest.ema70 &&
+    ema14Increasing &&
+    isATH &&
+    previousCrossover?.type === 'Bearish' &&
+    athAfterCrossover
+  ) {
     const gap = ((athCandle.high - athCandle.ema70) / athCandle.ema70) * 100;
     return {
       valid: true,
@@ -88,12 +126,23 @@ const detectReversal = (data) => {
       ema14: latest.ema14.toFixed(6),
       ema70: latest.ema70.toFixed(6),
       time: new Date(latest.time).toLocaleString(),
-      previous: prevATH
+      previous: prevATH,
+      crossover: previousCrossover,
     };
   }
 
-  return { valid: false, error: 'No valid reversal detected.', previousATL: prevATL, previousATH: prevATH };
+  return {
+    valid: false,
+    error: 'No valid reversal detected.',
+    previousATL: prevATL,
+    previousATH: prevATH,
+    crossover: previousCrossover,
+  };
 };
+
+export { calculateEMA, getPreviousExtreme, detectReversal };
+      
+    
 
 async function fetchCandleData(symbol) {
   try {
