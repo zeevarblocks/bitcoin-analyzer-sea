@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import SignalChecker from '../utils/signal';
 
 interface SignalData {
   trend: string;
