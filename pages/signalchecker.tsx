@@ -15,24 +15,33 @@ interface SignalData {
   inferredLevelWithinRange: boolean;
 }
 
-const predefinedSymbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
+const predefinedSymbols = ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', 'SOL-USDT-SWAP', 'PI-USDT-SWAP', 'CORE-USDT-SWAP'];
 
 export default function SignalCheckerPage({ initialSignals }: { initialSignals: Record<string, SignalData> }) {
   const [signals, setSignals] = useState<Record<string, SignalData>>(initialSignals);
   const [inputSymbol, setInputSymbol] = useState('');
 
   const fetchSignal = async (symbol: string) => {
-    const res = await fetch(`/api/signal?symbol=${symbol}`);
-    const data = await res.json();
-    if (data && data.signal) {
-      setSignals(prev => ({ ...prev, [symbol]: data.signal }));
+    try {
+      const res = await fetch(`/api/signal?symbol=${symbol}`);
+      const data = await res.json();
+      if (data?.signal) {
+        setSignals(prev => ({ ...prev, [symbol]: data.signal }));
+      } else {
+        alert(`No signal data returned for ${symbol}`);
+      }
+    } catch (error) {
+      alert(`Failed to fetch signal for ${symbol}`);
+      console.error(error);
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputSymbol.trim()) {
-      fetchSignal(inputSymbol.trim().toUpperCase());
+    const symbol = inputSymbol.trim().toUpperCase();
+    if (symbol) {
+      fetchSignal(symbol);
+      setInputSymbol('');
     }
   };
 
@@ -68,8 +77,7 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
       ))}
     </div>
   );
-}
-
+                                                                    }
 export async function getServerSideProps() {
   const symbols = predefinedSymbols;
   const signals: Record<string, SignalData> = {};
@@ -91,19 +99,4 @@ export async function getServerSideProps() {
       initialSignals: signals,
     },
   };
-                        }
-(data?.signal) {
-        signals[symbol] = data.signal;
-      }
-    } catch (err) {
-      console.error(`Error fetching signal for ${symbol}`, err);
-    }
-  }
-
-  return {
-    props: {
-      initialSignals: signals,
-    },
-  };
-}
-            
+              }
