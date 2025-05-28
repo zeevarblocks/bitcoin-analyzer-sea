@@ -162,4 +162,4 @@ const SignalChecker = ({ signals }: { signals: Record<string, SignalData> }) => 
   );
 };
 
-export default SignalChecker;
+
