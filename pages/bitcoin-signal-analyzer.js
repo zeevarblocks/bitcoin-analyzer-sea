@@ -108,6 +108,7 @@ export default function Home() {
 
         return emaArray;
     };
+        const formattedPrice = price ? price.toLocaleString() : 'Loading...';
         
 
         const getPreviousATL = (candles) => {
