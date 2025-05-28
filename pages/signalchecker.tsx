@@ -15,18 +15,17 @@ interface SignalData {
   inferredLevelWithinRange: boolean;
 }
 
-const predefinedSymbols = ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', 'SOL-USDT-SWAP', 'PI-USDT-SWAP', 'CORE-USDT-SWAP'];
+const predefinedSymbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
 
 export default function SignalCheckerPage({ initialSignals }: { initialSignals: Record<string, SignalData> }) {
   const [signals, setSignals] = useState<Record<string, SignalData>>(initialSignals);
   const [inputSymbol, setInputSymbol] = useState('');
 
   const fetchSignal = async (symbol: string) => {
-    const formattedSymbol = symbol.endsWith('-SWAP') ? symbol : `${symbol}-SWAP`;
-    const res = await fetch(`/api/signal?symbol=${formattedSymbol}`);
+    const res = await fetch(`/api/signal?symbol=${symbol}`);
     const data = await res.json();
     if (data && data.signal) {
-      setSignals(prev => ({ ...prev, [formattedSymbol]: data.signal }));
+      setSignals(prev => ({ ...prev, [symbol]: data.signal }));
     }
   };
 
@@ -42,7 +41,7 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
       <form onSubmit={handleSubmit} className="mb-4 space-x-2">
         <input
           type="text"
-          placeholder="Enter OKX Futures Pair (e.g. XRP-USDT)"
+          placeholder="Enter OKX Futures Pair (e.g. XRP-USDT-SWAP)"
           value={inputSymbol}
           onChange={(e) => setInputSymbol(e.target.value)}
           className="p-2 rounded text-black"
@@ -71,25 +70,27 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
   );
 }
 
-// Use analyzeSymbol for initial signals
-import { analyzeSymbol } from '../api/signal';
 
-export async function getServerSideProps() {
-  const signals: Record<string, SignalData> = {};
+export async function getServerSideProps(context) {
+  const { pair } = context.query;
 
-  for (const symbol of predefinedSymbols) {
-    try {
-      const signal = await analyzeSymbol(symbol);
-      signals[symbol] = signal;
-    } catch (error) {
-      console.error(`Failed to analyze ${symbol}:`, error);
-    }
+  try {
+    const response = await fetch(
+      `https://www.okx.com/api/v5/market/candles?instId=${pair}&bar=1h&limit=5`
+    );
+    const data = await response.json();
+
+    return {
+      props: {
+        data,
+      },
+    };
+  } catch (error) {
+    return {
+      props: {
+        data: { error: 'Failed to fetch data' },
+      },
+    };
   }
-
-  return {
-    props: {
-      initialSignals: signals,
-    },
-  };
           }
-  
+                                
