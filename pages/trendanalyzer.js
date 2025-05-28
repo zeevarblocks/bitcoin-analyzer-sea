@@ -1,14 +1,17 @@
 import axios from 'axios';
 import TradingViewWidget from './tradingviewwidget';
 
-const getPreviousExtreme = (candles, type = 'low', lookback = 100) => {
-  if (candles.length <= 1) return null;
-  const candlesExcludingLast = candles.slice(0, -1);
-  const recentCandles = candlesExcludingLast.slice(-lookback);
+const getPreviousExtreme1DFrom15m = (candles, type = 'low') => {
+  const candlesPerDay = 96;
 
-  if (recentCandles.length === 0) return null;
+  if (candles.length < candlesPerDay * 2) return null;
 
-  const extremeCandle = recentCandles.reduce((extreme, curr) =>
+  // Extract the full day before the most recent one
+  const startIndex = candles.length - candlesPerDay * 2;
+  const endIndex = candles.length - candlesPerDay;
+  const previousDayCandles = candles.slice(startIndex, endIndex);
+
+  const extremeCandle = previousDayCandles.reduce((extreme, curr) =>
     type === 'low'
       ? curr.low < extreme.low ? curr : extreme
       : curr.high > extreme.high ? curr : extreme
@@ -109,8 +112,8 @@ const detectReversal = (data) => {
     const isATL = latest.low <= atlCandle.low;
     const isATH = latest.high >= athCandle.high;
 
-    const prevATL = getPreviousExtreme(data, 'low');
-    const prevATH = getPreviousExtreme(data, 'high');
+    const prevATL = getPreviousExtreme1DFrom15m(data, 'low');
+const prevATH = getPreviousExtreme1DFrom15m(data, 'high');
 
     const previousCrossover = getPreviousEMACross(data);
     const atlAfterCrossover = previousCrossover && latest.time > data[previousCrossover.index].time;
