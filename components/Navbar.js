@@ -12,6 +12,7 @@ export default function Navbar() {
     { href: '/', label: 'Home' },
     { href: '/trendanalyzer', label: 'Trend Detector' },
     { href: '/btcreversalpanel', label: 'ATH/ATL vs EMA' },
+    { href: '/signalchecker', label: 'Signal Checker' },
     { href: '/rewards', label: 'Rewards' },
     { href: '/about', label: 'About' },
   ];
