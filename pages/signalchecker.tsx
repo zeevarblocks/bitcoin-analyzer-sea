@@ -27,21 +27,21 @@ interface Candle {
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
-  const response = await fetch(\`https://www.okx.com/api/v5/market/candles?instId=\${symbol}&bar=\${interval}&limit=\${limit}\`);
-  const data = await response.json();
+  const response = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`);
+  const json = await response.json();
 
-  if (!data.data || !Array.isArray(data.data)) throw new Error('Invalid candle data');
+  // Depending on the API response, map/transform to Candle[]
+  // For example, if `json.data` is an array of arrays, map it to Candle[]:
+  const candles: Candle[] = json.data.map((d: any[]) => ({
+    timestamp: Number(d[0]),
+    open: Number(d[1]),
+    high: Number(d[2]),
+    low: Number(d[3]),
+    close: Number(d[4]),
+    volume: Number(d[5]),
+  }));
 
-  return data.data
-    .map((d: string[]) => ({
-      timestamp: +d[0],
-      open: +d[1],
-      high: +d[2],
-      low: +d[3],
-      close: +d[4],
-      volume: +d[5],
-    }))
-    .reverse();
+  return candles;
 }
 
 function calculateEMA(data: number[], period: number): number[] {
