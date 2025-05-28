@@ -106,5 +106,11 @@ export async function getServerSideProps(context) {
           }
 
 export async function getServerSideProps() {
-  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
-  const results: Record<string, SignalData> = {};
+  const res = await fetch('http://localhost:3000/api/signal?symbols=BTC-USDT,ETH-USDT,SOL-USDT,PI-USDT,CORE-USDT');
+  const data = await res.json();
+  return {
+    props: {
+      initialSignals: data.signals,
+    },
+  };
+}
