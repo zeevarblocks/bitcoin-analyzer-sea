@@ -71,3 +71,12 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
     </div>
   );
 }
+export async function getServerSideProps() {
+  const res = await fetch('http://localhost:3000/api/signal?symbols=BTC-USDT,ETH-USDT,SOL-USDT,PI-USDT,CORE-USDT');
+  const data = await res.json();
+  return {
+    props: {
+      initialSignals: data.signals,
+    },
+  };
+          }
