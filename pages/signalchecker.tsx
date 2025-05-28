@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface SignalData {
@@ -6,6 +7,8 @@ interface SignalData {
   divergence: boolean;
   emaSupport: boolean;
   ema14Bounce: boolean;
+  supportLevel: number | null;
+  resistanceLevel: number | null;
 }
 
 interface Candle {
@@ -35,7 +38,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
       close: +d[4],
       volume: +d[5],
     }))
-    .reverse(); // newest last
+    .reverse();
 }
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -137,12 +140,27 @@ export async function getServerSideProps() {
       const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const ema14Bounce = recentTouches && lastClose > lastEMA14;
 
+      let supportLevel: number | null = null;
+      let resistanceLevel: number | null = null;
+
+      for (let i = ema14.length - 2; i > 0; i--) {
+        if (!supportLevel && ema14[i - 1] < ema70[i - 1] && ema14[i] > ema70[i]) {
+          supportLevel = closes[i];
+        }
+        if (!resistanceLevel && ema14[i - 1] > ema70[i - 1] && ema14[i] < ema70[i]) {
+          resistanceLevel = closes[i];
+        }
+        if (supportLevel && resistanceLevel) break;
+      }
+
       results[symbol] = {
         trend,
         breakout,
         divergence,
         emaSupport,
         ema14Bounce,
+        supportLevel,
+        resistanceLevel,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -187,8 +205,20 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               {data.ema14Bounce ? 'Yes' : 'No'}
             </span>
           </p>
+          <p>
+            📏 Support Level:{' '}
+            <span className="text-blue-300">
+              {data.supportLevel ? data.supportLevel.toFixed(2) : 'N/A'}
+            </span>
+          </p>
+          <p>
+            📐 Resistance Level:{' '}
+            <span className="text-orange-300">
+              {data.resistanceLevel ? data.resistanceLevel.toFixed(2) : 'N/A'}
+            </span>
+          </p>
         </div>
       ))}
     </div>
   );
-}
+  }
