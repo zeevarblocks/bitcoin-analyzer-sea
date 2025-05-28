@@ -70,16 +70,29 @@ export default function SignalChecker({ initialSignals }: { initialSignals: Reco
   );
 }
 
-export async function getServerSideProps() {
-  
-  const { pair } = req.query;
+// pages/signalchecker.tsx or wherever your page is
+export async function getServerSideProps(context: any) {
+  const { pair } = context.query;
+
   try {
     const response = await fetch(
       `https://www.okx.com/api/v5/market/candles?instId=${pair}&bar=1h&limit=5`
     );
     const data = await response.json();
-    res.status(200).json(data);
+
+    return {
+      props: {
+        pairData: data, // pass data to the component
+        pair: pair || null,
+      },
+    };
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch data" });
+    return {
+      props: {
+        pairData: null,
+        pair: pair || null,
+        error: "Failed to fetch data",
+      },
+    };
   }
-          }
+}
