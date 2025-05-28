@@ -118,8 +118,7 @@ export default function Home() {
                 };
         };
 
-
-        const findRecentATH = (data) => {
+const findRecentATH = (data) => {
     if (!data || data.length === 0) return null;
 
     const latestCandle = data[data.length - 1];
@@ -143,10 +142,11 @@ export default function Home() {
         ath: athPrice,
         ema70: athEMA70,
         gapPercent: gapPercent.toFixed(2),
-        time: new Date(athCandle.time).toLocaleDateString(),
+        time: athCandle.time ? new Date(athCandle.time).toLocaleDateString() : 'N/A',
         candle: athCandle,
     };
 };
+        
         useEffect(() => {
                 async function fetchMarketData() {
                         try {
