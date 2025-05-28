@@ -100,72 +100,74 @@ function calculateRSI(closes: number[], period = 14): number[] {
 }
 
 export async function getServerSideProps() {
-  const symbol = 'BTC-USDT';
+const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT'];
+const results: Record<string, SignalData> = {};
 
-  const candles = await fetchCandles(symbol, '15m');
-  const closes = candles.map(c => c.close);
-  const highs = candles.map(c => c.high);
-  const lows = candles.map(c => c.low);
+for (const symbol of symbols) {
+  try {
+    const candles = await fetchCandles(symbol, '15m');
+    const closes = candles.map(c => c.close);
+    const highs = candles.map(c => c.high);
+    const lows = candles.map(c => c.low);
 
-  const ema14 = calculateEMA(closes, 14);
-  const ema70 = calculateEMA(closes, 70);
-  const rsi14 = calculateRSI(closes, 14);
+    const ema14 = calculateEMA(closes, 14);
+    const ema70 = calculateEMA(closes, 70);
+    const rsi14 = calculateRSI(closes, 14);
 
-  const lastClose = closes.at(-1)!;
-  const lastEMA14 = ema14.at(-1)!;
-  const lastEMA70 = ema70.at(-1)!;
+    const lastClose = closes.at(-1)!;
+    const lastEMA14 = ema14.at(-1)!;
+    const lastEMA70 = ema70.at(-1)!;
 
-  // 1. Trend
-  const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
+    const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-  // 2. Previous daily high/low
-  const dailyCandles = await fetchCandles(symbol, '1d');
-  const prevDay = dailyCandles.at(-2);
-  const dailyHigh = prevDay?.high ?? 0;
-  const dailyLow = prevDay?.low ?? 0;
+    const dailyCandles = await fetchCandles(symbol, '1d');
+    const prevDay = dailyCandles.at(-2);
+    const dailyHigh = prevDay?.high ?? 0;
+    const dailyLow = prevDay?.low ?? 0;
 
-  // 3. RSI divergence (simplified)
-  const prevHighIdx = highs.lastIndexOf(dailyHigh);
-  const prevLowIdx = lows.lastIndexOf(dailyLow);
-  const divergence =
-    (highs.at(-1)! > dailyHigh && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-    (lows.at(-1)! < dailyLow && rsi14.at(-1)! > rsi14[prevLowIdx]);
+    const prevHighIdx = highs.lastIndexOf(dailyHigh);
+    const prevLowIdx = lows.lastIndexOf(dailyLow);
+    const divergence =
+      (highs.at(-1)! > dailyHigh && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+      (lows.at(-1)! < dailyLow && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
-  // 4. EMA cross
-  const crossIdx = ema14.findIndex((v, i) => v < ema70[i] && ema14[i + 1] > ema70[i + 1]);
-  const emaSupport = crossIdx !== -1;
+    const crossIdx = ema14.findIndex((v, i) => v < ema70[i] && ema14[i + 1] > ema70[i + 1]);
+    const emaSupport = crossIdx !== -1;
 
-  // 5. Daily breakout
-  const breakout = highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow;
+    const breakout = highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow;
+    const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
+    const ema14Bounce = recentTouches && lastClose > lastEMA14;
 
-  // 6. EMA14 bounce
-  const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
-  const ema14Bounce = recentTouches && lastClose > lastEMA14;
-
-  const signals: SignalData = {
-    trend,
-    breakout,
-    divergence,
-    emaSupport,
-    ema14Bounce,
-  };
-
+    results[symbol] = {
+      trend,
+      breakout,
+      divergence,
+      emaSupport,
+      ema14Bounce,
+    };
+  } catch (err) {
+    console.error(`Error fetching ${symbol}:`, err);
+  }
+                                     }
   return {
-    props: {
-      signals,
-    },
-  };
-}
+  props: {
+    signals: results,
+  },
+};
 
-export default function SignalChecker({ signals }: { signals: SignalData }) {
+export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
-    <div className="p-4 space-y-2">
-      <h2 className="text-xl font-bold">15-Minute Signal Analysis (Server-Side)</h2>
-      <p>📈 Trend: {signals.trend}</p>
-      <p>🚀 Daily Breakout: {signals.breakout ? 'Yes' : 'No'}</p>
-      <p>📉 RSI Divergence: {signals.divergence ? 'Yes' : 'No'}</p>
-      <p>🛡️ EMA Support/Resistance: {signals.emaSupport ? 'Detected' : 'No'}</p>
-      <p>🔁 EMA14 Bounce: {signals.ema14Bounce ? 'Yes' : 'No'}</p>
+    <div className="p-4 space-y-6">
+      {Object.entries(signals).map(([symbol, data]) => (
+        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
+          <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
+          <p>📈 Trend: {data.trend}</p>
+          <p>🚀 Daily Breakout: {data.breakout ? 'Yes' : 'No'}</p>
+          <p>📉 RSI Divergence: {data.divergence ? 'Yes' : 'No'}</p>
+          <p>🛡️ EMA Support/Resistance: {data.emaSupport ? 'Detected' : 'No'}</p>
+          <p>🔁 EMA14 Bounce: {data.ema14Bounce ? 'Yes' : 'No'}</p>
+        </div>
+      ))}
     </div>
   );
 }
