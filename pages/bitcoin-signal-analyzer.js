@@ -40,8 +40,10 @@ export default function Home() {
                 }));
 
                 setWeeklyCandles(candlesWithEma);
+                     setLoading(false); 
             } catch (err) {
                 console.error("Error loading candles:", err);
+                     setLoading(false); 
             }
         };
 
