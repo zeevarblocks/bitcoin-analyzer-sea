@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface SignalData {
@@ -7,8 +6,8 @@ interface SignalData {
   divergence: boolean;
   emaSupport: boolean;
   ema14Bounce: boolean;
-  supportLevel: number | null;
-  resistanceLevel: number | null;
+  level: number | null;
+  levelType: 'support' | 'resistance' | null;
 }
 
 interface Candle {
@@ -38,7 +37,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
       close: +d[4],
       volume: +d[5],
     }))
-    .reverse();
+    .reverse(); // newest last
 }
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -100,8 +99,32 @@ function calculateRSI(closes: number[], period = 14): number[] {
   return rsi;
 }
 
+function findRelevantLevel(
+  ema14: number[],
+  ema70: number[],
+  closes: number[],
+  trend: 'bullish' | 'bearish'
+): { level: number | null, type: 'support' | 'resistance' | null } {
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
+      return { level: closes[i], type: 'support' };
+    }
+
+    if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
+      return { level: closes[i], type: 'resistance' };
+    }
+  }
+
+  return { level: null, type: null };
+}
+
 export async function getServerSideProps() {
-  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT'];
+  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
   const results: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
@@ -140,18 +163,7 @@ export async function getServerSideProps() {
       const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const ema14Bounce = recentTouches && lastClose > lastEMA14;
 
-      let supportLevel: number | null = null;
-      let resistanceLevel: number | null = null;
-
-      for (let i = ema14.length - 2; i > 0; i--) {
-        if (!supportLevel && ema14[i - 1] < ema70[i - 1] && ema14[i] > ema70[i]) {
-          supportLevel = closes[i];
-        }
-        if (!resistanceLevel && ema14[i - 1] > ema70[i - 1] && ema14[i] < ema70[i]) {
-          resistanceLevel = closes[i];
-        }
-        if (supportLevel && resistanceLevel) break;
-      }
+      const { level, type } = findRelevantLevel(ema14, ema70, closes, trend);
 
       results[symbol] = {
         trend,
@@ -159,8 +171,8 @@ export async function getServerSideProps() {
         divergence,
         emaSupport,
         ema14Bounce,
-        supportLevel,
-        resistanceLevel,
+        level,
+        levelType: type,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -205,20 +217,14 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               {data.ema14Bounce ? 'Yes' : 'No'}
             </span>
           </p>
-          <p>
-            📏 Support Level:{' '}
-            <span className="text-blue-300">
-              {data.supportLevel ? data.supportLevel.toFixed(2) : 'N/A'}
-            </span>
-          </p>
-          <p>
-            📐 Resistance Level:{' '}
-            <span className="text-orange-300">
-              {data.resistanceLevel ? data.resistanceLevel.toFixed(2) : 'N/A'}
-            </span>
-          </p>
+          {data.levelType && (
+            <p>
+              {data.levelType === 'support' && <>🟢 Support Level: <span className="text-green-400">{data.level?.toFixed(2)}</span></>}
+              {data.levelType === 'resistance' && <>🔴 Resistance Level: <span className="text-red-400">{data.level?.toFixed(2)}</span></>}
+            </p>
+          )}
         </div>
       ))}
     </div>
   );
-  }
+}
