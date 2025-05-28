@@ -9,6 +9,8 @@ interface SignalData {
   currentPrice: number;
   level: number | null;
   levelType: 'support' | 'resistance' | null;
+  inferredLevel: number;
+  inferredLevelType: 'support' | 'resistance';
 }
 
 interface Candle {
@@ -167,6 +169,10 @@ export async function getServerSideProps() {
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
       const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
+      const highestHigh = Math.max(...highs);
+      const lowestLow = Math.min(...lows);
+      const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
+      const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
 
       results[symbol] = {
         trend,
@@ -177,6 +183,8 @@ export async function getServerSideProps() {
         currentPrice: lastClose,
         level,
         levelType: type,
+        inferredLevel,
+        inferredLevelType,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -228,8 +236,12 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             📊 {data.levelType?.toUpperCase()} Level:{' '}
             <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
           </p>
+          <p>
+            🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
+            <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
+          </p>
         </div>
       ))}
     </div>
   );
-       }
+    }
