@@ -214,3 +214,34 @@ export default function SignalChecker() {
       alert("Failed to fetch signal. Make sure the pair is valid on OKX Futures.");
     }
   };
+return (
+    <div className="p-4 space-y-6">
+      <form onSubmit={handleSubmit} className="space-x-2">
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Enter OKX Futures Symbol (e.g. BTC-USDT)"
+          className="p-2 rounded border"
+        />
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Check</button>
+      </form>
+
+      {Object.entries(signals).map(([symbol, data]) => (
+        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow text-white">
+          <h2 className="text-xl font-bold">{symbol} Signal</h2>
+          <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+          <p>🚀 Daily Breakout: <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>{data.breakout ? 'Yes' : 'No'}</span></p>
+          <p>📉 RSI Divergence: <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>{data.divergence ? 'Yes' : 'No'}</span></p>
+          <p>🟠 Near/At EMA70 Divergence: <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>{data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}</span></p>
+          <p>🟣 Inferred Level within Range: <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>{data.inferredLevelWithinRange ? 'Yes' : 'No'}</span></p>
+          <p>🔁 EMA14 Bounce: <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>{data.ema14Bounce ? 'Yes' : 'No'}</span></p>
+          <p>🟡 EMA70 Bounce: <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>{data.ema70Bounce ? 'Yes' : 'No'}</span></p>
+          <p>💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span></p>
+          <p>📊 {data.levelType?.toUpperCase()} Level: <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span></p>
+          <p>🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}: <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span></p>
+        </div>
+      ))}
+    </div>
+  );
+          }
