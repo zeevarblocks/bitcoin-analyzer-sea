@@ -70,7 +70,6 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
   );
 }
 
-
 export async function getServerSideProps() {
   const symbols = predefinedSymbols;
   const signals: Record<string, SignalData> = {};
@@ -106,4 +105,5 @@ export async function getServerSideProps() {
       initialSignals: signals,
     },
   };
-                        }
+}
+            
