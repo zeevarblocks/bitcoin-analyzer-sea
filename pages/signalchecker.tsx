@@ -1,5 +1,3 @@
-// pages/signal-checker.tsx
-
 import React from 'react';
 
 interface SignalData {
@@ -100,60 +98,63 @@ function calculateRSI(closes: number[], period = 14): number[] {
 }
 
 export async function getServerSideProps() {
-const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT'];
-const results: Record<string, SignalData> = {};
+  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT'];
+  const results: Record<string, SignalData> = {};
 
-for (const symbol of symbols) {
-  try {
-    const candles = await fetchCandles(symbol, '15m');
-    const closes = candles.map(c => c.close);
-    const highs = candles.map(c => c.high);
-    const lows = candles.map(c => c.low);
+  for (const symbol of symbols) {
+    try {
+      const candles = await fetchCandles(symbol, '15m');
+      const closes = candles.map(c => c.close);
+      const highs = candles.map(c => c.high);
+      const lows = candles.map(c => c.low);
 
-    const ema14 = calculateEMA(closes, 14);
-    const ema70 = calculateEMA(closes, 70);
-    const rsi14 = calculateRSI(closes, 14);
+      const ema14 = calculateEMA(closes, 14);
+      const ema70 = calculateEMA(closes, 70);
+      const rsi14 = calculateRSI(closes, 14);
 
-    const lastClose = closes.at(-1)!;
-    const lastEMA14 = ema14.at(-1)!;
-    const lastEMA70 = ema70.at(-1)!;
+      const lastClose = closes.at(-1)!;
+      const lastEMA14 = ema14.at(-1)!;
+      const lastEMA70 = ema70.at(-1)!;
 
-    const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
+      const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-    const dailyCandles = await fetchCandles(symbol, '1d');
-    const prevDay = dailyCandles.at(-2);
-    const dailyHigh = prevDay?.high ?? 0;
-    const dailyLow = prevDay?.low ?? 0;
+      const dailyCandles = await fetchCandles(symbol, '1d');
+      const prevDay = dailyCandles.at(-2);
+      const dailyHigh = prevDay?.high ?? 0;
+      const dailyLow = prevDay?.low ?? 0;
 
-    const prevHighIdx = highs.lastIndexOf(dailyHigh);
-    const prevLowIdx = lows.lastIndexOf(dailyLow);
-    const divergence =
-      (highs.at(-1)! > dailyHigh && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-      (lows.at(-1)! < dailyLow && rsi14.at(-1)! > rsi14[prevLowIdx]);
+      const prevHighIdx = highs.lastIndexOf(dailyHigh);
+      const prevLowIdx = lows.lastIndexOf(dailyLow);
 
-    const crossIdx = ema14.findIndex((v, i) => v < ema70[i] && ema14[i + 1] > ema70[i + 1]);
-    const emaSupport = crossIdx !== -1;
+      const divergence =
+        (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+        (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
-    const breakout = highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow;
-    const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
-    const ema14Bounce = recentTouches && lastClose > lastEMA14;
+      const crossIdx = ema14.findIndex((v, i) => v < ema70[i] && ema14[i + 1] > ema70[i + 1]);
+      const emaSupport = crossIdx !== -1;
 
-    results[symbol] = {
-      trend,
-      breakout,
-      divergence,
-      emaSupport,
-      ema14Bounce,
-    };
-  } catch (err) {
-    console.error(`Error fetching ${symbol}:`, err);
+      const breakout = highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow;
+      const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
+      const ema14Bounce = recentTouches && lastClose > lastEMA14;
+
+      results[symbol] = {
+        trend,
+        breakout,
+        divergence,
+        emaSupport,
+        ema14Bounce,
+      };
+    } catch (err) {
+      console.error(`Error fetching ${symbol}:`, err);
+    }
   }
-                                     }
+
   return {
-  props: {
-    signals: results,
-  },
-};
+    props: {
+      signals: results,
+    },
+  };
+}
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
@@ -161,11 +162,31 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       {Object.entries(signals).map(([symbol, data]) => (
         <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
           <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
-          <p>📈 Trend: {data.trend}</p>
-          <p>🚀 Daily Breakout: {data.breakout ? 'Yes' : 'No'}</p>
-          <p>📉 RSI Divergence: {data.divergence ? 'Yes' : 'No'}</p>
-          <p>🛡️ EMA Support/Resistance: {data.emaSupport ? 'Detected' : 'No'}</p>
-          <p>🔁 EMA14 Bounce: {data.ema14Bounce ? 'Yes' : 'No'}</p>
+          <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+          <p>
+            🚀 Daily Breakout:{' '}
+            <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
+              {data.breakout ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            📉 RSI Divergence:{' '}
+            <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
+              {data.divergence ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            🛡️ EMA Support/Resistance:{' '}
+            <span className={data.emaSupport ? 'text-green-400' : 'text-red-400'}>
+              {data.emaSupport ? 'Detected' : 'No'}
+            </span>
+          </p>
+          <p>
+            🔁 EMA14 Bounce:{' '}
+            <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
+              {data.ema14Bounce ? 'Yes' : 'No'}
+            </span>
+          </p>
         </div>
       ))}
     </div>
