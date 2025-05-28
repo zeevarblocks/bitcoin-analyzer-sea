@@ -11,14 +11,15 @@ export default function Home() {
         const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
 
+
         useEffect(() => {
     const fetchBTCWeeklyCandles = async () => {
         try {
             const res = await fetch("https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1W&limit=200");
             if (!res.ok) throw new Error("Failed to fetch weekly candles");
-            const json = await res.json();
 
-            const rawCandles = json.data || []; // OKX API returns { code, msg, data: [...] }
+            const json = await res.json();
+            const rawCandles = json.data || [];
 
             const formatted = rawCandles.map((candle) => ({
                 time: Number(candle[0]),
@@ -27,7 +28,7 @@ export default function Home() {
                 low: parseFloat(candle[3]),
                 close: parseFloat(candle[4]),
                 volume: parseFloat(candle[5]),
-            })).reverse(); // reverse for oldest-to-newest order
+            })).reverse();
 
             const ema14 = calculateEMA(formatted, 14);
             const ema70 = calculateEMA(formatted, 70);
@@ -46,27 +47,30 @@ export default function Home() {
 
     fetchBTCWeeklyCandles();
 }, []);
+
+useEffect(() => {
+    if (weeklyCandles.length > 0) {
+        const lastEma = weeklyCandles[weeklyCandles.length - 1].ema70;
+        if (lastEma && lastEma > 0) setEma70(lastEma.toFixed(2));
+    }
+}, [weeklyCandles]);
+
+const calculateEMA = (data, period) => {
+    if (data.length < period) return Array(data.length).fill(0);
+
+    const k = 2 / (period + 1);
+    let emaArray = [];
+    let ema = data.slice(0, period).reduce((sum, val) => sum + val.close, 0) / period;
+    emaArray[period - 1] = ema;
+
+    for (let i = period; i < data.length; i++) {
+        ema = data[i].close * k + ema * (1 - k);
+        emaArray[i] = ema;
+    }
+
+    return emaArray;
+};
         
-        useEffect(() => {
-                if (weeklyCandles.length > 0) {
-                        const lastEma = weeklyCandles[weeklyCandles.length - 1].ema70;
-                        if (lastEma && lastEma > 0) setEma70(lastEma.toFixed(2));
-                }
-        }, [weeklyCandles]);
-
-        const calculateEMA = (data, period) => {
-                const k = 2 / (period + 1);
-                let emaArray = [];
-                let ema = data.slice(0, period).reduce((sum, val) => sum + val.close, 0) / period;
-                emaArray[period - 1] = ema;
-
-                for (let i = period; i < data.length; i++) {
-                        ema = data[i].close * k + ema * (1 - k);
-                        emaArray[i] = ema;
-                }
-
-                return emaArray;
-        };
 
         const getPreviousATL = (candles) => {
     if (candles.length < 2) return null;
