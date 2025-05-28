@@ -250,8 +250,7 @@ async function fetchCandleData(symbol) {
 
 export default function Home({ results }) {
   return (
-    <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '2rem', borderRadius: '16px', color: 'gray', maxWidth: '600px', width: '100%', textAlign: 'center' }}>
-      <TradingViewWidget />
+    <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '2rem', borderRadius: '16px', color: 'gray-100', maxWidth: '600px', width: '100%', textAlign: 'center' }}>
       <h1 className="text-4xl font-bold mb-6">Reversal Detector (15m - OKX)</h1>
       {results.map(({ symbol, result, error }) => (
         <div key={symbol} className="bg-transparent border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl">
@@ -280,6 +279,7 @@ export default function Home({ results }) {
                 {result.crossover && (
   <p>Previous EMA {result.crossover.type} crossover at {result.crossover.time} — Price: {result.crossover.price}</p>
 )}
+               <TradingViewWidget />
             </>
           )}
         </div>
