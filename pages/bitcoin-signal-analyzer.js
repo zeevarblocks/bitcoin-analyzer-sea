@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../components/Alert";
-import axios from 'axios';
 
 
 
@@ -9,152 +8,104 @@ export default function Home() {
         const [ath, setAth] = useState(null);
         const [atl, setAtl] = useState(null);
         const [ema70, setEma70] = useState('');
-        const [loading, setLoading] = useState(false);
+        const [loading, setLoading] = useState(true);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
 
+        useEffect(() => {
+    const fetchBTCWeeklyCandles = async () => {
+        try {
+            const res = await fetch("https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1W&limit=200");
+            if (!res.ok) throw new Error("Failed to fetch weekly candles");
+            const json = await res.json();
 
-          useEffect(() => {
-        const fetchBTCWeeklyCandles = async () => {
-            try {
-                const res = await fetch("https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=1W&limit=200");
-                if (!res.ok) throw new Error("Failed to fetch weekly candles");
+            const rawCandles = json.data || []; // OKX API returns { code, msg, data: [...] }
 
-                const json = await res.json();
-                const rawCandles = json.data || [];
+            const formatted = rawCandles.map((candle) => ({
+                time: Number(candle[0]),
+                open: parseFloat(candle[1]),
+                high: parseFloat(candle[2]),
+                low: parseFloat(candle[3]),
+                close: parseFloat(candle[4]),
+                volume: parseFloat(candle[5]),
+            })).reverse(); // reverse for oldest-to-newest order
 
-                const formatted = rawCandles.map((candle) => ({
-                    time: Number(candle[0]),
-                    open: parseFloat(candle[1]),
-                    high: parseFloat(candle[2]),
-                    low: parseFloat(candle[3]),
-                    close: parseFloat(candle[4]),
-                    volume: parseFloat(candle[5]),
-                })).reverse();
+            const ema14 = calculateEMA(formatted, 14);
+            const ema70 = calculateEMA(formatted, 70);
 
-                const ema14 = calculateEMA(formatted, 14);
-                const ema70 = calculateEMA(formatted, 70);
+            const candlesWithEma = formatted.map((candle, idx) => ({
+                ...candle,
+                ema14: ema14[idx] || 0,
+                ema70: ema70[idx] || 0,
+            }));
 
-                const candlesWithEma = formatted.map((candle, idx) => ({
-                    ...candle,
-                    ema14: ema14[idx] || 0,
-                    ema70: ema70[idx] || 0,
-                }));
+            setWeeklyCandles(candlesWithEma);
+        } catch (err) {
+            console.error("Error loading candles:", err);
+        }
+    };
 
-                setWeeklyCandles(candlesWithEma);
-                     setLoading(false); 
-            } catch (err) {
-                console.error("Error loading candles:", err);
-                     setLoading(false); 
-            }
+    fetchBTCWeeklyCandles();
+}, []);
+        
+        useEffect(() => {
+                if (weeklyCandles.length > 0) {
+                        const lastEma = weeklyCandles[weeklyCandles.length - 1].ema70;
+                        if (lastEma && lastEma > 0) setEma70(lastEma.toFixed(2));
+                }
+        }, [weeklyCandles]);
+
+        const calculateEMA = (data, period) => {
+                const k = 2 / (period + 1);
+                let emaArray = [];
+                let ema = data.slice(0, period).reduce((sum, val) => sum + val.close, 0) / period;
+                emaArray[period - 1] = ema;
+
+                for (let i = period; i < data.length; i++) {
+                        ema = data[i].close * k + ema * (1 - k);
+                        emaArray[i] = ema;
+                }
+
+                return emaArray;
         };
 
-        fetchBTCWeeklyCandles();
-    }, []);
-
-        (async () => {
-  const symbol = 'BTC-USDT'; // Replace with desired symbol
-
-  try {
-    const url = `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`;
-    const { data } = await axios.get(url);
-    const rawCandles = data.data || [];
-
-    const candles = rawCandles
-      .reverse()
-      .map(c => ({
-        time: Number(c[0]),
-        open: parseFloat(c[1]),
-        high: parseFloat(c[2]),
-        low: parseFloat(c[3]),
-        close: parseFloat(c[4])
-      }));
-
-    const ema14Array = calculateEMA(candles, 14);
-    const ema70Array = calculateEMA(candles, 70);
-    
-
-    const result = candles.map((c, i) => ({
-      ...c,
-      ema14: ema14Array[i] || c.close,
-      ema70: ema70Array[i] || c.close,
-      
-    }));
-
-    console.log(result); // Or do something with the result
-  } catch (error) {
-    console.error(`Error fetching ${symbol}:`, error.message);
-  }
-})();
-
-    useEffect(() => {
-        if (weeklyCandles.length > 0) {
-            const lastEma = weeklyCandles[weeklyCandles.length - 1].ema70;
-            if (lastEma && lastEma > 0) setEma70(lastEma.toFixed(2));
-        }
-    }, [weeklyCandles]);
-
-    const calculateEMA = (data, period) => {
-        if (data.length < period) return Array(data.length).fill(0);
-
-        const k = 2 / (period + 1);
-        let emaArray = [];
-        let ema = data.slice(0, period).reduce((sum, val) => sum + val.close, 0) / period;
-        emaArray[period - 1] = ema;
-
-        for (let i = period; i < data.length; i++) {
-            ema = data[i].close * k + ema * (1 - k);
-            emaArray[i] = ema;
-        }
-
-        return emaArray;
-    };
-        const formattedPrice = price ? price.toLocaleString() : 'Loading...';
-        
-
         const getPreviousATL = (candles) => {
-    if (candles.length < 2) return null;
+                if (candles.length < 2) return null;
+                const candlesExcludingLast = candles.slice(0, -1);
+                const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+                        curr.low < min.low ? curr : min
+                );
+                return {
+                        price: prevAtlCandle.low,
+                        time: new Date(prevAtlCandle.time).toLocaleDateString(),
+                };
+        };
 
-    const candlesExcludingLast = candles.slice(0, -1);
-    const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
-        curr.low < min.low ? curr : min
-    );
+        const findRecentATL = (data) => {
+                if (!data || data.length < 100) return null;
 
-    return {
-        price: prevAtlCandle.low,
-        time: prevAtlCandle.time ? new Date(prevAtlCandle.time).toLocaleDateString() : 'N/A',
-        candle: prevAtlCandle
-    };
-};
+                const last100 = data.slice(-100);
+                const latestCandle = data[data.length - 1];
 
-const findRecentATL = (data) => {
-    if (!data || data.length === 0) return null;
+                // Ensure current trend is bearish
+                if (latestCandle.ema14 >= latestCandle.ema70) return null;
 
-    const latestCandle = data[data.length - 1];
-    const previousATL = getPreviousATL(data);
+                let atlCandle = last100[0];
+                last100.forEach(candle => {
+                        if (candle.low < atlCandle.low) {
+                                atlCandle = candle;
+                        }
+                });
 
-    // Default to previous ATL candle
-    let atlCandle = previousATL ? previousATL.candle : data[0];
+                const atlPrice = atlCandle.low;
+                const atlEMA70 = atlCandle.ema70;
+                const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
 
-    // Condition: only update ATL if ema14 < ema70 and low breaks ATL
-    if (latestCandle.ema14 < latestCandle.ema70 && previousATL && latestCandle.low < previousATL.price) {
-        atlCandle = latestCandle;
-    }
-
-    const atlPrice = atlCandle.low;
-    const atlEMA70 = atlCandle.ema70;
-    const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
-
-    return {
-        atl: atlPrice,
-        ema70: atlEMA70,
-        gapPercent: gapPercent.toFixed(2),
-        time: atlCandle.time ? new Date(atlCandle.time).toLocaleDateString() : 'N/A',
-        candle: atlCandle,
-    };
-};
-
-
-        
+                return {
+                        atl: atlPrice,
+                        ema70: atlEMA70,
+                        gapPercent: gapPercent.toFixed(2),
+                };
+        };
         const getPreviousATH = (candles) => {
                 if (candles.length < 2) return null;
                 const candlesExcludingLast = candles.slice(0, -1);
@@ -167,35 +118,50 @@ const findRecentATL = (data) => {
                 };
         };
 
-const findRecentATH = (data) => {
-    if (!data || data.length === 0) return null;
 
-    const latestCandle = data[data.length - 1];
+        const findRecentATH = (data) => {
+                if (!data || data.length < 100) return null;
 
-    // Only proceed if the current trend is bullish
-    if (latestCandle.ema14 <= latestCandle.ema70) return null;
+                const last100 = data.slice(-100);
+                const latestCandle = data[data.length - 1];
 
-    // Find ATH across full history
-    let athCandle = data[0];
-    data.forEach(candle => {
-        if (candle.high > athCandle.high) {
-            athCandle = candle;
-        }
-    });
+                // Ensure current trend is bullish
+                if (latestCandle.ema14 <= latestCandle.ema70) return null;
 
-    const athPrice = athCandle.high;
-    const athEMA70 = athCandle.ema70;
-    const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+                let athCandle = last100[0];
+                last100.forEach(candle => {
+                        if (candle.high > athCandle.high) {
+                                athCandle = candle;
+                        }
+                });
 
-    return {
-        ath: athPrice,
-        ema70: athEMA70,
-        gapPercent: gapPercent.toFixed(2),
-        time: athCandle.time ? new Date(athCandle.time).toLocaleDateString() : 'N/A',
-        candle: athCandle,
-    };
-};
-        
+                const athPrice = athCandle.high;
+                const athEMA70 = athCandle.ema70;
+                const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+
+                return {
+                        ath: athPrice,
+                        ema70: athEMA70,
+                        gapPercent: gapPercent.toFixed(2),
+                };
+        };
+
+        useEffect(() => {
+                async function fetchMarketData() {
+                        try {
+                                const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin');
+                                const data = await res.json();
+                                setAth(data.market_data.ath.usd);
+                                setAtl(data.market_data.atl.usd);
+                        } catch (error) {
+                                console.error('Failed to fetch market data:', error);
+                        } finally {
+                                setLoading(false);
+                        }
+                }
+                fetchMarketData();
+        }, []);
+
         const athNum = parseFloat(ath);
         const atlNum = parseFloat(atl);
         const emaNum = parseFloat(ema70);
