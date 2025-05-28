@@ -1,6 +1,6 @@
-import { fetchCandles } from '../utils/api';
-import { calculateEMA, calculateRSI } from '../utils/indicators';
-import { findRelevantLevel } from '../utils/signalUtils';
+import { fetchCandles } from './utils/api';
+import { calculateEMA, calculateRSI } from './utils/indicators';
+import { findRelevantLevel } from './utils/signalUtils';
 import React from 'react';
 
 
