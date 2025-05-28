@@ -157,22 +157,6 @@ const findRecentATH = (data) => {
     };
 };
         
-        useEffect(() => {
-                async function fetchMarketData() {
-                        try {
-                                const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin');
-                                const data = await res.json();
-                                setAth(data.market_data.ath.usd);
-                                setAtl(data.market_data.atl.usd);
-                        } catch (error) {
-                                console.error('Failed to fetch market data:', error);
-                        } finally {
-                                setLoading(false);
-                        }
-                }
-                fetchMarketData();
-        }, []);
-
         const athNum = parseFloat(ath);
         const atlNum = parseFloat(atl);
         const emaNum = parseFloat(ema70);
