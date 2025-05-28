@@ -69,43 +69,49 @@ export default function Home() {
         };
 
         const getPreviousATL = (candles) => {
-                if (candles.length < 2) return null;
-                const candlesExcludingLast = candles.slice(0, -1);
-                const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
-                        curr.low < min.low ? curr : min
-                );
-                return {
-                        price: prevAtlCandle.low,
-                        time: new Date(prevAtlCandle.time).toLocaleDateString(),
-                };
-        };
+    if (candles.length < 2) return null;
 
-        const findRecentATL = (data) => {
-                if (!data || data.length < 100) return null;
+    const candlesExcludingLast = candles.slice(0, -1);
+    const prevAtlCandle = candlesExcludingLast.reduce((min, curr) =>
+        curr.low < min.low ? curr : min
+    );
 
-                const last100 = data.slice(-100);
-                const latestCandle = data[data.length - 1];
+    return {
+        price: prevAtlCandle.low,
+        time: prevAtlCandle.time ? new Date(prevAtlCandle.time).toLocaleDateString() : 'N/A',
+        candle: prevAtlCandle
+    };
+};
 
-                // Ensure current trend is bearish
-                if (latestCandle.ema14 >= latestCandle.ema70) return null;
+const findRecentATL = (data) => {
+    if (!data || data.length === 0) return null;
 
-                let atlCandle = last100[0];
-                last100.forEach(candle => {
-                        if (candle.low < atlCandle.low) {
-                                atlCandle = candle;
-                        }
-                });
+    const latestCandle = data[data.length - 1];
+    const previousATL = getPreviousATL(data);
 
-                const atlPrice = atlCandle.low;
-                const atlEMA70 = atlCandle.ema70;
-                const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
+    // Default to previous ATL candle
+    let atlCandle = previousATL ? previousATL.candle : data[0];
 
-                return {
-                        atl: atlPrice,
-                        ema70: atlEMA70,
-                        gapPercent: gapPercent.toFixed(2),
-                };
-        };
+    // Condition: only update ATL if ema14 < ema70 and low breaks ATL
+    if (latestCandle.ema14 < latestCandle.ema70 && previousATL && latestCandle.low < previousATL.price) {
+        atlCandle = latestCandle;
+    }
+
+    const atlPrice = atlCandle.low;
+    const atlEMA70 = atlCandle.ema70;
+    const gapPercent = ((atlEMA70 - atlPrice) / atlEMA70) * 100;
+
+    return {
+        atl: atlPrice,
+        ema70: atlEMA70,
+        gapPercent: gapPercent.toFixed(2),
+        time: atlCandle.time ? new Date(atlCandle.time).toLocaleDateString() : 'N/A',
+        candle: atlCandle,
+    };
+};
+
+
+        
         const getPreviousATH = (candles) => {
                 if (candles.length < 2) return null;
                 const candlesExcludingLast = candles.slice(0, -1);
