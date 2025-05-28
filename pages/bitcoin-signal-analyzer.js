@@ -120,32 +120,33 @@ export default function Home() {
 
 
         const findRecentATH = (data) => {
-                if (!data || data.length < 100) return null;
+    if (!data || data.length === 0) return null;
 
-                const last100 = data.slice(-100);
-                const latestCandle = data[data.length - 1];
+    const latestCandle = data[data.length - 1];
 
-                // Ensure current trend is bullish
-                if (latestCandle.ema14 <= latestCandle.ema70) return null;
+    // Only proceed if the current trend is bullish
+    if (latestCandle.ema14 <= latestCandle.ema70) return null;
 
-                let athCandle = last100[0];
-                last100.forEach(candle => {
-                        if (candle.high > athCandle.high) {
-                                athCandle = candle;
-                        }
-                });
+    // Find ATH across full history
+    let athCandle = data[0];
+    data.forEach(candle => {
+        if (candle.high > athCandle.high) {
+            athCandle = candle;
+        }
+    });
 
-                const athPrice = athCandle.high;
-                const athEMA70 = athCandle.ema70;
-                const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
+    const athPrice = athCandle.high;
+    const athEMA70 = athCandle.ema70;
+    const gapPercent = ((athPrice - athEMA70) / athEMA70) * 100;
 
-                return {
-                        ath: athPrice,
-                        ema70: athEMA70,
-                        gapPercent: gapPercent.toFixed(2),
-                };
-        };
-
+    return {
+        ath: athPrice,
+        ema70: athEMA70,
+        gapPercent: gapPercent.toFixed(2),
+        time: new Date(athCandle.time).toLocaleDateString(),
+        candle: athCandle,
+    };
+};
         useEffect(() => {
                 async function fetchMarketData() {
                         try {
