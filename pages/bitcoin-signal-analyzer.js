@@ -8,7 +8,7 @@ export default function Home() {
         const [ath, setAth] = useState(null);
         const [atl, setAtl] = useState(null);
         const [ema70, setEma70] = useState('');
-        const [loading, setLoading] = useState(true);
+        const [loading, setLoading] = useState(false);
         const [weeklyCandles, setWeeklyCandles] = useState([]);
 
 
