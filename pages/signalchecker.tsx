@@ -106,11 +106,37 @@ export async function getServerSideProps(context) {
           }
 
 export async function getServerSideProps() {
-  const res = await fetch('http://localhost:3000/api/signal?symbols=BTC-USDT,ETH-USDT,SOL-USDT,PI-USDT,CORE-USDT');
-  const data = await res.json();
+  const symbols = ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', 'SOL-USDT-SWAP', 'PI-USDT-SWAP', 'CORE-USDT-SWAP'];
+  const interval = '1h';
+  const limit = 5;
+
+  const signals: Record<string, any> = {};
+
+  for (const symbol of symbols) {
+    const res = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`);
+    const data = await res.json();
+
+    // NOTE: You should build your own signal extraction logic here.
+    // For demo, we just attach the raw candles.
+    signals[symbol] = {
+      trend: string;
+  breakout: boolean;
+  divergence: boolean;
+  ema14Bounce: boolean;
+  ema70Bounce: boolean;
+  currentPrice: number;
+  level: number | null;
+  levelType: 'support' | 'resistance' | null;
+  inferredLevel: number;
+  inferredLevelType: 'support' | 'resistance';
+  nearOrAtEMA70Divergence: boolean;
+  inferredLevelWithinRange: boolean;
+    };
+  }
+
   return {
     props: {
-      initialSignals: data.signals,
+      initialSignals: signals,
     },
   };
 }
