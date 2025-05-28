@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface SignalData {
   trend: string;
@@ -132,143 +132,115 @@ function findRelevantLevel(
   return { level, type };
 }
 
-export async function getServerSideProps() {
-  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
-  const results: Record<string, SignalData> = {};
+async function analyzeSymbol(symbol: string): Promise<SignalData> {
+  const candles = await fetchCandles(symbol, '15m');
+  const closes = candles.map(c => c.close);
+  const highs = candles.map(c => c.high);
+  const lows = candles.map(c => c.low);
 
-  for (const symbol of symbols) {
-    try {
-      const candles = await fetchCandles(symbol, '15m');
-      const closes = candles.map(c => c.close);
-      const highs = candles.map(c => c.high);
-      const lows = candles.map(c => c.low);
+  const ema14 = calculateEMA(closes, 14);
+  const ema70 = calculateEMA(closes, 70);
+  const rsi14 = calculateRSI(closes, 14);
 
-      const ema14 = calculateEMA(closes, 14);
-      const ema70 = calculateEMA(closes, 70);
-      const rsi14 = calculateRSI(closes, 14);
+  const lastClose = closes.at(-1)!;
+  const lastEMA14 = ema14.at(-1)!;
+  const lastEMA70 = ema70.at(-1)!;
 
-      const lastClose = closes.at(-1)!;
-      const lastEMA14 = ema14.at(-1)!;
-      const lastEMA70 = ema70.at(-1)!;
+  const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-      const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
+  const dailyCandles = await fetchCandles(symbol, '1d');
+  const prevDay = dailyCandles.at(-2);
+  const currDay = dailyCandles.at(-1);
 
-      const dailyCandles = await fetchCandles(symbol, '1d');
-      const prevDay = dailyCandles.at(-2);
-      const currDay = dailyCandles.at(-1);
+  const dailyHigh = prevDay?.high ?? 0;
+  const dailyLow = prevDay?.low ?? 0;
+  const currDayHigh = currDay?.high ?? 0;
+  const currDayLow = currDay?.low ?? 0;
 
-      const dailyHigh = prevDay?.high ?? 0;
-      const dailyLow = prevDay?.low ?? 0;
-      const currDayHigh = currDay?.high ?? 0;
-      const currDayLow = currDay?.low ?? 0;
+  const prevHighIdx = highs.lastIndexOf(dailyHigh);
+  const prevLowIdx = lows.lastIndexOf(dailyLow);
 
-      const prevHighIdx = highs.lastIndexOf(dailyHigh);
-      const prevLowIdx = lows.lastIndexOf(dailyLow);
+  const divergence =
+    (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+    (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
-      const divergence =
-        (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-        (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+  const nearOrAtEMA70Divergence =
+    divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 
-      const nearOrAtEMA70Divergence =
-        divergence &&
-        (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
+  const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
+  const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
+  const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
+  const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-      const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
-      const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
-      const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
-      const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
+  const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
+  const highestHigh = Math.max(...highs);
+  const lowestLow = Math.min(...lows);
+  const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
+  const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
 
-      const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
-      const highestHigh = Math.max(...highs);
-      const lowestLow = Math.min(...lows);
-      const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
-      const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-
-      const inferredLevelWithinRange =
-        inferredLevel <= currDayHigh && inferredLevel >= currDayLow;
-
-      results[symbol] = {
-        trend,
-        breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
-        divergence,
-        ema14Bounce,
-        ema70Bounce,
-        currentPrice: lastClose,
-        level,
-        levelType: type,
-        inferredLevel,
-        inferredLevelType,
-        nearOrAtEMA70Divergence,
-        inferredLevelWithinRange,
-      };
-    } catch (err) {
-      console.error(`Error fetching ${symbol}:`, err);
-    }
-  }
+  const inferredLevelWithinRange =
+    inferredLevel <= currDayHigh && inferredLevel >= currDayLow;
 
   return {
-    props: {
-      signals: results,
-    },
+    trend,
+    breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
+    divergence,
+    ema14Bounce,
+    ema70Bounce,
+    currentPrice: lastClose,
+    level,
+    levelType: type,
+    inferredLevel,
+    inferredLevelType,
+    nearOrAtEMA70Divergence,
+    inferredLevelWithinRange,
   };
 }
 
-export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
+export default function SignalChecker() {
+  const [signals, setSignals] = useState<Record<string, SignalData>>({});
+  const [input, setInput] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    try {
+      const symbol = input.trim().toUpperCase();
+      const data = await analyzeSymbol(symbol);
+      setSignals(prev => ({ ...prev, [symbol]: data }));
+    } catch (err) {
+      alert("Failed to fetch signal. Make sure the pair is valid on OKX Futures.");
+    }
+  };
+
   return (
     <div className="p-4 space-y-6">
+      <form onSubmit={handleSubmit} className="space-x-2">
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Enter OKX Futures Symbol (e.g. BTC-USDT)"
+          className="p-2 rounded border"
+        />
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Check</button>
+      </form>
+
       {Object.entries(signals).map(([symbol, data]) => (
-        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
-          <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
+        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow text-white">
+          <h2 className="text-xl font-bold">{symbol} Signal</h2>
           <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
-          <p>
-            🚀 Daily Breakout:{' '}
-            <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
-              {data.breakout ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            📉 RSI Divergence:{' '}
-            <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
-              {data.divergence ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟠 Near/At EMA70 Divergence:{' '}
-            <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
-              {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟣 Inferred Level within Range:{' '}
-            <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-              {data.inferredLevelWithinRange ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🔁 EMA14 Bounce:{' '}
-            <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
-              {data.ema14Bounce ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟡 EMA70 Bounce:{' '}
-            <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
-              {data.ema70Bounce ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
-          </p>
-          <p>
-            📊 {data.levelType?.toUpperCase()} Level:{' '}
-            <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-          </p>
-          <p>
-            🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-            <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-          </p>
+          <p>🚀 Daily Breakout: <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>{data.breakout ? 'Yes' : 'No'}</span></p>
+          <p>📉 RSI Divergence: <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>{data.divergence ? 'Yes' : 'No'}</span></p>
+          <p>🟠 Near/At EMA70 Divergence: <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>{data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}</span></p>
+          <p>🟣 Inferred Level within Range: <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>{data.inferredLevelWithinRange ? 'Yes' : 'No'}</span></p>
+          <p>🔁 EMA14 Bounce: <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>{data.ema14Bounce ? 'Yes' : 'No'}</span></p>
+          <p>🟡 EMA70 Bounce: <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>{data.ema70Bounce ? 'Yes' : 'No'}</span></p>
+          <p>💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span></p>
+          <p>📊 {data.levelType?.toUpperCase()} Level: <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span></p>
+          <p>🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}: <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span></p>
         </div>
       ))}
     </div>
   );
-}
+    }
