@@ -1,7 +1,7 @@
 // Placeholder - Replace with full signal logic from original code
 
 import React, { useState } from 'react';
-import SignalCheckerPage from '../pages/signalchecker';
+import SignalData from '../pages/signalchecker';
 
 interface Candle {
   timestamp: number;
