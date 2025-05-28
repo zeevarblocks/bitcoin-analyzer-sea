@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'; import { Card, CardContent } from '@/components/ui/card'; import { Input } from '@/components/ui/input'; import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react'; 
 
 interface SignalData { trend: string; breakout: boolean; divergence: boolean; ema14Bounce: boolean; ema70Bounce: boolean; currentPrice: number; level: number | null; levelType: 'support' | 'resistance' | null; inferredLevel: number; inferredLevelType: 'support' | 'resistance'; nearOrAtEMA70Divergence: boolean; inferredLevelWithinRange: boolean; }
 
