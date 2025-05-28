@@ -5,6 +5,8 @@ interface SignalData {
   breakout: boolean;
   divergence: boolean;
   ema14Bounce: boolean;
+  ema70Bounce: boolean;
+  currentPrice: number;
   level: number | null;
   levelType: 'support' | 'resistance' | null;
 }
@@ -36,7 +38,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
       close: +d[4],
       volume: +d[5],
     }))
-    .reverse(); // newest last
+    .reverse();
 }
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -159,8 +161,10 @@ export async function getServerSideProps() {
         (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
         (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
-      const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
-      const ema14Bounce = recentTouches && lastClose > lastEMA14;
+      const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
+      const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
+      const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
+      const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
       const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
 
@@ -169,6 +173,8 @@ export async function getServerSideProps() {
         breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
         divergence,
         ema14Bounce,
+        ema70Bounce,
+        currentPrice: lastClose,
         level,
         levelType: type,
       };
@@ -210,6 +216,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             </span>
           </p>
           <p>
+            🟡 EMA70 Bounce:{' '}
+            <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
+              {data.ema70Bounce ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
+          </p>
+          <p>
             📊 {data.levelType?.toUpperCase()} Level:{' '}
             <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
           </p>
@@ -217,4 +232,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       ))}
     </div>
   );
-  }
+       }
