@@ -4,9 +4,9 @@ interface SignalData {
   trend: string;
   breakout: boolean;
   divergence: boolean;
-  ema70Bounce: boolean;
-  supportLevel?: number;
-  resistanceLevel?: number;
+  ema14Bounce: boolean;
+  level: number | null;
+  levelType: 'support' | 'resistance' | null;
 }
 
 interface Candle {
@@ -24,36 +24,44 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
     `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
   );
   const data = await response.json();
+
   if (!data.data || !Array.isArray(data.data)) throw new Error('Invalid candle data');
-  return data.data.map((d: string[]) => ({
-    timestamp: +d[0],
-    open: +d[1],
-    high: +d[2],
-    low: +d[3],
-    close: +d[4],
-    volume: +d[5],
-  })).reverse();
+
+  return data.data
+    .map((d: string[]) => ({
+      timestamp: +d[0],
+      open: +d[1],
+      high: +d[2],
+      low: +d[3],
+      close: +d[4],
+      volume: +d[5],
+    }))
+    .reverse(); // newest last
 }
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
   const ema: number[] = [];
   let previousEma: number | null = null;
+
   for (let i = 0; i < data.length; i++) {
     if (i < period - 1) {
       ema.push(NaN);
       continue;
     }
+
     if (i === period - 1) {
       const sma = data.slice(0, period).reduce((sum, val) => sum + val, 0) / period;
       previousEma = sma;
     }
+
     if (previousEma !== null) {
       const currentEma = data[i] * k + previousEma * (1 - k);
       ema.push(currentEma);
       previousEma = currentEma;
     }
   }
+
   return ema;
 }
 
@@ -61,11 +69,13 @@ function calculateRSI(closes: number[], period = 14): number[] {
   const rsi: number[] = [];
   let gains = 0;
   let losses = 0;
+
   for (let i = 1; i < closes.length; i++) {
     const diff = closes[i] - closes[i - 1];
     if (i <= period) {
       if (diff > 0) gains += diff;
       else losses -= diff;
+
       if (i === period) {
         const avgGain = gains / period;
         const avgLoss = losses / period;
@@ -83,8 +93,37 @@ function calculateRSI(closes: number[], period = 14): number[] {
       rsi.push(100 - 100 / (1 + rs));
     }
   }
+
   rsi.unshift(...Array(closes.length - rsi.length).fill(NaN));
   return rsi;
+}
+
+function findRelevantLevel(
+  ema14: number[],
+  ema70: number[],
+  closes: number[],
+  highs: number[],
+  lows: number[],
+  trend: 'bullish' | 'bearish'
+): { level: number | null; type: 'support' | 'resistance' | null } {
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
+      return { level: closes[i], type: 'support' };
+    }
+
+    if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
+      return { level: closes[i], type: 'resistance' };
+    }
+  }
+
+  const level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
+  const type = trend === 'bullish' ? 'resistance' : 'support';
+  return { level, type };
 }
 
 export async function getServerSideProps() {
@@ -120,29 +159,29 @@ export async function getServerSideProps() {
         (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
         (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
-      const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.003);
-      const ema70Bounce = recentTouches && (
-        (trend === 'bullish' && lastClose > lastEMA70) ||
-        (trend === 'bearish' && lastClose < lastEMA70)
-      );
+      const recentTouches = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
+      const ema14Bounce = recentTouches && lastClose > lastEMA14;
 
-      const supportLevel = trend === 'bearish' ? Math.min(...lows.slice(-50)) : undefined;
-      const resistanceLevel = trend === 'bullish' ? Math.max(...highs.slice(-50)) : undefined;
+      const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
 
       results[symbol] = {
         trend,
         breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
         divergence,
-        ema70Bounce,
-        supportLevel,
-        resistanceLevel,
+        ema14Bounce,
+        level,
+        levelType: type,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
     }
   }
 
-  return { props: { signals: results } };
+  return {
+    props: {
+      signals: results,
+    },
+  };
 }
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
@@ -152,17 +191,30 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
           <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
           <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
-          <p>🚀 Daily Breakout: <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>{data.breakout ? 'Yes' : 'No'}</span></p>
-          <p>📉 RSI Divergence: <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>{data.divergence ? 'Yes' : 'No'}</span></p>
-          <p>🔁 EMA70 Bounce Detected: <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>{data.ema70Bounce ? 'Yes' : 'No'}</span></p>
-          {data.trend === 'bullish' && data.resistanceLevel && (
-            <p>🧱 Resistance Level (Recent High): <span className="text-yellow-400">{data.resistanceLevel.toFixed(2)}</span></p>
-          )}
-          {data.trend === 'bearish' && data.supportLevel && (
-            <p>🧱 Support Level (Recent Low): <span className="text-cyan-400">{data.supportLevel.toFixed(2)}</span></p>
-          )}
+          <p>
+            🚀 Daily Breakout:{' '}
+            <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
+              {data.breakout ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            📉 RSI Divergence:{' '}
+            <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
+              {data.divergence ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            🔁 EMA14 Bounce:{' '}
+            <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
+              {data.ema14Bounce ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            📊 {data.levelType?.toUpperCase()} Level:{' '}
+            <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
+          </p>
         </div>
       ))}
     </div>
   );
-          }
+  }
