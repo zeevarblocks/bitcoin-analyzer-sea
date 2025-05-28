@@ -15,17 +15,18 @@ interface SignalData {
   inferredLevelWithinRange: boolean;
 }
 
-const predefinedSymbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
+const predefinedSymbols = ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', 'SOL-USDT-SWAP', 'PI-USDT-SWAP', 'CORE-USDT-SWAP'];
 
 export default function SignalCheckerPage({ initialSignals }: { initialSignals: Record<string, SignalData> }) {
   const [signals, setSignals] = useState<Record<string, SignalData>>(initialSignals);
   const [inputSymbol, setInputSymbol] = useState('');
 
   const fetchSignal = async (symbol: string) => {
-    const res = await fetch(`/api/signal?symbol=${symbol}`);
+    const formattedSymbol = symbol.endsWith('-SWAP') ? symbol : `${symbol}-SWAP`;
+    const res = await fetch(`/api/signal?symbol=${formattedSymbol}`);
     const data = await res.json();
     if (data && data.signal) {
-      setSignals(prev => ({ ...prev, [symbol]: data.signal }));
+      setSignals(prev => ({ ...prev, [formattedSymbol]: data.signal }));
     }
   };
 
@@ -41,7 +42,7 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
       <form onSubmit={handleSubmit} className="mb-4 space-x-2">
         <input
           type="text"
-          placeholder="Enter OKX Futures Pair (e.g. XRP-USDT-SWAP)"
+          placeholder="Enter OKX Futures Pair (e.g. XRP-USDT)"
           value={inputSymbol}
           onChange={(e) => setInputSymbol(e.target.value)}
           className="p-2 rounded text-black"
@@ -70,33 +71,19 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
   );
 }
 
-// Optional: GetServerSideProps if needed for this page
+// Use analyzeSymbol for initial signals
+import { analyzeSymbol } from '../api/signal';
+
 export async function getServerSideProps() {
-  const symbols = ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', 'SOL-USDT-SWAP', 'PI-USDT-SWAP', 'CORE-USDT-SWAP'];
-  const interval = '1h';
-  const limit = 5;
+  const signals: Record<string, SignalData> = {};
 
-  const signals: Record<string, any> = {};
-
-  for (const symbol of symbols) {
-    const res = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`);
-    const data = await res.json();
-
-    // Replace this with your actual signal extraction logic
-    signals[symbol] = {
-      trend: 'unknown',
-      breakout: false,
-      divergence: false,
-      ema14Bounce: false,
-      ema70Bounce: false,
-      currentPrice: parseFloat(data?.data?.[0]?.[1]) || 0,
-      level: null,
-      levelType: null,
-      inferredLevel: 0,
-      inferredLevelType: 'support',
-      nearOrAtEMA70Divergence: false,
-      inferredLevelWithinRange: false,
-    };
+  for (const symbol of predefinedSymbols) {
+    try {
+      const signal = await analyzeSymbol(symbol);
+      signals[symbol] = signal;
+    } catch (error) {
+      console.error(`Failed to analyze ${symbol}:`, error);
+    }
   }
 
   return {
@@ -105,3 +92,4 @@ export async function getServerSideProps() {
     },
   };
           }
+  
