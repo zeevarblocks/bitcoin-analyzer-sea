@@ -1,64 +1,33 @@
-import { fetchCandles } from '../utils/api';
-import { calculateEMA, calculateRSI } from '../utils/indicators';
-import { findRelevantLevel } from '../utils/signalUtils';
-import React from 'react';
+import { useState, useEffect } from 'react'; import { Card, CardContent } from '@/components/ui/card'; import { Input } from '@/components/ui/input'; import { Button } from '@/components/ui/button';
 
-export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  return (
-    <div className="p-4 space-y-6">
-      {Object.entries(signals).map(([symbol, data]) => (
-        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
-          <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
-          <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
-          <p>
-            🚀 Daily Breakout:{' '}
-            <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
-              {data.breakout ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            📉 RSI Divergence:{' '}
-            <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
-              {data.divergence ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟠 Near/At EMA70 Divergence:{' '}
-            <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
-              {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟣 Inferred Level within Range:{' '}
-            <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-              {data.inferredLevelWithinRange ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🔁 EMA14 Bounce:{' '}
-            <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
-              {data.ema14Bounce ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟡 EMA70 Bounce:{' '}
-            <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
-              {data.ema70Bounce ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
-          </p>
-          <p>
-            📊 {data.levelType?.toUpperCase()} Level:{' '}
-            <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-          </p>
-          <p>
-            🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-            <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-          }
+interface SignalData { trend: string; breakout: boolean; divergence: boolean; ema14Bounce: boolean; ema70Bounce: boolean; currentPrice: number; level: number | null; levelType: 'support' | 'resistance' | null; inferredLevel: number; inferredLevelType: 'support' | 'resistance'; nearOrAtEMA70Divergence: boolean; inferredLevelWithinRange: boolean; }
+
+export default function SignalDashboard() { const [symbol, setSymbol] = useState('BTC-USDT-SWAP'); const [loading, setLoading] = useState(false); const [signal, setSignal] = useState<SignalData | null>(null);
+
+const fetchSignal = async () => { setLoading(true); try { const res = await fetch(/api/signal?symbol=${symbol}); const data = await res.json(); setSignal(data.signal); } catch (err) { console.error('Error fetching signal:', err); } finally { setLoading(false); } };
+
+useEffect(() => { fetchSignal(); }, []);
+
+return ( <div className="p-4 max-w-2xl mx-auto"> <div className="flex gap-2 mb-4"> <Input value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="Enter symbol" /> <Button onClick={fetchSignal} disabled={loading}> {loading ? 'Loading...' : 'Get Signal'} </Button> </div>
+
+{signal && (
+    <Card className="shadow-xl">
+      <CardContent className="space-y-4 p-4">
+        <h2 className="text-xl font-bold">Signal for {symbol}</h2>
+        <div>📈 <strong>Trend:</strong> {signal.trend}</div>
+        <div>🚀 <strong>Breakout:</strong> {signal.breakout ? 'Yes' : 'No'}</div>
+        <div>📉 <strong>Divergence:</strong> {signal.divergence ? 'Yes' : 'No'}</div>
+        <div>🔄 <strong>EMA14 Bounce:</strong> {signal.ema14Bounce ? 'Yes' : 'No'}</div>
+        <div>🔄 <strong>EMA70 Bounce:</strong> {signal.ema70Bounce ? 'Yes' : 'No'}</div>
+        <div>💰 <strong>Current Price:</strong> ${signal.currentPrice.toFixed(2)}</div>
+        <div>📍 <strong>Inferred Level ({signal.inferredLevelType}):</strong> ${signal.inferredLevel.toFixed(2)}</div>
+        <div>📊 <strong>Near EMA70 & Divergence:</strong> {signal.nearOrAtEMA70Divergence ? 'Yes' : 'No'}</div>
+        <div>📏 <strong>Level Within Range:</strong> {signal.inferredLevelWithinRange ? 'Yes' : 'No'}</div>
+      </CardContent>
+    </Card>
+  )}
+</div>
+
+); }
+
+      
