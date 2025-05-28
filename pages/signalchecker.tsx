@@ -17,7 +17,7 @@ interface SignalData {
 
 const predefinedSymbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
 
-export default function SignalCheckerPage({ initialSignals }: { initialSignals: Record<string, SignalData> }) {
+export default function SignalChecker({ initialSignals }: { initialSignals: Record<string, SignalData> }) {
   const [signals, setSignals] = useState<Record<string, SignalData>>(initialSignals);
   const [inputSymbol, setInputSymbol] = useState('');
 
