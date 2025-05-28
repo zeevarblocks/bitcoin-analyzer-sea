@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import SignalChecker from '../utils/signal'
-
+import SignalChecker from '../utils/signal';
 
 interface SignalData {
   trend: string;
@@ -72,39 +71,7 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
   );
 }
 
-// pages/pair.tsx
-export default function PairPage({ data }: { data: any }) {
-  return (
-    <div>
-      <h1>OHLCV Candles</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
-  );
-}
-
-export async function getServerSideProps(context) {
-  const { pair } = context.query;
-
-  try {
-    const response = await fetch(
-      `https://www.okx.com/api/v5/market/candles?instId=${pair}&bar=1h&limit=5`
-    );
-    const data = await response.json();
-
-    return {
-      props: {
-        data,
-      },
-    };
-  } catch (error) {
-    return {
-      props: {
-        data: { error: 'Failed to fetch data' },
-      },
-    };
-  }
-          }
-
+// Optional: GetServerSideProps if needed for this page
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT-SWAP', 'ETH-USDT-SWAP', 'SOL-USDT-SWAP', 'PI-USDT-SWAP', 'CORE-USDT-SWAP'];
   const interval = '1h';
@@ -116,21 +83,20 @@ export async function getServerSideProps() {
     const res = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`);
     const data = await res.json();
 
-    // NOTE: You should build your own signal extraction logic here.
-    // For demo, we just attach the raw candles.
+    // Replace this with your actual signal extraction logic
     signals[symbol] = {
-      trend: string;
-  breakout: boolean;
-  divergence: boolean;
-  ema14Bounce: boolean;
-  ema70Bounce: boolean;
-  currentPrice: number;
-  level: number | null;
-  levelType: 'support' | 'resistance' | null;
-  inferredLevel: number;
-  inferredLevelType: 'support' | 'resistance';
-  nearOrAtEMA70Divergence: boolean;
-  inferredLevelWithinRange: boolean;
+      trend: 'unknown',
+      breakout: false,
+      divergence: false,
+      ema14Bounce: false,
+      ema70Bounce: false,
+      currentPrice: parseFloat(data?.data?.[0]?.[1]) || 0,
+      level: null,
+      levelType: null,
+      inferredLevel: 0,
+      inferredLevelType: 'support',
+      nearOrAtEMA70Divergence: false,
+      inferredLevelWithinRange: false,
     };
   }
 
@@ -139,4 +105,4 @@ export async function getServerSideProps() {
       initialSignals: signals,
     },
   };
-}
+          }
