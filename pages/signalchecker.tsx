@@ -104,3 +104,7 @@ export async function getServerSideProps(context) {
     };
   }
           }
+
+export async function getServerSideProps() {
+  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
+  const results: Record<string, SignalData> = {};
