@@ -1,58 +1,38 @@
 export function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
-  const ema: number[] = [];
-  let previousEma: number | null = null;
+  let emaArray: number[] = [];
+  let ema = data.slice(0, period).reduce((a, b) => a + b) / period;
+  emaArray[period - 1] = ema;
 
-  for (let i = 0; i < data.length; i++) {
-    if (i < period - 1) {
-      ema.push(NaN);
-      continue;
-    }
-
-    if (i === period - 1) {
-      const sma = data.slice(0, period).reduce((sum, val) => sum + val, 0) / period;
-      previousEma = sma;
-    }
-
-    if (previousEma !== null) {
-      const currentEma = data[i] * k + previousEma * (1 - k);
-      ema.push(currentEma);
-      previousEma = currentEma;
-    }
+  for (let i = period; i < data.length; i++) {
+    ema = data[i] * k + ema * (1 - k);
+    emaArray.push(ema);
   }
 
-  return ema;
+  return emaArray;
 }
 
-export function calculateRSI(closes: number[], period = 14): number[] {
-  const rsi: number[] = [];
+export function calculateRSI(data: number[], period = 14): number[] {
   let gains = 0;
   let losses = 0;
+  let rsiArray: number[] = [];
 
-  for (let i = 1; i < closes.length; i++) {
-    const diff = closes[i] - closes[i - 1];
-    if (i <= period) {
-      if (diff > 0) gains += diff;
-      else losses -= diff;
-
-      if (i === period) {
-        const avgGain = gains / period;
-        const avgLoss = losses / period;
-        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-        rsi.push(100 - 100 / (1 + rs));
-      } else {
-        rsi.push(NaN);
-      }
-    } else {
-      const gain = diff > 0 ? diff : 0;
-      const loss = diff < 0 ? -diff : 0;
-      gains = (gains * (period - 1) + gain) / period;
-      losses = (losses * (period - 1) + loss) / period;
-      const rs = losses === 0 ? 100 : gains / losses;
-      rsi.push(100 - 100 / (1 + rs));
-    }
+  for (let i = 1; i <= period; i++) {
+    const delta = data[i] - data[i - 1];
+    if (delta > 0) gains += delta;
+    else losses -= delta;
   }
 
-  rsi.unshift(...Array(closes.length - rsi.length).fill(NaN));
-  return rsi;
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  rsiArray[period] = 100 - 100 / (1 + avgGain / avgLoss);
+
+  for (let i = period + 1; i < data.length; i++) {
+    const delta = data[i] - data[i - 1];
+    avgGain = (avgGain * (period - 1) + Math.max(delta, 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + Math.max(-delta, 0)) / period;
+    rsiArray.push(100 - 100 / (1 + avgGain / avgLoss));
+  }
+
+  return rsiArray;
 }
