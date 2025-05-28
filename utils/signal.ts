@@ -2,21 +2,6 @@
 
 import React, { useState } from 'react';
 
-interface SignalData {
-  trend: string;
-  breakout: boolean;
-  divergence: boolean;
-  ema14Bounce: boolean;
-  ema70Bounce: boolean;
-  currentPrice: number;
-  level: number | null;
-  levelType: 'support' | 'resistance' | null;
-  inferredLevel: number;
-  inferredLevelType: 'support' | 'resistance';
-  nearOrAtEMA70Divergence: boolean;
-  inferredLevelWithinRange: boolean;
-}
-
 interface Candle {
   timestamp: number;
   open: number;
