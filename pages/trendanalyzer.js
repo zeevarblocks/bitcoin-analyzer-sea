@@ -281,8 +281,8 @@ export default function Home({ results }) {
   <p>Previous EMA {result.crossover.type} crossover at {result.crossover.time} — Price: {result.crossover.price}</p>
 )}
             </>
-               <TradingViewWidget />
           )}
+               <TradingViewWidget />
         </div>
       ))}
     </div>
