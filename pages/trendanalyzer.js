@@ -259,6 +259,7 @@ export default function Home({ results }) {
             <p className="text-red-600 font-medium">Error: {error}</p>
           ) : result.valid ? (
             <>
+            <TradingViewWidget />
               <p className={`font-semibold ${result.type === 'Bullish' ? 'text-green-600' : 'text-red-600'}`}>Signal: {result.signal}</p>
               <p><span className="font-medium text-gray-600">Type:</span> <span className={result.type === 'Bullish' ? 'text-green-700' : 'text-red-700'}>{result.type}</span></p>
               <p><span className="font-medium text-gray-600">Classification:</span> <span className="text-blue-600">{result.classification}</span></p>
@@ -279,7 +280,6 @@ export default function Home({ results }) {
                 {result.crossover && (
   <p>Previous EMA {result.crossover.type} crossover at {result.crossover.time} — Price: {result.crossover.price}</p>
 )}
-               <TradingViewWidget />
             </>
           )}
         </div>
