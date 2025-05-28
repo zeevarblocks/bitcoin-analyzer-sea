@@ -50,6 +50,41 @@ export default function Home() {
         fetchBTCWeeklyCandles();
     }, []);
 
+        (async () => {
+  const symbol = 'BTC-USDT'; // Replace with desired symbol
+
+  try {
+    const url = `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=15m&limit=200`;
+    const { data } = await axios.get(url);
+    const rawCandles = data.data || [];
+
+    const candles = rawCandles
+      .reverse()
+      .map(c => ({
+        time: Number(c[0]),
+        open: parseFloat(c[1]),
+        high: parseFloat(c[2]),
+        low: parseFloat(c[3]),
+        close: parseFloat(c[4])
+      }));
+
+    const ema14Array = calculateEMA(candles, 14);
+    const ema70Array = calculateEMA(candles, 70);
+    
+
+    const result = candles.map((c, i) => ({
+      ...c,
+      ema14: ema14Array[i] || c.close,
+      ema70: ema70Array[i] || c.close,
+      
+    }));
+
+    console.log(result); // Or do something with the result
+  } catch (error) {
+    console.error(`Error fetching ${symbol}:`, error.message);
+  }
+})();
+
     useEffect(() => {
         if (weeklyCandles.length > 0) {
             const lastEma = weeklyCandles[weeklyCandles.length - 1].ema70;
