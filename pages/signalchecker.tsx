@@ -71,12 +71,36 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
     </div>
   );
 }
-export async function getServerSideProps() {
-  const res = await fetch('http://localhost:3000/api/signal?symbols=BTC-USDT,ETH-USDT,SOL-USDT,PI-USDT,CORE-USDT');
-  const data = await res.json();
-  return {
-    props: {
-      initialSignals: data.signals,
-    },
-  };
+
+// pages/pair.tsx
+export default function PairPage({ data }: { data: any }) {
+  return (
+    <div>
+      <h1>OHLCV Candles</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
+export async function getServerSideProps(context) {
+  const { pair } = context.query;
+
+  try {
+    const response = await fetch(
+      `https://www.okx.com/api/v5/market/candles?instId=${pair}&bar=1h&limit=5`
+    );
+    const data = await response.json();
+
+    return {
+      props: {
+        data,
+      },
+    };
+  } catch (error) {
+    return {
+      props: {
+        data: { error: 'Failed to fetch data' },
+      },
+    };
+  }
           }
