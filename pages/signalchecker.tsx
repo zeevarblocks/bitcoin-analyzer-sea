@@ -11,6 +11,8 @@ interface SignalData {
   levelType: 'support' | 'resistance' | null;
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
+  nearOrAtEMA70Divergence: boolean;
+  inferredLevelWithinRange: boolean;
 }
 
 interface Candle {
@@ -153,8 +155,12 @@ export async function getServerSideProps() {
 
       const dailyCandles = await fetchCandles(symbol, '1d');
       const prevDay = dailyCandles.at(-2);
+      const currDay = dailyCandles.at(-1);
+
       const dailyHigh = prevDay?.high ?? 0;
       const dailyLow = prevDay?.low ?? 0;
+      const currDayHigh = currDay?.high ?? 0;
+      const currDayLow = currDay?.low ?? 0;
 
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
       const prevLowIdx = lows.lastIndexOf(dailyLow);
@@ -162,6 +168,10 @@ export async function getServerSideProps() {
       const divergence =
         (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
         (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+
+      const nearOrAtEMA70Divergence =
+        divergence &&
+        (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 
       const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
@@ -174,6 +184,9 @@ export async function getServerSideProps() {
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
       const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
 
+      const inferredLevelWithinRange =
+        inferredLevel <= currDayHigh && inferredLevel >= currDayLow;
+
       results[symbol] = {
         trend,
         breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
@@ -185,6 +198,8 @@ export async function getServerSideProps() {
         levelType: type,
         inferredLevel,
         inferredLevelType,
+        nearOrAtEMA70Divergence,
+        inferredLevelWithinRange,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -218,6 +233,18 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             </span>
           </p>
           <p>
+            🟠 Near/At EMA70 Divergence:{' '}
+            <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
+              {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            🟣 Inferred Level within Range:{' '}
+            <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
+              {data.inferredLevelWithinRange ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
             🔁 EMA14 Bounce:{' '}
             <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
               {data.ema14Bounce ? 'Yes' : 'No'}
@@ -244,4 +271,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       ))}
     </div>
   );
-    }
+}
