@@ -71,7 +71,7 @@ export default function SignalChecker({ initialSignals }: { initialSignals: Reco
 }
 
 export async function getServerSideProps() {
-  const res = await fetch('http://localhost:3000/api/signal?symbols=BTC-USDT,ETH-USDT,SOL-USDT,PI-USDT,CORE-USDT');
+  const res = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`);
   const data = await res.json();
   return {
     props: {
