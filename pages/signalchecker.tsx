@@ -1,6 +1,16 @@
 import React from 'react';
 import axios from 'axios';
 
+// fetchCandles, calculateEMA, etc.,. utility section 
+interface Candle {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
 interface SignalData {
   trend: string;
     symbol: string;
@@ -25,15 +35,6 @@ interface SignalData {
 bullishContinuation: boolean;
 }
 
-// fetchCandles, calculateEMA, etc.,. utility section 
-interface Candle {
-  timestamp: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
