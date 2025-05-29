@@ -5,6 +5,8 @@ interface SignalData {
   breakout: boolean;
   bullishBreakout: boolean; 
   bearishBreakout: boolean; 
+	pointA: number | null;
+pointB: { timestamp: number; price: number } | null;
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
@@ -21,7 +23,7 @@ interface SignalData {
 bullishContinuation: boolean;
 }
 
-// fetchCandles, calculateEMA, etc.,.
+// fetchCandles, calculateEMA, etc.,. utility section 
 interface Candle {
   timestamp: number;
   open: number;
@@ -197,6 +199,42 @@ function detectBullishContinuation(
   return false;
 }
 
+function detectBreakoutPoint(
+  candles: Candle[],
+  dailyHigh: number,
+  dailyLow: number
+): {
+  breakout: boolean;
+  breakoutType: 'bullish' | 'bearish' | null;
+  pointA: number | null;
+  pointB: { timestamp: number; price: number } | null;
+} {
+  for (const c of candles) {
+    if (c.close > dailyHigh) {
+      return {
+        breakout: true,
+        breakoutType: 'bullish',
+        pointA: dailyHigh,
+        pointB: { timestamp: c.timestamp, price: c.close },
+      };
+    } else if (c.close < dailyLow) {
+      return {
+        breakout: true,
+        breakoutType: 'bearish',
+        pointA: dailyLow,
+        pointB: { timestamp: c.timestamp, price: c.close },
+      };
+    }
+  }
+
+  return {
+    breakout: false,
+    breakoutType: null,
+    pointA: null,
+    pointB: null,
+  };
+}
+
 
 // logic in getServerSideProps:
 
@@ -234,9 +272,7 @@ export async function getServerSideProps() {
 const prevLowIdx = lows.lastIndexOf(dailyLow);
 
 // Breakout check:
-const bullishBreakout = currDayHigh > dailyHigh;
-const bearishBreakout = currDayLow < dailyLow;
-const breakout = bullishBreakout || bearishBreakout;
+const { breakout, breakoutType, pointA, pointB } = detectBreakoutPoint(candles, dailyHigh, dailyLow);
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -286,8 +322,10 @@ const divergence =
       results[symbol] = {
   trend,
   breakout,
-  bullishBreakout,
-  bearishBreakout,
+bullishBreakout: breakoutType === 'bullish',
+bearishBreakout: breakoutType === 'bearish',
+pointA,
+pointB,
   divergence,
   ema14Bounce,
   ema70Bounce,
@@ -331,19 +369,34 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     {data.breakout ? 'Yes' : 'No'}
   </span>
 </p>
-<p>
-  🟢 Bullish Breakout:{' '}
-  <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
-    {data.bullishBreakout ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  🔴 Bearish Breakout:{' '}
-  <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-    {data.bearishBreakout ? 'Yes' : 'No'}
-  </span>
-</p>
-      <p>
+
+{data.breakout && (
+  <>
+    <p>
+      🟢 Bullish Breakout:{' '}
+      <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
+        {data.bullishBreakout ? 'Yes' : 'No'}
+      </span>
+    </p>
+    <p>
+      🔴 Bearish Breakout:{' '}
+      <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+        {data.bearishBreakout ? 'Yes' : 'No'}
+      </span>
+    </p>
+    <p>
+      📍 Point A (Previous High/Low):{' '}
+      <span className="text-yellow-300">
+        {data.pointA?.toFixed(2)}
+      </span>
+    </p>
+    <p>
+      💥 Point B (Breakout Candle):{' '}
+      <span className="text-blue-300">
+        {data.pointB?.price.toFixed(2)} @ {new Date(data.pointB?.timestamp).toLocaleString()}
+      </span>
+    </p>
+  </p>
         📉 RSI Divergence:{' '}
         <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
           {data.divergence ? 'Yes' : 'No'}
