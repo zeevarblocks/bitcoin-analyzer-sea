@@ -139,6 +139,14 @@ function findRelevantLevel(
   return { level, type };
 }
 
+function detectBreakout(candles: Candle[], high72h: number, low72h: number) {
+  if (candles.length < 2) return { bullishBreakout: false, bearishBreakout: false, breakout: false };
+
+  const currentCandle = candles[0];     // newest candle (first in array)
+  const prevCandle = candles[1];        // previous candle (second in array)
+  
+
+
 function detectBearishContinuation(
   closes: number[],
   highs: number[],
@@ -243,11 +251,15 @@ let bearishBreakout = false;
 let breakout = false;
 
 if (currentCandle) {
-  // Break above 72h high (bullish)
-  bullishBreakout = currentCandle.high > high72h && currentCandle.close > currentCandle.open;
+  const buffer = 0.01; // 1%
 
-  // Break below 72h low (bearish)
-  bearishBreakout = currentCandle.low < low72h && currentCandle.close < currentCandle.open;
+bullishBreakout =
+  currentCandle.high > high72h * (1 + buffer) &&
+  currentCandle.close > currentCandle.open;
+
+bearishBreakout =
+  currentCandle.low < low72h * (1 - buffer) &&
+  currentCandle.close < currentCandle.open;
 
   breakout = bullishBreakout || bearishBreakout;
 }
