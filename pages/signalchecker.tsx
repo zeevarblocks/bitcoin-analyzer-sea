@@ -236,6 +236,10 @@ const dailyLow = Math.min(...last96Lows);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
 
 // Breakout logic using 15m chart (24h window)
+      
+const prevCandle = candles.at(-2);
+const currentCandle = candles.at(-1);
+
 let bullishBreakout = false;
 let bearishBreakout = false;
 let breakout = false;
