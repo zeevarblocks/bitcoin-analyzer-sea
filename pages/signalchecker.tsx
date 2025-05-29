@@ -220,9 +220,15 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
       const prevLowIdx = lows.lastIndexOf(dailyLow);
 
-      const bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14);
-const bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14);
+let bearishContinuation = false;
+let bullishContinuation = false;
 
+if (trend === 'bearish') {
+  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14);
+} else if (trend === 'bullish') {
+  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14);
+}
+      
       const divergence =
         (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
         (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
@@ -358,15 +364,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     {data.touchedEMA70Today ? 'Yes' : 'No'}
   </span>
 </p>
-          <p>
+<p>
   🔻 Bearish Continuation:{' '}
-  <span className={data.bearishContinuation ? 'text-green-400' : 'text-red-400'}>
+  <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
     {data.bearishContinuation ? 'Yes' : 'No'}
   </span>
 </p>
 <p>
   🔺 Bullish Continuation:{' '}
-  <span className={data.bullishContinuation ? 'text-green-400' : 'text-red-400'}>
+  <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
     {data.bullishContinuation ? 'Yes' : 'No'}
   </span>
 </p>
