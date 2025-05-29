@@ -222,11 +222,11 @@ export async function getServerSideProps() {
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
       const dailyCandles = await fetchCandles(symbol, '1d');
-      const prevDay = dailyCandles.at(0);
-      const currDay = dailyCandles.at(1);
+      const prevDay = dailyCandles.at(-2);
+      const currDay = dailyCandles.at(-1);
 
       const dailyHigh = prevDay?.high ?? 0;
-const dailyLow = prevDay?.low ?? 0;
+			const dailyLow = prevDay?.low ?? 0;
       const currDayHigh = currDay?.high ?? 0;
       const currDayLow = currDay?.low ?? 0;
       
