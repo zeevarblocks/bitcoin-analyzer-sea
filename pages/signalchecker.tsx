@@ -2,14 +2,11 @@ import React from 'react';
 
 interface SignalData {
   trend: string;
-    breakout: {
-    bullishBreakout,
-    bearishBreakout,
-    pointA,
-    pointB: {
-      price: pointB,
-      timestamp: current.timestamp,
-    },
+    breakout,
+        bullishBreakout,
+        bearishBreakout,
+        pointA,
+        pointB,
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
@@ -321,14 +318,11 @@ const divergence =
 
       results[symbol] = {
   trend,
-    breakout: {
-    bullishBreakout,
-    bearishBreakout,
-    pointA,
-    pointB: {
-      price: pointB,
-      timestamp: current.timestamp,
-    },
+    breakout,
+        bullishBreakout,
+        bearishBreakout,
+        pointA,
+        pointB,
   divergence,
   ema14Bounce,
   ema70Bounce,
