@@ -233,27 +233,24 @@ const low72h = Math.min(...last288Candles.map(c => c.low));
 
       const prevHighIdx = highs.lastIndexOf(high72h);
 const prevLowIdx = lows.lastIndexOf(low72h);
+
+      const prevCandle = candles.at(-2);
+const currentCandle = candles.at(-1);
       
 // Breakout logic using 15m chart (24h window)
-      
-const prevCandle = candles.at(-2);
-const currentCandle = candles.at(-1);
-
 let bullishBreakout = false;
 let bearishBreakout = false;
 let breakout = false;
 
-if (prevCandle && currentCandle) {
-  bullishBreakout =
-    prevCandle.high <= high72h &&      // previous candle's high is at or below 72h high
-    currentCandle.high > high72h;      // current candle's high breaks above 72h high
+if (currentCandle) {
+  // Break above 72h high (bullish)
+  bullishBreakout = currentCandle.high > high72h && currentCandle.close > currentCandle.open;
 
-  bearishBreakout =
-    prevCandle.low >= low72h &&        // previous candle's low is at or above 72h low
-    currentCandle.low < low72h;        // current candle's low breaks below 72h low
+  // Break below 72h low (bearish)
+  bearishBreakout = currentCandle.low < low72h && currentCandle.close < currentCandle.open;
 
   breakout = bullishBreakout || bearishBreakout;
-    }
+}
       
 let bearishContinuation = false;
 let bullishContinuation = false;
