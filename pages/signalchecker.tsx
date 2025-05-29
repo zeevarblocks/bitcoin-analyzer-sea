@@ -227,8 +227,8 @@ export async function getServerSideProps() {
       const currDayHigh = currDay?.high ?? 0;
 const currDayLow = currDay?.low ?? 0;
       
-      const prevHighIdx = highs.lastIndexOf(high72h);
-const prevLowIdx = lows.lastIndexOf(low72h);
+      const prevHighIdx = highs.lastIndexOf(dailyHigh);
+const prevLowIdx = lows.lastIndexOf(dailyLow);
       
 // Breakout logic 
 const bullishBreakout = currHigh > prevHigh;
@@ -246,8 +246,8 @@ if (trend === 'bearish') {
 }
       
 const divergence =
-  (highs.at(-1)! > high72h && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-  (lows.at(-1)! < low72h && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+  (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+  (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
       
       const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
@@ -278,7 +278,7 @@ const divergence =
       }
 
       const touchedEMA70Today =
-        high72h >= lastEMA70 && low72h <= lastEMA70 &&
+        dailyHigh >= lastEMA70 && dailyLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       results[symbol] = {
@@ -324,23 +324,23 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
       <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
       <p>
-        🚀 Daily Breakout:{' '}
-        <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
-          {data.breakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟢 Bullish Breakout:{' '}
-        <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bullishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔴 Bearish Breakout:{' '}
-        <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bearishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
+  🚀 Daily Breakout:{' '}
+  <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
+    {data.breakout ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  🟢 Bullish Breakout:{' '}
+  <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
+    {data.bullishBreakout ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  🔴 Bearish Breakout:{' '}
+  <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+    {data.bearishBreakout ? 'Yes' : 'No'}
+  </span>
+</p>
       <p>
         📉 RSI Divergence:{' '}
         <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
