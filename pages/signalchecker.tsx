@@ -221,18 +221,24 @@ export async function getServerSideProps() {
 
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-      // Get the last 96 15m candles (24 hours)
+      const dailyCandles = await fetchCandles(symbol, '1d');
+      const prevDay = dailyCandles.at(-2);
+      const currDay = dailyCandles.at(-1);
+
+      const dailyHigh = prevDay?.high ?? 0;
+      const dailyLow = prevDay?.low ?? 0;
+      const currDayHigh = currDay?.high ?? 0;
+      const currDayLow = currDay?.low ?? 0;
+
+      const prevHighIdx = highs.lastIndexOf(dailyHigh);
+const prevLowIdx = lows.lastIndexOf(dailyLow);
+      
 const last96Candles = candles.slice(-96);
 const last96Highs = last96Candles.map(c => c.high);
 const last96Lows = last96Candles.map(c => c.low);
 
-// Step 2: Compute high/low of last 24h
 const dailyHigh = Math.max(...last96Highs);
 const dailyLow = Math.min(...last96Lows);
-
-// ✅ Step 3: Use those values safely now
-const prevHighIdx = highs.lastIndexOf(dailyHigh);
-const prevLowIdx = lows.lastIndexOf(dailyLow);
 
 // Breakout logic using 15m chart (24h window)
 let bullishBreakout = false;
