@@ -2,11 +2,13 @@ import React from 'react';
 
 interface SignalData {
   trend: string;
-  breakout: boolean;
-  bullishBreakout: boolean; 
-  bearishBreakout: boolean; 
-	pointA: number | null;
-pointB: { timestamp: number; price: number } | null;
+  breakout: {
+    bullishBreakout,
+    bearishBreakout,
+    pointA,
+    pointB,
+    pointBTime,
+  },
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
@@ -214,7 +216,7 @@ function groupCandlesByDay(candles) {
     pointA: null,
     pointB: null,
   };
-}
+
 
 
 // logic in getServerSideProps:
