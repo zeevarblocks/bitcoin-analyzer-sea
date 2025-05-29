@@ -251,7 +251,7 @@ const grouped = groupCandlesByDay(candles);
 const days = Object.keys(grouped).sort();
 
 if (days.length < 2) {
-  return { ...otherSignals, breakout: null };
+  continue;
 }
 
 const today = days[days.length - 1];
