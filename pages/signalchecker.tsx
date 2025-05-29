@@ -227,10 +227,10 @@ export async function getServerSideProps() {
       const currDayHigh = currDay?.high ?? 0;
 const currDayLow = currDay?.low ?? 0;
       
-const last96Candles = candles.slice(-96);
-const last96Highs = last96Candles.map(c => c.high);
-const last96Lows = last96Candles.map(c => c.low);
-
+const last288Candles = candles.slice(-288); // 72h worth of 15m candles
+const high72h = Math.max(...last288Candles.map(c => c.high));
+const low72h = Math.min(...last288Candles.map(c => c.low));
+      
 const dailyHigh = Math.max(...last96Highs);
 const dailyLow = Math.min(...last96Lows);
 
@@ -248,13 +248,13 @@ let breakout = false;
 
 if (prevCandle && currentCandle) {
   bullishBreakout =
-    prevCandle.close <= dailyHigh &&
-    currentCandle.close > dailyHigh &&
+    prevCandle.close <= high72h &&
+    currentCandle.close > high72h &&
     currentCandle.close > currentCandle.open;
 
   bearishBreakout =
-    prevCandle.close >= dailyLow &&
-    currentCandle.close < dailyLow &&
+    prevCandle.close >= low72h &&
+    currentCandle.close < low72h &&
     currentCandle.close < currentCandle.open;
 
   breakout = bullishBreakout || bearishBreakout;
