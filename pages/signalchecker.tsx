@@ -9,13 +9,13 @@ interface SignalData {
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
-  level: number | null;
-  levelType: 'support' | 'resistance' | null;
+  level: number | null; //ema14&70 crossed 
+  levelType: 'support' | 'resistance' | null; //ema14&70 crossed 
   inferredLevel: number;
-  inferredLevelType: 'support' | 'resistance';
+  inferredLevelType: 'support' | 'resistance'; //deduce or conclude (information) from, "if can't get a crossed data/level
   nearOrAtEMA70Divergence: boolean;
-  inferredLevelWithinRange: boolean;
-  divergenceFromLevel: boolean;
+  inferredLevelWithinRange: boolean; //deduce or conclude (information) from ema14&70 crossed 
+  divergenceFromLevel: boolean; //from Point A = crossed ema14&70 to current price that create rsi divergent ema70
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
 bullishContinuation: boolean;
@@ -230,24 +230,6 @@ const dailyLow = prevDay?.low ?? 0;
       
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
-      
-// Reconstruct today's high/low from 15m candles
-const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-
-const todaysHighs = candles
-  .filter(c => new Date(c.timestamp).toISOString().startsWith(today))
-  .map(c => c.high);
-
-const todaysLows = candles
-  .filter(c => new Date(c.timestamp).toISOString().startsWith(today))
-  .map(c => c.low);
-
-const currDayHigh = todaysHighs.length ? Math.max(...todaysHighs) : 0;
-const currDayLow = todaysLows.length ? Math.min(...todaysLows) : 0;
-
-// Today's current high/low from intraday 15m candles:
-const currDayHigh = Math.max(...todaysHighs);
-const currDayLow = Math.min(...todaysLows);
 
 // Breakout check:
 const bullishBreakout = currDayHigh > dailyHigh;
