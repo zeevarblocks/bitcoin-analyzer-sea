@@ -231,6 +231,16 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
       const prevLowIdx = lows.lastIndexOf(dailyLow);
 
+      // Calculate today's UTC midnight timestamp
+const now = new Date();
+const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+// Filter 15m candles that are from today
+const todayCandles = candles.filter(c => c.timestamp >= utcMidnight);
+
+// Check if any of today's highs break the previous day's high
+const breakout = todayCandles.some(c => c.high > dailyHigh) || todayCandles.some(c => c.low < dailyLow);
+
 let bearishContinuation = false;
 let bullishContinuation = false;
 
