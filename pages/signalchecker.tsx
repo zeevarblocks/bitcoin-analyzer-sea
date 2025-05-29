@@ -299,7 +299,7 @@ const divergence =
       }
 
       const touchedEMA70Today =
-        dailyHigh >= lastEMA70 && dailyLow <= lastEMA70 &&
+        high72h >= lastEMA70 && low72h <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       results[symbol] = {
