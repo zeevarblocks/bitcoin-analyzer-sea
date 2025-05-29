@@ -2,13 +2,14 @@ import React from 'react';
 
 interface SignalData {
   trend: string;
-  breakout: {
-  bullishBreakout,
-  bearishBreakout,
-  pointA,
-  pointB,
-  pointBTime,
-},
+    breakout: {
+    bullishBreakout,
+    bearishBreakout,
+    pointA,
+    pointB: {
+      price: pointB,
+      timestamp: current.timestamp,
+    },
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
@@ -269,20 +270,9 @@ const bullishBreakout = current.high > yesterdayHigh && current.close > current.
 const bearishBreakout = current.low < yesterdayLow && current.close < current.open;
 
 const breakout = bullishBreakout || bearishBreakout;
-
-const pointA = breakout
-  ? bullishBreakout
-    ? yesterdayHigh
-    : yesterdayLow
-  : null;
-
-const pointB = breakout
-  ? bullishBreakout
-    ? current.high
-    : current.low
-  : null;
-
-const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
+const pointA = bullishBreakout ? yesterdayHigh : bearishBreakout ? yesterdayLow : 0;
+const pointB = bullishBreakout ? current.high : bearishBreakout ? current.low : 0;
+const pointBTime = new Date(current.timestamp).toLocaleString();
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -331,13 +321,14 @@ const divergence =
 
       results[symbol] = {
   trend,
-  breakout: {
-  bullishBreakout,
-  bearishBreakout,
-  pointA,
-  pointB,
-  pointBTime,
-},
+    breakout: {
+    bullishBreakout,
+    bearishBreakout,
+    pointA,
+    pointB: {
+      price: pointB,
+      timestamp: current.timestamp,
+    },
   divergence,
   ema14Bounce,
   ema70Bounce,
