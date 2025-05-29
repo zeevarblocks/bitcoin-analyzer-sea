@@ -266,10 +266,10 @@ if (trend === 'bearish') {
   bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
 }
       
-      const divergence =
-        (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-        (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
-
+const divergence =
+  (highs.at(-1)! > high72h && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+  (lows.at(-1)! < low72h && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+      
       const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 
