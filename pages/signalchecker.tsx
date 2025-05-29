@@ -283,8 +283,6 @@ const pointB = breakout
   : null;
 
 const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
-
-const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
       
 let bearishContinuation = false;
 let bullishContinuation = false;
