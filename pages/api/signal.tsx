@@ -26,17 +26,17 @@ interface Candle {
   volume: number;
 }
 
-async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;
-  const response = await fetch(
-    `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
-  );
+const response = await fetch(
+  `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
+);
 
-  const data = await response.json();
+const data = await response.json();
 
-  if (!data?.data || !Array.isArray(data.data) || data.data.length === 0) {
-    throw new Error(`No valid candle data returned for symbol ${symbol}`);
-  }
+console.log(`Fetched candles for ${symbol} (${interval}):`, JSON.stringify(data, null, 2));
+
+if (!data?.data || !Array.isArray(data.data) || data.data.length === 0) {
+  throw new Error(`No valid candle data returned for symbol ${symbol}`);
+}
 
   return data.data.map((d: string[]) => ({
     timestamp: +d[0],
@@ -197,12 +197,12 @@ async function analyzeSymbol(symbol: string): Promise<SignalData> {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { symbol } = req.query;
 
-  if (!symbol || typeof symbol !== 'string') {
-    return res.status(400).json({ error: 'Symbol is required' });
-  }
+if (!symbol.includes('-') || !symbol.endsWith('-SWAP')) {
+  return res.status(400).json({ error: 'Invalid OKX futures symbol format. Example: XRP-USDT-SWAP' });
+}
 
   try {
-    const signal = await analyzeSymbol(symbol.toUpperCase());
+    const signal = await analyzeSymbol(symbol);
     res.status(200).json({ signal });
   } catch (error: any) {
     console.error('Signal analysis failed:', error);
