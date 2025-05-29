@@ -439,3 +439,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 </div>
   );
 }
+}
