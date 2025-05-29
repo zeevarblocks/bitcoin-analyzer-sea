@@ -3,6 +3,8 @@ import React from 'react';
 interface SignalData {
   trend: string;
   breakout: boolean;
+  bullishBreakout: boolean; 
+  bearishBreakout: boolean; 
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
