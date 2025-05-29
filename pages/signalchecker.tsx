@@ -235,8 +235,6 @@ const prevDay = dailyCandles.at(-2); // safer: completed daily candle
 const dailyHigh = prevDay?.high ?? 0;
 const dailyLow = prevDay?.low ?? 0;
 
-const currentCandle = candles.at(-1); // latest 15m candle
-
 console.log('=== DEBUG: Daily Levels ===');
 console.log('Daily High:', dailyHigh);
 console.log('Daily Low:', dailyLow);
