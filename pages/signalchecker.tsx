@@ -251,12 +251,14 @@ let bearishBreakout = false;
 let breakout = false;
 
 if (currentCandle) {
-  const lastHigh = highs.at(-1)!;
-const lastLow = lows.at(-1)!;
+  // Check if current candle breaks the daily high or daily low
+  bullishBreakout =
+    currentCandle.high > dailyHigh &&
+    currentCandle.close > currentCandle.open;
 
-bullishBreakout = lastHigh > dailyHigh && currentCandle.close > currentCandle.open;
-bearishBreakout = lastLow < dailyLow && currentCandle.close < currentCandle.open;
-breakout = bullishBreakout || bearishBreakout;
+  bearishBreakout =
+    currentCandle.low < dailyLow &&
+    currentCandle.close < currentCandle.open;
 
   breakout = bullishBreakout || bearishBreakout;
 }
