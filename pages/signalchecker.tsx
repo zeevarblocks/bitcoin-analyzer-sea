@@ -227,33 +227,14 @@ export async function getServerSideProps() {
       const currDayHigh = currDay?.high ?? 0;
 const currDayLow = currDay?.low ?? 0;
       
-const last288Candles = candles.slice(-288); // 72h worth of 15m candles
-const high72h = Math.max(...last288Candles.map(c => c.high));
-const low72h = Math.min(...last288Candles.map(c => c.low));
-
       const prevHighIdx = highs.lastIndexOf(high72h);
 const prevLowIdx = lows.lastIndexOf(low72h);
       
-// Breakout logic using 15m chart (24h window)
-      
-const prevCandle = candles.at(-2);
-const currentCandle = candles.at(-1);
+// Breakout logic 
+const bullishBreakout = currHigh > prevHigh;
+const bearishBreakout = currLow < prevLow;
+const breakout = bullishBreakout || bearishBreakout;
 
-let bullishBreakout = false;
-let bearishBreakout = false;
-let breakout = false;
-
-if (prevCandle && currentCandle) {
-  bullishBreakout =
-    prevCandle.high <= high72h &&      // previous candle's high is at or below 72h high
-    currentCandle.high > high72h;      // current candle's high breaks above 72h high
-
-  bearishBreakout =
-    prevCandle.low >= low72h &&        // previous candle's low is at or above 72h low
-    currentCandle.low < low72h;        // current candle's low breaks below 72h low
-
-  breakout = bullishBreakout || bearishBreakout;
-    }
       
 let bearishContinuation = false;
 let bullishContinuation = false;
