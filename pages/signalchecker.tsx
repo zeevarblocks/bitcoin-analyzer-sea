@@ -221,9 +221,6 @@ export async function getServerSideProps() {
 
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-      const prevHighIdx = highs.lastIndexOf(dailyHigh);
-      const prevLowIdx = lows.lastIndexOf(dailyLow);
-
       // Get the last 96 15m candles (24 hours)
 const last96Candles = candles.slice(-96);
 const last96Highs = last96Candles.map(c => c.high);
