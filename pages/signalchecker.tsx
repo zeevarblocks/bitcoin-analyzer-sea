@@ -7,7 +7,7 @@ interface SignalData {
   bearishBreakout,
   pointA,
   pointB,
-  pointBTime: pointB?.timestamp ? new Date(pointB.timestamp).toLocaleString() : null,
+  pointBTime,
 },
   divergence: boolean;
   ema14Bounce: boolean;
@@ -276,10 +276,13 @@ const pointA = breakout
     : yesterdayLow
   : null;
 
-const { breakout } = data;
-const pointBTime = breakout.pointB
-  ? new Date(breakout.pointB.timestamp).toLocaleString()
+const pointB = breakout
+  ? bullishBreakout
+    ? current.high
+    : current.low
   : null;
+
+const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
 
 const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
       
@@ -335,7 +338,7 @@ const divergence =
   bearishBreakout,
   pointA,
   pointB,
-  pointBTime: pointB?.timestamp ? new Date(pointB.timestamp).toLocaleString() : null,
+  pointBTime,
 },
   divergence,
   ema14Bounce,
@@ -404,7 +407,7 @@ const divergence =
       <span className="text-blue-300">
         {data.breakout.pointB
           ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
-          : 'N/A'}
+          : 'No breakout detected' }
       </span>
     </p>
               <p>
