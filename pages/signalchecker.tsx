@@ -233,9 +233,9 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
       
-// Breakout logic 
-const bullishBreakout = currHigh > prevHigh;
-const bearishBreakout = currLow < prevLow;
+// Breakout logic
+const bullishBreakout = currDayHigh > dailyHigh;
+const bearishBreakout = currDayLow < dailyLow;
 const breakout = bullishBreakout || bearishBreakout;
 
       
