@@ -269,9 +269,20 @@ const bullishBreakout = current.high > yesterdayHigh && current.close > current.
 const bearishBreakout = current.low < yesterdayLow && current.close < current.open;
 
 const breakout = bullishBreakout || bearishBreakout;
-const pointA = bullishBreakout ? yesterdayHigh : bearishBreakout ? yesterdayLow : 0;
-const pointB = bullishBreakout ? current.high : bearishBreakout ? current.low : 0;
-const pointBTime = new Date(current.timestamp).toLocaleString();
+
+const pointA = breakout
+  ? bullishBreakout
+    ? yesterdayHigh
+    : yesterdayLow
+  : null;
+
+const pointB = breakout
+  ? bullishBreakout
+    ? current.high
+    : current.low
+  : null;
+
+const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
       
 let bearishContinuation = false;
 let bullishContinuation = false;
