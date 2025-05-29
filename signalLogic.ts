@@ -136,3 +136,25 @@ function findRelevantLevel(
 }
 
 // This file contains only the backend part and logic enhancements per user request
+
+
+// Inside the logic where we detect RSI divergence from level (assumed to be in getServerSideProps or similar function)
+// This snippet needs to be placed after computing RSIs, EMAs, and support/resistance level
+
+const recentTimestamps = candles.slice(-96).map(c => c.timestamp); // 96 * 15m = 24 hours
+
+const rsiDivergenceFromLevel = (() => {
+  if (!level) return false;
+  const threshold = 0.002;
+  for (let i = closes.length - 96; i < closes.length; i++) {
+    if (Math.abs(closes[i] - level) / level < threshold) {
+      if (trend === 'bullish' && closes[i] > level && rsi14[i] < rsi14[i - 1]) {
+        return true;
+      }
+      if (trend === 'bearish' && closes[i] < level && rsi14[i] > rsi14[i - 1]) {
+        return true;
+      }
+    }
+  }
+  return false;
+})();
