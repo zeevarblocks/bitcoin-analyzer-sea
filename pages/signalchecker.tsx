@@ -224,9 +224,6 @@ export async function getServerSideProps() {
       const dailyCandles = await fetchCandles(symbol, '1d');
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
-
-      const prevHighIdx = highs.lastIndexOf(dailyHigh);
-const prevLowIdx = lows.lastIndexOf(dailyLow);
       
 const last96Candles = candles.slice(-96);
 const last96Highs = last96Candles.map(c => c.high);
@@ -234,6 +231,9 @@ const last96Lows = last96Candles.map(c => c.low);
 
 const dailyHigh = Math.max(...last96Highs);
 const dailyLow = Math.min(...last96Lows);
+
+      const prevHighIdx = highs.lastIndexOf(dailyHigh);
+const prevLowIdx = lows.lastIndexOf(dailyLow);
 
 // Breakout logic using 15m chart (24h window)
 let bullishBreakout = false;
