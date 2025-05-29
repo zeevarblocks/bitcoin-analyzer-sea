@@ -401,13 +401,13 @@ const divergence =
       </span>
     </p>
     <p>
-      💥 Point B:{' '}
-      <span className="text-blue-300">
-        {data.breakout.pointB
-          ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
-          : 'No breakout detected' }
-      </span>
-    </p>
+  💥 Point B:{' '}
+  <span className="text-blue-300">
+    {data.breakout.pointB
+      ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
+      : 'No breakout detected'}
+  </span>
+</p>
               <p>
                 📉 RSI Divergence:{' '}
                 <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
