@@ -230,9 +230,6 @@ const currDayLow = currDay?.low ?? 0;
 const last288Candles = candles.slice(-288); // 72h worth of 15m candles
 const high72h = Math.max(...last288Candles.map(c => c.high));
 const low72h = Math.min(...last288Candles.map(c => c.low));
-      
-const dailyHigh = Math.max(...last96Highs);
-const dailyLow = Math.min(...last96Lows);
 
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
