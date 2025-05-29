@@ -239,8 +239,10 @@ const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTC
 const todayCandles = candles.filter(c => c.timestamp >= utcMidnight);
 
 // Check if any of today's highs break the previous day's high
-const breakout = todayCandles.some(c => c.high > dailyHigh) || todayCandles.some(c => c.low < dailyLow);
-
+const bullishBreakout = todayCandles.some(c => c.high > dailyHigh);
+const bearishBreakout = todayCandles.some(c => c.low < dailyLow);
+const breakout = bullishBreakout || bearishBreakout;
+      
 let bearishContinuation = false;
 let bullishContinuation = false;
 
@@ -288,7 +290,9 @@ if (trend === 'bearish') {
 
       results[symbol] = {
         trend,
-        breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
+        breakout,
+        bullishBreakout,
+  bearishBreakout,
         divergence,
         ema14Bounce,
         ema70Bounce,
@@ -327,12 +331,19 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
           <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
           <p>
-            🚀 Daily Breakout:{' '}
-            <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
-              {data.breakout ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
+  🚀 Daily Breakout:{' '}
+  {data.breakout ? (
+    <span className="text-green-400 font-semibold">
+      Yes (
+      {data.bullishBreakout && '🔺 Bullish'}
+      {data.bullishBreakout && data.bearishBreakout && ' & '}
+      {data.bearishBreakout && '🔻 Bearish'}
+      )
+    </span>
+  ) : (
+    <span className="text-red-400 font-semibold">No</span>
+  )}
+</p>
             📉 RSI Divergence:{' '}
             <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
               {data.divergence ? 'Yes' : 'No'}
