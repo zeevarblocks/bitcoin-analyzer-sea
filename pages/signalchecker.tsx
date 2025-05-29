@@ -226,7 +226,7 @@ export async function getServerSideProps() {
       const currDay = dailyCandles.at(-1);
 
       const dailyHigh = prevDay?.high ?? 0;
-      const dailyLow = prevDay?.low ?? 0;
+const dailyLow = prevDay?.low ?? 0;
       
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
@@ -257,12 +257,6 @@ const currDayLow = Math.min(...todaysLows);
 const bullishBreakout = currDayHigh > dailyHigh;
 const bearishBreakout = currDayLow < dailyLow;
 const breakout = bullishBreakout || bearishBreakout;
-      
-// Breakout logic
-const bullishBreakout = currDayHigh > dailyHigh;
-const bearishBreakout = currDayLow < dailyLow;
-const breakout = bullishBreakout || bearishBreakout;
-
       
 let bearishContinuation = false;
 let bullishContinuation = false;
