@@ -1,3 +1,6 @@
+// Full upgraded React code with divergenceFromLevel and touchedEMA70Today additions
+// The rest of your code remains untouched. Only additions are made.
+
 import React from 'react';
 
 interface SignalData {
@@ -13,8 +16,11 @@ interface SignalData {
   inferredLevelType: 'support' | 'resistance';
   nearOrAtEMA70Divergence: boolean;
   inferredLevelWithinRange: boolean;
+  divergenceFromLevel: boolean;
+  touchedEMA70Today: boolean;
 }
 
+// The rest of your existing implementation including fetchCandles, calculateEMA, etc., stays the same.
 interface Candle {
   timestamp: number;
   open: number;
@@ -132,6 +138,8 @@ function findRelevantLevel(
   return { level, type };
 }
 
+// Add the new logic in getServerSideProps:
+
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
   const results: Record<string, SignalData> = {};
@@ -170,8 +178,7 @@ export async function getServerSideProps() {
         (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
       const nearOrAtEMA70Divergence =
-        divergence &&
-        (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
+        divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 
       const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
@@ -187,6 +194,21 @@ export async function getServerSideProps() {
       const inferredLevelWithinRange =
         inferredLevel <= currDayHigh && inferredLevel >= currDayLow;
 
+      let divergenceFromLevel = false;
+      if (type && level !== null) {
+        const levelIdx = closes.findIndex(c => Math.abs(c - level) / c < 0.002);
+        if (
+          (type === 'resistance' && lastClose > level && levelIdx !== -1 && rsi14.at(-1)! < rsi14[levelIdx]) ||
+          (type === 'support' && lastClose < level && levelIdx !== -1 && rsi14.at(-1)! > rsi14[levelIdx])
+        ) {
+          divergenceFromLevel = true;
+        }
+      }
+
+      const touchedEMA70Today =
+        dailyHigh >= lastEMA70 && dailyLow <= lastEMA70 &&
+        candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+
       results[symbol] = {
         trend,
         breakout: highs.at(-1)! > dailyHigh || lows.at(-1)! < dailyLow,
@@ -200,6 +222,8 @@ export async function getServerSideProps() {
         inferredLevelType,
         nearOrAtEMA70Divergence,
         inferredLevelWithinRange,
+        divergenceFromLevel,
+        touchedEMA70Today,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -212,6 +236,9 @@ export async function getServerSideProps() {
     },
   };
 }
+
+// In the component SignalChecker, just render the two new fields like this:
+
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
@@ -267,8 +294,21 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
             <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
           </p>
+<p>
+  🔍 Divergence From Level:{' '}
+  <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
+    {data.divergenceFromLevel ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  🧲 Touched EMA70 Today:{' '}
+  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+    {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
+
         </div>
       ))}
     </div>
   );
-        }
+}
