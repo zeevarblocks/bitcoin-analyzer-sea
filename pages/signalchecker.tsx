@@ -141,23 +141,28 @@ function detectBearishContinuation(
   closes: number[],
   highs: number[],
   ema70: number[],
-  rsi14: number[]
+  rsi: number[],
+  ema14: number[],
 ): boolean {
-  const recentResistanceIdx = closes.findIndex((_, i) => {
-    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
-    const isHigh = highs[i] === Math.max(...highs.slice(i - 3, i + 1));
-    return nearEMA && isHigh;
-  });
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
 
-  if (recentResistanceIdx === -1) return false;
-
-  const resistanceRSI = rsi14[recentResistanceIdx];
-
-  for (let i = recentResistanceIdx + 1; i < closes.length; i++) {
-    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
-    if (nearEMA && rsi14[i] > resistanceRSI) return true;
+    if (prev14 > prev70 && curr14 < curr70) {
+      const rsiAtCross = rsi[i];
+      for (let j = i + 1; j < closes.length; j++) {
+        const price = closes[j];
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const rsiHigher = rsi[j] > rsiAtCross;
+        if (nearEMA70 && rsiHigher) {
+          return true;
+        }
+      }
+      break;
+    }
   }
-
   return false;
 }
 
@@ -165,25 +170,31 @@ function detectBullishContinuation(
   closes: number[],
   lows: number[],
   ema70: number[],
-  rsi14: number[]
+  rsi: number[],
+  ema14: number[],
 ): boolean {
-  const recentSupportIdx = closes.findIndex((_, i) => {
-    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
-    const isLow = lows[i] === Math.min(...lows.slice(i - 3, i + 1));
-    return nearEMA && isLow;
-  });
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
 
-  if (recentSupportIdx === -1) return false;
-
-  const supportRSI = rsi14[recentSupportIdx];
-
-  for (let i = recentSupportIdx + 1; i < closes.length; i++) {
-    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
-    if (nearEMA && rsi14[i] < supportRSI) return true;
+    if (prev14 < prev70 && curr14 > curr70) {
+      const rsiAtCross = rsi[i];
+      for (let j = i + 1; j < closes.length; j++) {
+        const price = closes[j];
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const rsiHigher = rsi[j] < rsiAtCross; // for bullish, RSI at latest is lower than cross
+        if (nearEMA70 && rsiHigher) {
+          return true;
+        }
+      }
+      break;
+    }
   }
-
   return false;
 }
+
 
 // logic in getServerSideProps:
 
@@ -224,9 +235,9 @@ let bearishContinuation = false;
 let bullishContinuation = false;
 
 if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14);
+  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
 } else if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14);
+  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
 }
       
       const divergence =
