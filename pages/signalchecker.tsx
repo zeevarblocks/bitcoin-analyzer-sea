@@ -245,10 +245,6 @@ const todaysLows = candles
 const currDayHigh = todaysHighs.length ? Math.max(...todaysHighs) : 0;
 const currDayLow = todaysLows.length ? Math.min(...todaysLows) : 0;
 
-// Daily high/low from yesterday's daily candle:
-const dailyHigh = previousDailyCandle.high;
-const dailyLow = previousDailyCandle.low;
-
 // Today's current high/low from intraday 15m candles:
 const currDayHigh = Math.max(...todaysHighs);
 const currDayLow = Math.min(...todaysLows);
