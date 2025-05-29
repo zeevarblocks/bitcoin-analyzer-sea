@@ -197,15 +197,19 @@ async function analyzeSymbol(symbol: string): Promise<SignalData> {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { symbol } = req.query;
 
-if (!symbol.includes('-') || !symbol.endsWith('-SWAP')) {
-  return res.status(400).json({ error: 'Invalid OKX futures symbol format. Example: XRP-USDT-SWAP' });
-}
+  if (!symbol || typeof symbol !== 'string') {
+    return res.status(400).json({ error: 'Symbol is required' });
+  }
+
+  if (!symbol.includes('-') || !symbol.endsWith('-SWAP')) {
+    return res.status(400).json({ error: 'Invalid OKX futures symbol format. Example: XRP-USDT-SWAP' });
+  }
 
   try {
-    const signal = await analyzeSymbol(symbol);
+    const signal = await analyzeSymbol(symbol);  // removed .toUpperCase()
     res.status(200).json({ signal });
   } catch (error: any) {
     console.error('Signal analysis failed:', error);
     res.status(500).json({ error: error.message || 'Failed to analyze symbol' });
   }
-        }
+      }
