@@ -385,12 +385,14 @@ const divergence =
         {data.breakout.pointA?.toFixed(2)}
       </span>
     </p>
-    <p>
-  💥 Point B:{' '}
-  <span className="text-blue-300">
-    {data.pointB.price.toFixed(2)} @ {new Date(data.pointB.timestamp).toLocaleString()}
-  </span>
-</p>
+     <p>
+      💥 Point B:{' '}
+      <span className="text-blue-300">
+        {data.breakout.pointB
+          ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
+          : 'No breakout detected'}
+      </span>
+    </p>
               <p>
                 📉 RSI Divergence:{' '}
                 <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
