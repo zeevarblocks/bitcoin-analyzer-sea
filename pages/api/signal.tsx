@@ -83,8 +83,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
     const data = await response.json();
 
-    if (!data?.data || !Array.isArray(data.data)) {
-      return res.status(500).json({ error: 'Invalid response from OKX' });
+    if (!data?.data || !Array.isArray(data.data) || data.data.length === 0) {
+  return res.status(404).json({ error: 'No data available for this symbol' });
     }
 
     const candles: Candle[] = data.data
