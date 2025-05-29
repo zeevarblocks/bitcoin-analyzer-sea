@@ -1,12 +1,14 @@
 import React from 'react';
+import axios from 'axios';
 
 interface SignalData {
   trend: string;
-    breakout,
-        bullishBreakout,
-        bearishBreakout,
-        pointA,
-        pointB,
+    symbol: string;
+  breakout: 'bullish' | 'bearish' | null;
+  pointA?: number;
+  pointB?: {
+    price: number;
+    timestamp: number;
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
@@ -53,6 +55,27 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
     }))
     .reverse();
 }
+
+const fetchSpotSymbols = async (): Promise<string[]> => {
+  const res = await axios.get('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
+  return res.data.data.map((item: any) => item.instId);
+};
+
+const fetch1DCandles = async (symbol: string): Promise<Candle[]> => {
+  const res = await axios.get(
+    `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=1D&limit=2`
+  );
+  return res.data.data.map((c: string[]) => ({
+    timestamp: Number(c[0]),
+    open: c[1],
+    high: c[2],
+    low: c[3],
+    close: c[4],
+    volume: c[5],
+  }));
+};
+
+
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
@@ -199,14 +222,39 @@ function detectBullishContinuation(
   return false;
 }
 
-function groupCandlesByDay(candles) {
-  return candles.reduce((acc, c) => {
-    const date = new Date(c.timestamp).toISOString().split("T")[0];
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(c);
-    return acc;
-  }, {});
-}
+const detectBreakout = (candles: Candle[]): BreakoutResult => {
+  const [today, yesterday] = candles;
+  const todayHigh = parseFloat(today.high);
+  const todayLow = parseFloat(today.low);
+  const yHigh = parseFloat(yesterday.high);
+  const yLow = parseFloat(yesterday.low);
+
+  if (todayHigh > yHigh) {
+    return {
+      symbol: '',
+      breakout: 'bullish',
+      pointA: yHigh,
+      pointB: {
+        price: todayHigh,
+        timestamp: today.timestamp,
+      },
+    };
+  }
+
+  if (todayLow < yLow) {
+    return {
+      symbol: '',
+      breakout: 'bearish',
+      pointA: yLow,
+      pointB: {
+        price: todayLow,
+        timestamp: today.timestamp,
+      },
+    };
+  }
+
+  return { symbol: '', breakout: null };
+};
 
 
 // logic in getServerSideProps:
@@ -214,6 +262,7 @@ function groupCandlesByDay(candles) {
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
   const results: Record<string, SignalData> = {};
+	const results: BreakoutResult[] = [];
 
   for (const symbol of symbols) {
     try {
@@ -244,25 +293,17 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
 
-// Breakout check:
-const grouped = groupCandlesByDay(candles);
-const days = Object.keys(grouped).sort();
-
-if (days.length < 2) {
-  continue;
-}
-
-const today = days[days.length - 1];
-const yesterday = days[days.length - 2];
-
-const todayCandles = grouped[today];
-const yesterdayCandles = grouped[yesterday];
-
-const yesterdayHigh = Math.max(...yesterdayCandles.map(c => c.high));
-const yesterdayLow = Math.min(...yesterdayCandles.map(c => c.low));
-
-const current = todayCandles[todayCandles.length - 1];
-
+const candles = await fetch1DCandles(symbol);
+      if (candles.length < 2) continue;
+      const breakout = detectBreakout(candles);
+      breakout.symbol = symbol;
+      results.push(breakout);
+    } catch (e) {
+      console.error(`Error fetching data for ${symbol}`, e);
+    }
+  }
+	    
+//breakout section 
 const bullishBreakout = current.high > yesterdayHigh && current.close > current.open;
 const bearishBreakout = current.low < yesterdayLow && current.close < current.open;
 
@@ -318,11 +359,7 @@ const divergence =
 
       results[symbol] = {
   trend,
-    breakout,
-        bullishBreakout,
-        bearishBreakout,
-        pointA,
-        pointB,
+    breakouts: results,
   divergence,
   ema14Bounce,
   ema70Bounce,
@@ -358,41 +395,23 @@ const divergence =
         <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
           <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
           <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+           <p>🚀 Breakout: {b.breakout || 'No'}</p>
           <p>
-  🚀 Daily Breakout:{' '}
-  <span className={data.breakout?.bullishBreakout || data.breakout?.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-    {data.breakout?.bullishBreakout || data.breakout?.bearishBreakout ? 'Yes' : 'No'}
-  </span>
-</p>
-
-{data.breakout && (
-  <>
-    <p>
-      🟢 Bullish Breakout:{' '}
-      <span className={data.breakout.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
-        {data.breakout.bullishBreakout ? 'Yes' : 'No'}
-      </span>
-    </p>
-    <p>
-      🔴 Bearish Breakout:{' '}
-      <span className={data.breakout.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-        {data.breakout.bearishBreakout ? 'Yes' : 'No'}
-      </span>
-    </p>
-    <p>
-      📍 Point A:{' '}
-      <span className="text-yellow-300">
-        {data.breakout.pointA?.toFixed(2)}
-      </span>
-    </p>
-     <p>
-      💥 Point B:{' '}
-      <span className="text-blue-300">
-        {data.breakout.pointB
-          ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
-          : 'No breakout detected'}
-      </span>
-    </p>
+            📍 Point A:{' '}
+            <span className="text-yellow-300">
+              {b.pointA?.toFixed(2) || 'N/A'}
+            </span>
+          </p>
+          <p>
+            💥 Point B:{' '}
+            <span className="text-blue-300">
+              {b.pointB
+                ? `${b.pointB.price.toFixed(2)} @ ${new Date(
+                    b.pointB.timestamp
+                  ).toLocaleString()}`
+                : 'No breakout detected'}
+            </span>
+          </p>
               <p>
                 📉 RSI Divergence:{' '}
                 <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
