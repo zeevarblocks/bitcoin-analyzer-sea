@@ -227,12 +227,18 @@ export async function getServerSideProps() {
 
       const dailyHigh = prevDay?.high ?? 0;
       const dailyLow = prevDay?.low ?? 0;
-      const currDayHigh = currDay?.high ?? 0;
-      const currDayLow = currDay?.low ?? 0;
       
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
       
+// Reconstruct today's high/low from 15m candles
+const today = new Date().toISOString().slice(0, 10); // '2025-05-29'
+const todaysHighs = candles.filter(c => c.timestamp.startsWith(today)).map(c => c.high);
+const todaysLows = candles.filter(c => c.timestamp.startsWith(today)).map(c => c.low);
+
+const currDayHigh = Math.max(...todaysHighs);
+const currDayLow = Math.min(...todaysLows);
+
 // Breakout logic
 const bullishBreakout = currDayHigh > dailyHigh;
 const bearishBreakout = currDayLow < dailyLow;
