@@ -144,7 +144,7 @@ function detectBreakout(candles: Candle[], high72h: number, low72h: number) {
 
   const currentCandle = candles[0];     // newest candle (first in array)
   const prevCandle = candles[1];        // previous candle (second in array)
-  
+}
 
 
 function detectBearishContinuation(
@@ -438,5 +438,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   ))}
 </div>
   );
-}
 }
