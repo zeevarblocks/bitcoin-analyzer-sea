@@ -94,7 +94,7 @@ export async function getServerSideProps() {
 
   for (const symbol of symbols) {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/signal?symbol=${symbol}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`);
       const data = await res.json();
       if (data?.signal) {
         signals[symbol] = data.signal;
