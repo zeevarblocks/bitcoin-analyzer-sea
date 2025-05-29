@@ -224,6 +224,8 @@ export async function getServerSideProps() {
       const dailyCandles = await fetchCandles(symbol, '1d');
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
+      const currDayHigh = currDay?.high ?? 0;
+const currDayLow = currDay?.low ?? 0;
       
 const last96Candles = candles.slice(-96);
 const last96Highs = last96Candles.map(c => c.high);
