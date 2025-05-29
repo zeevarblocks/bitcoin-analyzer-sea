@@ -245,14 +245,12 @@ let breakout = false;
 
 if (prevCandle && currentCandle) {
   bullishBreakout =
-    prevCandle.close <= high72h &&
-    currentCandle.close > high72h &&
-    currentCandle.close > currentCandle.open;
+    prevCandle.high <= high72h &&      // previous candle's high is at or below 72h high
+    currentCandle.high > high72h;      // current candle's high breaks above 72h high
 
   bearishBreakout =
-    prevCandle.close >= low72h &&
-    currentCandle.close < low72h &&
-    currentCandle.close < currentCandle.open;
+    prevCandle.low >= low72h &&        // previous candle's low is at or above 72h low
+    currentCandle.low < low72h;        // current candle's low breaks below 72h low
 
   breakout = bullishBreakout || bearishBreakout;
     }
