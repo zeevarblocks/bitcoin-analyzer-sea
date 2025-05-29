@@ -221,29 +221,38 @@ export async function getServerSideProps() {
 
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-      const dailyCandles = await fetchCandles(symbol, '1d');
-      const prevDay = dailyCandles.at(-2);
-      const currDay = dailyCandles.at(-1);
-
-      const dailyHigh = prevDay?.high ?? 0;
-      const dailyLow = prevDay?.low ?? 0;
-      const currDayHigh = currDay?.high ?? 0;
-      const currDayLow = currDay?.low ?? 0;
-
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
       const prevLowIdx = lows.lastIndexOf(dailyLow);
 
-      // Calculate today's UTC midnight timestamp
-const now = new Date();
-const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+      // Get the last 96 15m candles (24 hours)
+const last96Candles = candles.slice(-96);
+const last96Highs = last96Candles.map(c => c.high);
+const last96Lows = last96Candles.map(c => c.low);
 
-// Filter 15m candles that are from today
-const todayCandles = candles.filter(c => c.timestamp >= utcMidnight);
+const dailyHigh = Math.max(...last96Highs);
+const dailyLow = Math.min(...last96Lows);
 
-// Check if any of today's highs break the previous day's high
-const bullishBreakout = todayCandles.some(c => c.high > dailyHigh);
-const bearishBreakout = todayCandles.some(c => c.low < dailyLow);
-const breakout = bullishBreakout || bearishBreakout;
+const prevCandle = last96Candles.at(-2);
+const currentCandle = last96Candles.at(-1);
+
+// Breakout logic using 15m chart (24h window)
+let bullishBreakout = false;
+let bearishBreakout = false;
+let breakout = false;
+
+if (prevCandle && currentCandle) {
+  bullishBreakout =
+    prevCandle.close <= dailyHigh &&
+    currentCandle.close > dailyHigh &&
+    currentCandle.close > currentCandle.open;
+
+  bearishBreakout =
+    prevCandle.close >= dailyLow &&
+    currentCandle.close < dailyLow &&
+    currentCandle.close < currentCandle.open;
+
+  breakout = bullishBreakout || bearishBreakout;
+    }
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -291,25 +300,25 @@ if (trend === 'bearish') {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       results[symbol] = {
-        trend,
-        breakout,
-        bullishBreakout,
+  trend,
+  breakout,
+  bullishBreakout,
   bearishBreakout,
-        divergence,
-        ema14Bounce,
-        ema70Bounce,
-        currentPrice: lastClose,
-        level,
-        levelType: type,
-        inferredLevel,
-        inferredLevelType,
-        nearOrAtEMA70Divergence,
-        inferredLevelWithinRange,
-        divergenceFromLevel,
-        touchedEMA70Today,
-         bearishContinuation,
+  divergence,
+  ema14Bounce,
+  ema70Bounce,
+  currentPrice: lastClose,
+  level,
+  levelType: type,
+  inferredLevel,
+  inferredLevelType,
+  nearOrAtEMA70Divergence,
+  inferredLevelWithinRange,
+  divergenceFromLevel,
+  touchedEMA70Today,
+  bearishContinuation,
   bullishContinuation,
-      };
+};
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
     }
