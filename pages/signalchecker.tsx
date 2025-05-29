@@ -22,19 +22,22 @@ export default function SignalCheckerPage({ initialSignals }: { initialSignals: 
   const [inputSymbol, setInputSymbol] = useState('');
 
   const fetchSignal = async (symbol: string) => {
-    try {
-      const res = await fetch(`/api/signal?symbol=${symbol}`);
-      const data = await res.json();
-      if (data?.signal) {
-        setSignals(prev => ({ ...prev, [symbol]: data.signal }));
-      } else {
-        alert(`No signal data returned for ${symbol}`);
-      }
-    } catch (error) {
-      alert(`Failed to fetch signal for ${symbol}`);
-      console.error(error);
+  try {
+    const res = await fetch(`/api/signal?symbol=${symbol}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || 'Failed to fetch signal.');
+      return;
     }
-  };
+
+    if (data && data.signal) {
+      setSignals(prev => ({ ...prev, [symbol]: data.signal }));
+    }
+  } catch (err) {
+    alert('Network error. Please try again later.');
+  }
+};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
