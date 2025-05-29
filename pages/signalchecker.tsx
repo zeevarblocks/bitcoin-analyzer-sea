@@ -3,24 +3,24 @@ import React from 'react';
 interface SignalData {
   trend: string;
   breakout: {
-    bullishBreakout,
-    bearishBreakout,
-    pointA,
-    pointB,
-    pointBTime,
-  },
+  bullishBreakout,
+  bearishBreakout,
+  pointA,
+  pointB,
+  pointBTime: pointB?.timestamp ? new Date(pointB.timestamp).toLocaleString() : null,
+},
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
-  level: number | null; //ema14&70 crossed 
-  levelType: 'support' | 'resistance' | null; //ema14&70 crossed 
-  inferredLevel: number;
-  inferredLevelType: 'support' | 'resistance'; //deduce or conclude (information) from, "if can't get a crossed data/level
-  nearOrAtEMA70Divergence: boolean;
-  inferredLevelWithinRange: boolean; //deduce or conclude (information) from ema14&70 crossed 
-  divergenceFromLevel: boolean; //from Point A = crossed ema14&70 to current price that create rsi divergent ema70
-  touchedEMA70Today: boolean;
+  level: number | null; //Acts as a reference point to evaluate potential reversals or confirmations.
+  levelType: 'support' | 'resistance' | null; //Helps determine the context — bullish (support) or bearish (resistance).
+  inferredLevel: number; //A fallback/secondary level used when the primary calculated level is unreliable or unclear.
+  inferredLevelType: 'support' | 'resistance'; //Helps categorize the inferredLevel appropriately for visualization or logic checks.
+  nearOrAtEMA70Divergence: boolean; //Strong potential reversal zone indicator.
+  inferredLevelWithinRange: boolean; //If true, it suggests the inferred support/resistance is actively being tested or approached today.
+  divergenceFromLevel: boolean; //Signals possible fakeout or exhaustion of the move — early warning for reversals.
+  touchedEMA70Today: boolean; //EMA70 is being "tested" today — important for strategies based on EMA70 bounce or rejection behavior.
   bearishContinuation: boolean;
 bullishContinuation: boolean;
 }
@@ -277,9 +277,10 @@ const pointA = breakout
   : null;
 
 const pointB = breakout
-  ? bullishBreakout
-    ? current.high
-    : current.low
+  ? {
+      price: bullishBreakout ? current.high : current.low,
+      timestamp: current.timestamp,
+    }
   : null;
 
 const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
@@ -332,12 +333,12 @@ const divergence =
       results[symbol] = {
   trend,
   breakout: {
-    bullishBreakout,
-    bearishBreakout,
-    pointA,
-    pointB,
-    pointBTime,
-  },
+  bullishBreakout,
+  bearishBreakout,
+  pointA,
+  pointB,
+  pointBTime: pointB?.timestamp ? new Date(pointB.timestamp).toLocaleString() : null,
+},
   divergence,
   ema14Bounce,
   ema70Bounce,
