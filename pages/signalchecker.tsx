@@ -232,13 +232,19 @@ export async function getServerSideProps() {
 const prevLowIdx = lows.lastIndexOf(dailyLow);
       
 // Reconstruct today's high/low from 15m candles
-const today = new Date().toISOString().slice(0, 10); // '2025-05-29'
-const todaysHighs = candles.filter(c => c.timestamp.startsWith(today)).map(c => c.high);
-const todaysLows = candles.filter(c => c.timestamp.startsWith(today)).map(c => c.low);
+const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
-const currDayHigh = Math.max(...todaysHighs);
-const currDayLow = Math.min(...todaysLows);
+const todaysHighs = candles
+  .filter(c => new Date(c.timestamp).toISOString().startsWith(today))
+  .map(c => c.high);
 
+const todaysLows = candles
+  .filter(c => new Date(c.timestamp).toISOString().startsWith(today))
+  .map(c => c.low);
+
+const currDayHigh = todaysHighs.length ? Math.max(...todaysHighs) : 0;
+const currDayLow = todaysLows.length ? Math.min(...todaysLows) : 0;
+      
 // Breakout logic
 const bullishBreakout = currDayHigh > dailyHigh;
 const bearishBreakout = currDayLow < dailyLow;
