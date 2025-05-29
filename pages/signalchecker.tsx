@@ -332,20 +332,24 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
           <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
           <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+ <p>
+            🚀 Daily Breakout:{' '}
+            <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
+              {data.breakout ? 'Yes' : 'No'}
+            </span>
+          </p>
           <p>
-  🚀 Daily Breakout:{' '}
-  {data.breakout ? (
-    <span className="text-green-400 font-semibold">
-      Yes (
-      {data.bullishBreakout && '🔺 Bullish'}
-      {data.bullishBreakout && data.bearishBreakout && ' & '}
-      {data.bearishBreakout && '🔻 Bearish'}
-      )
-    </span>
-  ) : (
-    <span className="text-red-400 font-semibold">No</span>
-  )}
-</p>
+            🟢 Bullish Breakout:{' '}
+            <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
+              {data.bullishBreakout ? 'Yes' : 'No'}
+            </span>
+          </p>
+          <p>
+            🔴 Bearish Breakout:{' '}
+            <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+              {data.bearishBreakout ? 'Yes' : 'No'}
+            </span>
+          </p>
         </p>
             📉 RSI Divergence:{' '}
             <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
