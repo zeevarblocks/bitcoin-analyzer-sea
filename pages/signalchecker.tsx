@@ -210,14 +210,6 @@ function groupCandlesByDay(candles) {
   }, {});
 }
 
-  return {
-    breakout: false,
-    breakoutType: null,
-    pointA: null,
-    pointB: null,
-  };
-
-
 
 // logic in getServerSideProps:
 
