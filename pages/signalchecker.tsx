@@ -346,6 +346,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     <span className="text-red-400 font-semibold">No</span>
   )}
 </p>
+        </p>
             📉 RSI Divergence:{' '}
             <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
               {data.divergence ? 'Yes' : 'No'}
