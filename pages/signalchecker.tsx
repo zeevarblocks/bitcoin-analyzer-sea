@@ -139,14 +139,6 @@ function findRelevantLevel(
   return { level, type };
 }
 
-function detectBreakout(candles: Candle[], high72h: number, low72h: number) {
-  if (candles.length < 2) return { bullishBreakout: false, bearishBreakout: false, breakout: false };
-
-  const currentCandle = candles[0];     // newest candle (first in array)
-  const prevCandle = candles[1];        // previous candle (second in array)
-}
-
-
 function detectBearishContinuation(
   closes: number[],
   highs: number[],
@@ -230,20 +222,10 @@ export async function getServerSideProps() {
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
       const dailyCandles = await fetchCandles(symbol, '1d');
-const prevDay = dailyCandles.at(-2); // safer: completed daily candle
-
-const dailyHigh = prevDay?.high ?? 0;
-const dailyLow = prevDay?.low ?? 0;
-
-console.log('=== DEBUG: Daily Levels ===');
-console.log('Daily High:', dailyHigh);
-console.log('Daily Low:', dailyLow);
-
-console.log('=== DEBUG: Current Candle (15m) ===');
-console.log('Open:', currentCandle?.open);
-console.log('High:', currentCandle?.high);
-console.log('Low:', currentCandle?.low);
-console.log('Close:', currentCandle?.close);
+      const prevDay = dailyCandles.at(-2);
+      const currDay = dailyCandles.at(-1);
+      const currDayHigh = currDay?.high ?? 0;
+const currDayLow = currDay?.low ?? 0;
       
 const last288Candles = candles.slice(-288); // 72h worth of 15m candles
 const high72h = Math.max(...last288Candles.map(c => c.high));
@@ -251,33 +233,27 @@ const low72h = Math.min(...last288Candles.map(c => c.low));
 
       const prevHighIdx = highs.lastIndexOf(high72h);
 const prevLowIdx = lows.lastIndexOf(low72h);
-
-      const prevCandle = candles.at(-2);
-const currentCandle = candles.at(-1);
       
 // Breakout logic using 15m chart (24h window)
+      
+const prevCandle = candles.at(-2);
+const currentCandle = candles.at(-1);
+
 let bullishBreakout = false;
 let bearishBreakout = false;
 let breakout = false;
 
-if (currentCandle) {
+if (prevCandle && currentCandle) {
   bullishBreakout =
-    currentCandle.high > dailyHigh &&
-    currentCandle.close > currentCandle.open;
+    prevCandle.high <= high72h &&      // previous candle's high is at or below 72h high
+    currentCandle.high > high72h;      // current candle's high breaks above 72h high
 
   bearishBreakout =
-    currentCandle.low < dailyLow &&
-    currentCandle.close < currentCandle.open;
+    prevCandle.low >= low72h &&        // previous candle's low is at or above 72h low
+    currentCandle.low < low72h;        // current candle's low breaks below 72h low
 
   breakout = bullishBreakout || bearishBreakout;
-
-  console.log('=== DEBUG: Breakout Evaluation ===');
-  console.log('Bullish Breakout:', bullishBreakout);
-  console.log('Bearish Breakout:', bearishBreakout);
-  console.log('Breakout Detected:', breakout);
-} else {
-  console.log('No current 15m candle available.');
-}
+    }
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -453,4 +429,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   ))}
 </div>
   );
-}
+                                               }
