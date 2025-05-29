@@ -276,11 +276,9 @@ const pointA = breakout
     : yesterdayLow
   : null;
 
-const pointB = breakout
-  ? {
-      price: bullishBreakout ? current.high : current.low,
-      timestamp: current.timestamp,
-    }
+const { breakout } = data;
+const pointBTime = breakout.pointB
+  ? new Date(breakout.pointB.timestamp).toLocaleString()
   : null;
 
 const pointBTime = breakout ? new Date(current.timestamp).toLocaleString() : null;
