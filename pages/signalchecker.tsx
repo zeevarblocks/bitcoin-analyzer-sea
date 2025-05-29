@@ -251,15 +251,12 @@ let bearishBreakout = false;
 let breakout = false;
 
 if (currentCandle) {
-  const buffer = 0.01; // 1%
+  const lastHigh = highs.at(-1)!;
+const lastLow = lows.at(-1)!;
 
-bullishBreakout =
-  currentCandle.high > high72h * (1 + buffer) &&
-  currentCandle.close > currentCandle.open;
-
-bearishBreakout =
-  currentCandle.low < low72h * (1 - buffer) &&
-  currentCandle.close < currentCandle.open;
+bullishBreakout = lastHigh > dailyHigh && currentCandle.close > currentCandle.open;
+bearishBreakout = lastLow < dailyLow && currentCandle.close < currentCandle.open;
+breakout = bullishBreakout || bearishBreakout;
 
   breakout = bullishBreakout || bearishBreakout;
 }
