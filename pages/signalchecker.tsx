@@ -388,9 +388,7 @@ const divergence =
     <p>
   💥 Point B:{' '}
   <span className="text-blue-300">
-    {data.breakout?.pointB?.price !== undefined && data.breakout?.pointB?.timestamp
-      ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
-      : 'No breakout detected'}
+    {data.pointB.price.toFixed(2)} @ {new Date(data.pointB.timestamp).toLocaleString()}
   </span>
 </p>
               <p>
