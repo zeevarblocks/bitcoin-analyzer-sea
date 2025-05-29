@@ -231,9 +231,9 @@ const last288Candles = candles.slice(-288); // 72h worth of 15m candles
 const high72h = Math.max(...last288Candles.map(c => c.high));
 const low72h = Math.min(...last288Candles.map(c => c.low));
 
-      const prevHighIdx = highs.lastIndexOf(dailyHigh);
-const prevLowIdx = lows.lastIndexOf(dailyLow);
-
+      const prevHighIdx = highs.lastIndexOf(high72h);
+const prevLowIdx = lows.lastIndexOf(low72h);
+      
 // Breakout logic using 15m chart (24h window)
       
 const prevCandle = candles.at(-2);
