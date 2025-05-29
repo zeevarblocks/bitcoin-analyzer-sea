@@ -1,6 +1,3 @@
-// Full upgraded React code with divergenceFromLevel and touchedEMA70Today additions
-// The rest of your code remains untouched. Only additions are made.
-
 import React from 'react';
 
 interface SignalData {
@@ -18,9 +15,11 @@ interface SignalData {
   inferredLevelWithinRange: boolean;
   divergenceFromLevel: boolean;
   touchedEMA70Today: boolean;
+  bearishContinuation: boolean;
+bullishContinuation: boolean;
 }
 
-// The rest of your existing implementation including fetchCandles, calculateEMA, etc., stays the same.
+// fetchCandles, calculateEMA, etc.,.
 interface Candle {
   timestamp: number;
   open: number;
@@ -138,7 +137,55 @@ function findRelevantLevel(
   return { level, type };
 }
 
-// Add the new logic in getServerSideProps:
+function detectBearishContinuation(
+  closes: number[],
+  highs: number[],
+  ema70: number[],
+  rsi14: number[]
+): boolean {
+  const recentResistanceIdx = closes.findIndex((_, i) => {
+    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
+    const isHigh = highs[i] === Math.max(...highs.slice(i - 3, i + 1));
+    return nearEMA && isHigh;
+  });
+
+  if (recentResistanceIdx === -1) return false;
+
+  const resistanceRSI = rsi14[recentResistanceIdx];
+
+  for (let i = recentResistanceIdx + 1; i < closes.length; i++) {
+    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
+    if (nearEMA && rsi14[i] > resistanceRSI) return true;
+  }
+
+  return false;
+}
+
+function detectBullishContinuation(
+  closes: number[],
+  lows: number[],
+  ema70: number[],
+  rsi14: number[]
+): boolean {
+  const recentSupportIdx = closes.findIndex((_, i) => {
+    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
+    const isLow = lows[i] === Math.min(...lows.slice(i - 3, i + 1));
+    return nearEMA && isLow;
+  });
+
+  if (recentSupportIdx === -1) return false;
+
+  const supportRSI = rsi14[recentSupportIdx];
+
+  for (let i = recentSupportIdx + 1; i < closes.length; i++) {
+    const nearEMA = Math.abs(closes[i] - ema70[i]) / closes[i] < 0.002;
+    if (nearEMA && rsi14[i] < supportRSI) return true;
+  }
+
+  return false;
+}
+
+// logic in getServerSideProps:
 
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
@@ -172,6 +219,9 @@ export async function getServerSideProps() {
 
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
       const prevLowIdx = lows.lastIndexOf(dailyLow);
+
+      const bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14);
+const bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14);
 
       const divergence =
         (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
@@ -224,6 +274,8 @@ export async function getServerSideProps() {
         inferredLevelWithinRange,
         divergenceFromLevel,
         touchedEMA70Today,
+         bearishContinuation,
+  bullishContinuation,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -304,6 +356,18 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   🧲 Touched EMA70 Today:{' '}
   <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
     {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
+          <p>
+  🔻 Bearish Continuation:{' '}
+  <span className={data.bearishContinuation ? 'text-green-400' : 'text-red-400'}>
+    {data.bearishContinuation ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  🔺 Bullish Continuation:{' '}
+  <span className={data.bullishContinuation ? 'text-green-400' : 'text-red-400'}>
+    {data.bullishContinuation ? 'Yes' : 'No'}
   </span>
 </p>
 
