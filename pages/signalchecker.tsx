@@ -1,11 +1,17 @@
 import React from 'react';
 
 interface SignalData {
-  trend: string;
+  
+    breakout,
+        bullishBreakout,
+        bearishBreakout,
+        pointA,
+        pointB,
   divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
+	trend: string;
   level: number | null; //Acts as a reference point to evaluate potential reversals or confirmations.
   levelType: 'support' | 'resistance' | null; //Helps determine the context — bullish (support) or bearish (resistance).
   inferredLevel: number; //A fallback/secondary level used when the primary calculated level is unreliable or unclear.
@@ -17,7 +23,8 @@ interface SignalData {
   bearishContinuation: boolean;
 bullishContinuation: boolean;
 }
-	// fetchCandles, calculateEMA, etc.,. utility section 
+
+// fetchCandles, calculateEMA, etc.,. utility section 
 interface Candle {
   timestamp: number;
   open: number;
@@ -26,7 +33,6 @@ interface Candle {
   close: number;
   volume: number;
 }
-
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
@@ -194,13 +200,21 @@ function detectBullishContinuation(
   return false;
 }
 
+function groupCandlesByDay(candles) {
+  return candles.reduce((acc, c) => {
+    const date = new Date(c.timestamp).toISOString().split("T")[0];
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(c);
+    return acc;
+  }, {});
+}
+
 
 // logic in getServerSideProps:
 
 export async function getServerSideProps() {
   const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
   const results: Record<string, SignalData> = {};
-
 
   for (const symbol of symbols) {
     try {
@@ -230,6 +244,33 @@ export async function getServerSideProps() {
       
       const prevHighIdx = highs.lastIndexOf(dailyHigh);
 const prevLowIdx = lows.lastIndexOf(dailyLow);
+
+// Breakout check:
+const grouped = groupCandlesByDay(candles);
+const days = Object.keys(grouped).sort();
+
+if (days.length < 2) {
+  continue;
+}
+
+const today = days[days.length - 1];
+const yesterday = days[days.length - 2];
+
+const todayCandles = grouped[today];
+const yesterdayCandles = grouped[yesterday];
+
+const yesterdayHigh = Math.max(...yesterdayCandles.map(c => c.high));
+const yesterdayLow = Math.min(...yesterdayCandles.map(c => c.low));
+
+const current = todayCandles[todayCandles.length - 1];
+
+const bullishBreakout = current.high > yesterdayHigh && current.close > current.open;
+const bearishBreakout = current.low < yesterdayLow && current.close < current.open;
+
+const breakout = bullishBreakout || bearishBreakout;
+const pointA = bullishBreakout ? yesterdayHigh : bearishBreakout ? yesterdayLow : 0;
+const pointB = bullishBreakout ? current.high : bearishBreakout ? current.low : 0;
+const pointBTime = new Date(current.timestamp).toLocaleString();
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -277,11 +318,16 @@ const divergence =
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       results[symbol] = {
-  trend,
+    breakout,
+        bullishBreakout,
+        bearishBreakout,
+        pointA,
+        pointB,
   divergence,
   ema14Bounce,
   ema70Bounce,
   currentPrice: lastClose,
+	      trend,
   level,
   levelType: type,
   inferredLevel,
@@ -314,72 +360,109 @@ const divergence =
           <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
           <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
           <p>
-            📉 RSI Divergence:{' '}
-            <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
-              {data.divergence ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟠 Near/At EMA70 Divergence:{' '}
-            <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
-              {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟣 Inferred Level within Range:{' '}
-            <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-              {data.inferredLevelWithinRange ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🔁 EMA14 Bounce:{' '}
-            <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
-              {data.ema14Bounce ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🟡 EMA70 Bounce:{' '}
-            <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
-              {data.ema70Bounce ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
-          </p>
-          <p>
-            📊 {data.levelType?.toUpperCase()} Level:{' '}
-            <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-          </p>
-          <p>
-            🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-            <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-          </p>
-          <p>
-            🔍 Divergence From Level:{' '}
-            <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
-              {data.divergenceFromLevel ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🧲 Touched EMA70 Today:{' '}
-            <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-              {data.touchedEMA70Today ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🔻 Bearish Continuation:{' '}
-            <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
-              {data.bearishContinuation ? 'Yes' : 'No'}
-            </span>
-          </p>
-          <p>
-            🔺 Bullish Continuation:{' '}
-            <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
-              {data.bullishContinuation ? 'Yes' : 'No'}
-            </span>
-          </p>
+  🚀 Daily Breakout:{' '}
+  <span className={data.breakout?.bullishBreakout || data.breakout?.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+    {data.breakout?.bullishBreakout || data.breakout?.bearishBreakout ? 'Yes' : 'No'}
+  </span>
+</p>
+
+{data.breakout && (
+  <>
+    <p>
+      🟢 Bullish Breakout:{' '}
+      <span className={data.breakout.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
+        {data.breakout.bullishBreakout ? 'Yes' : 'No'}
+      </span>
+    </p>
+    <p>
+      🔴 Bearish Breakout:{' '}
+      <span className={data.breakout.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+        {data.breakout.bearishBreakout ? 'Yes' : 'No'}
+      </span>
+    </p>
+    <p>
+      📍 Point A:{' '}
+      <span className="text-yellow-300">
+        {data.breakout.pointA?.toFixed(2)}
+      </span>
+    </p>
+     <p>
+      💥 Point B:{' '}
+      <span className="text-blue-300">
+        {data.breakout.pointB
+          ? `${data.breakout.pointB.price.toFixed(2)} @ ${new Date(data.breakout.pointB.timestamp).toLocaleString()}`
+          : 'No breakout detected'}
+      </span>
+    </p>
+              <p>
+                📉 RSI Divergence:{' '}
+                <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
+                  {data.divergence ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🟠 Near/At EMA70 Divergence:{' '}
+                <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
+                  {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🟣 Inferred Level within Range:{' '}
+                <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
+                  {data.inferredLevelWithinRange ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🔁 EMA14 Bounce:{' '}
+                <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
+                  {data.ema14Bounce ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🟡 EMA70 Bounce:{' '}
+                <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
+                  {data.ema70Bounce ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
+              </p>
+              <p>
+                📊 {data.levelType?.toUpperCase()} Level:{' '}
+                <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
+              </p>
+              <p>
+                🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
+                <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
+              </p>
+              <p>
+                🔍 Divergence From Level:{' '}
+                <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
+                  {data.divergenceFromLevel ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🧲 Touched EMA70 Today:{' '}
+                <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+                  {data.touchedEMA70Today ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🔻 Bearish Continuation:{' '}
+                <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
+                  {data.bearishContinuation ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p>
+                🔺 Bullish Continuation:{' '}
+                <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
+                  {data.bullishContinuation ? 'Yes' : 'No'}
+                </span>
+              </p>
+            </>
+          )}
         </div>
       ))}
     </div>
   );
-      }
+	}
