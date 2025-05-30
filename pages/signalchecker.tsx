@@ -236,9 +236,9 @@ const prevLowIdx = lows.lastIndexOf(prevDayLow);
 const all15mCandles = await fetchCandles(symbol, '15m');
 const lowerTimeframeCandles = all15mCandles.filter(c => c.timestamp > prevDayCloseTime);
 	    
-const firstBullishBreakoutCandle = lowerTimeframeCandles.find(c => c.high > prevDayHigh);
-const firstBearishBreakoutCandle = lowerTimeframeCandles.find(c => c.low < prevDayLow);
-
+const firstBullishBreakoutCandle = candlesAfterPrevDay.find(c => c.high > prevDayHigh);
+const firstBearishBreakoutCandle = candlesAfterPrevDay.find(c => c.low < prevDayLow);
+	    
 const bullishBreakout = !!firstBullishBreakoutCandle;
 const bearishBreakout = !!firstBearishBreakoutCandle;
 const breakout = bullishBreakout || bearishBreakout;
