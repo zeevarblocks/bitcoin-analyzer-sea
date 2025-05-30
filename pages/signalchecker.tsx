@@ -233,7 +233,7 @@ export async function getServerSideProps() {
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
       
 // Breakout logic using 15m chart (24h window)
-      
+   export {};   
 const prevCandle = candles.at(-2);
 const currentCandle = candles.at(-1);
 
