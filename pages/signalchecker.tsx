@@ -235,11 +235,7 @@ const prevLowIdx = lows.lastIndexOf(prevDayLow);
 const prevCandle = candles.at(-2);
 const currentCandle = candles.at(-1);
 
-// New breakout logic based on 23:45 UTC yesterday
-let bullishBreakout = false;
-let bearishBreakout = false;
-let breakout = false;
-
+// Get 23:45 UTC yesterday timestamp
 const now = new Date();
 const utcYesterday2345 = new Date(Date.UTC(
   now.getUTCFullYear(),
@@ -249,21 +245,27 @@ const utcYesterday2345 = new Date(Date.UTC(
 ));
 const refTimestamp = +utcYesterday2345;
 
-// Find the 23:45 UTC candle from yesterday
+// Find the reference candle at 23:45 UTC
 const refCandle = candles.find(c => c.timestamp === refTimestamp);
 
-if (refCandle) {
-  const candlesAfterRef = candles.filter(c => c.timestamp > refCandle.timestamp);
+let bullishBreakout = false;
+let bearishBreakout = false;
+let breakout = false;
 
-  const highestHigh = Math.max(...candlesAfterRef.map(c => c.high));
-  const lowestLow = Math.min(...candlesAfterRef.map(c => c.low));
+if (refCandle) {
+  // Get candles after 23:45 UTC
+  const candlesAfter = candles.filter(c => c.timestamp > refTimestamp);
+
+  // Get highest high and lowest low from those candles
+  const highestHigh = Math.max(...candlesAfter.map(c => c.high));
+  const lowestLow = Math.min(...candlesAfter.map(c => c.low));
 
   bullishBreakout = highestHigh > refCandle.high;
   bearishBreakout = lowestLow < refCandle.low;
   breakout = bullishBreakout || bearishBreakout;
 } else {
-  console.warn(`${symbol}: Reference candle at 23:45 UTC yesterday not found`);
-	      }
+  console.warn(`${symbol}: 23:45 UTC candle not found`);
+}
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -352,24 +354,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
       <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
       <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
-      <p>
-        🚀 Daily Breakout:{' '}
-        <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
-          {data.breakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟢 Bullish Breakout:{' '}
-        <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bullishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔴 Bearish Breakout:{' '}
-        <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bearishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
+      <p>🚀 Daily Breakout: <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>{data.breakout ? 'Yes' : 'No'}</span></p>
+<p>🟢 Bullish Breakout: <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>{data.bullishBreakout ? 'Yes' : 'No'}</span></p>
+<p>🔴 Bearish Breakout: <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>{data.bearishBreakout ? 'Yes' : 'No'}</span></p>
       <p>
         📉 RSI Divergence:{' '}
         <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
