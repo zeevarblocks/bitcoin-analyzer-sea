@@ -237,27 +237,38 @@ export async function getServerSideProps() {
 
       // Get 15m candles for today only
 const now = new Date();
-const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-const nowPH = new Date(utc + 8 * 60 * 60000);
 
-// --- Current Session: 8:00 AM today → 7:45 AM tomorrow
+// --- Define session times in PH time (UTC+8), but convert them to UTC timestamps
+const getUTCMillis = (year: number, month: number, date: number, hourPH: number, min: number) => {
+  // Convert PH time to UTC
+  return Date.UTC(year, month, date, hourPH - 8, min);
+};
+
+const year = now.getUTCFullYear();
+const month = now.getUTCMonth();
+const date = now.getUTCDate();
+
+// Today's session: 8:00 AM (UTC+8) today to 7:45 AM (UTC+8) tomorrow
+const today8AM_UTC = getUTCMillis(year, month, date, 8, 0);
+const tomorrow745AM_UTC = getUTCMillis(year, month, date + 1, 7, 45);
+
 let sessionStart: number, sessionEnd: number;
-const today8AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 8, 0, 0);
-const tomorrow745AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() + 1, 7, 45, 0);
 
-if (nowPH >= today8AM) {
-  sessionStart = today8AM.getTime();
-  sessionEnd = tomorrow745AM.getTime();
+if (now.getTime() >= today8AM_UTC) {
+  // It's inside today's session
+  sessionStart = today8AM_UTC;
+  sessionEnd = tomorrow745AM_UTC;
 } else {
-  const yesterday8AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() - 1, 8, 0, 0);
-  const today745AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 7, 45, 0);
-  sessionStart = yesterday8AM.getTime();
-  sessionEnd = today745AM.getTime();
+  // Still before 8AM, so current session is yesterday 8AM → today 7:45AM
+  const yesterday8AM_UTC = getUTCMillis(year, month, date - 1, 8, 0);
+  const today745AM_UTC = getUTCMillis(year, month, date, 7, 45);
+  sessionStart = yesterday8AM_UTC;
+  sessionEnd = today745AM_UTC;
 }
 
-// --- Previous Session: 8:00 AM yesterday → 7:45 AM today
-const prevSessionStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() - 1, 8, 0, 0).getTime();
-const prevSessionEnd = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 7, 45, 0).getTime();
+// --- Previous Session: 8:00 AM (UTC+8) yesterday → 7:45 AM (UTC+8) today
+const prevSessionStart = getUTCMillis(year, month, date - 1, 8, 0);
+const prevSessionEnd = getUTCMillis(year, month, date, 7, 45);
 
 // --- Filter Candles
 const candlesToday = candles
@@ -275,11 +286,12 @@ const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map
 const prevSessionLow = candlesPrevSession.length > 0 ? Math.min(...candlesPrevSession.map(c => c.low)) : null;
 const prevSessionHigh = candlesPrevSession.length > 0 ? Math.max(...candlesPrevSession.map(c => c.high)) : null;
 
-// --- Now put this here
+// --- Breakout Logic
 const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
-const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;	
-const bullishBreakout = todaysHighestHigh > prevSessionHigh;
-const bearishBreakout = todaysLowestLow < prevSessionLow;
+const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
+
+const bullishBreakout = intradayHigherHighBreak;
+const bearishBreakout = intradayLowerLowBreak;
 const breakout = bullishBreakout || bearishBreakout;
 
 	    
