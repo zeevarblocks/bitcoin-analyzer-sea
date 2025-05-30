@@ -313,7 +313,7 @@ const bearishBreakout = todaysLowestLow < prevDayLow;
   divergence,
   ema14Bounce,
   ema70Bounce,
-  currentPrice: currDay?.close ?? 0,,
+  currentPrice: currDay?.close ?? 0,
   level,
   levelType: type,
   inferredLevel,
