@@ -204,9 +204,23 @@ function detectBullishContinuation(
 
 
 // logic in getServerSideProps:
-
 export async function getServerSideProps() {
-  const symbols = ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'PI-USDT', 'CORE-USDT'];
+  // --- Helper: Fetch Top 50 Pairs by Volume
+  async function fetchTopPairs(limit = 50): Promise<string[]> {
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const data = await response.json();
+
+    // Sort by volume, then get top N
+    const sorted = data.data
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .slice(0, limit);
+
+    return sorted.map((ticker: any) => ticker.instId);
+  }
+
+  // --- Get Top Pairs
+  const symbols = await fetchTopPairs(50);
+
   const results: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
@@ -224,98 +238,86 @@ export async function getServerSideProps() {
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
 
-    const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
+      const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
       const dailyCandles = await fetchCandles(symbol, '1d');
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
 
-      // Get 15m candles for today only
-const now = new Date();
+      const now = new Date();
 
-// --- Define session times in PH time (UTC+8), but convert them to UTC timestamps
-const getUTCMillis = (year: number, month: number, date: number, hourPH: number, min: number) => {
-  // Convert PH time to UTC
-  return Date.UTC(year, month, date, hourPH - 8, min);
-};
+      const getUTCMillis = (year: number, month: number, date: number, hourPH: number, min: number) => {
+        return Date.UTC(year, month, date, hourPH - 8, min);
+      };
 
-const year = now.getUTCFullYear();
-const month = now.getUTCMonth();
-const date = now.getUTCDate();
+      const year = now.getUTCFullYear();
+      const month = now.getUTCMonth();
+      const date = now.getUTCDate();
 
-// Today's session: 8:00 AM (UTC+8) today to 7:45 AM (UTC+8) tomorrow
-const today8AM_UTC = getUTCMillis(year, month, date, 8, 0);
-const tomorrow745AM_UTC = getUTCMillis(year, month, date + 1, 7, 45);
+      const today8AM_UTC = getUTCMillis(year, month, date, 8, 0);
+      const tomorrow745AM_UTC = getUTCMillis(year, month, date + 1, 7, 45);
 
-let sessionStart: number, sessionEnd: number;
+      let sessionStart: number, sessionEnd: number;
 
-if (now.getTime() >= today8AM_UTC) {
-  // It's inside today's session
-  sessionStart = today8AM_UTC;
-  sessionEnd = tomorrow745AM_UTC;
-} else {
-  // Still before 8AM, so current session is yesterday 8AM → today 7:45AM
-  const yesterday8AM_UTC = getUTCMillis(year, month, date - 1, 8, 0);
-  const today745AM_UTC = getUTCMillis(year, month, date, 7, 45);
-  sessionStart = yesterday8AM_UTC;
-  sessionEnd = today745AM_UTC;
-}
+      if (now.getTime() >= today8AM_UTC) {
+        sessionStart = today8AM_UTC;
+        sessionEnd = tomorrow745AM_UTC;
+      } else {
+        const yesterday8AM_UTC = getUTCMillis(year, month, date - 1, 8, 0);
+        const today745AM_UTC = getUTCMillis(year, month, date, 7, 45);
+        sessionStart = yesterday8AM_UTC;
+        sessionEnd = today745AM_UTC;
+      }
 
-// --- Previous Session: 8:00 AM (UTC+8) yesterday → 7:45 AM (UTC+8) today
-const prevSessionStart = getUTCMillis(year, month, date - 1, 8, 0);
-const prevSessionEnd = getUTCMillis(year, month, date, 7, 45);
+      const prevSessionStart = getUTCMillis(year, month, date - 1, 8, 0);
+      const prevSessionEnd = getUTCMillis(year, month, date, 7, 45);
 
-// --- Filter Candles
-const candlesToday = candles
-  .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
-  .filter(c => c.timestamp >= sessionStart && c.timestamp <= sessionEnd);
+      const candlesToday = candles
+        .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
+        .filter(c => c.timestamp >= sessionStart && c.timestamp <= sessionEnd);
 
-const candlesPrevSession = candles
-  .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
-  .filter(c => c.timestamp >= prevSessionStart && c.timestamp <= prevSessionEnd);
+      const candlesPrevSession = candles
+        .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
+        .filter(c => c.timestamp >= prevSessionStart && c.timestamp <= prevSessionEnd);
 
-// --- Extract High/Low
-const todaysLowestLow = candlesToday.length > 0 ? Math.min(...candlesToday.map(c => c.low)) : null;
-const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map(c => c.high)) : null;
+      const todaysLowestLow = candlesToday.length > 0 ? Math.min(...candlesToday.map(c => c.low)) : null;
+      const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map(c => c.high)) : null;
 
-const prevSessionLow = candlesPrevSession.length > 0 ? Math.min(...candlesPrevSession.map(c => c.low)) : null;
-const prevSessionHigh = candlesPrevSession.length > 0 ? Math.max(...candlesPrevSession.map(c => c.high)) : null;
+      const prevSessionLow = candlesPrevSession.length > 0 ? Math.min(...candlesPrevSession.map(c => c.low)) : null;
+      const prevSessionHigh = candlesPrevSession.length > 0 ? Math.max(...candlesPrevSession.map(c => c.high)) : null;
 
-// --- Breakout Logic
-const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
-const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
+      const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
+      const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
 
-const bullishBreakout = intradayHigherHighBreak;
-const bearishBreakout = intradayLowerLowBreak;
-const breakout = bullishBreakout || bearishBreakout;
-	    
-// --- Calculate today's high/low and previous day's high/low from earlier
-const currDayHigh = todaysHighestHigh!;
-const currDayLow = todaysLowestLow!;
-const prevDayHigh = prevSessionHigh!;
-const prevDayLow = prevSessionLow!;
-	    
-const prevHighIdx = highs.lastIndexOf(prevDayHigh);
-const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
-      
-let bearishContinuation = false;
-let bullishContinuation = false;
+      const bullishBreakout = intradayHigherHighBreak;
+      const bearishBreakout = intradayLowerLowBreak;
+      const breakout = bullishBreakout || bearishBreakout;
 
-if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
-} else if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-}
+      const currDayHigh = todaysHighestHigh!;
+      const currDayLow = todaysLowestLow!;
+      const prevDayHigh = prevSessionHigh!;
+      const prevDayLow = prevSessionLow!;
 
-// --- Get current RSI and previous RSI values (safeguard against undefined)
-const currentRSI = rsi14.at(-1);
-const prevHighRSI = rsi14[prevHighIdx] ?? null;
-const prevLowRSI = rsi14[prevLowIdx] ?? null;
-	    
-const divergence =
-  (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-  (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
-      
+      const prevHighIdx = highs.lastIndexOf(prevDayHigh);
+      const prevLowIdx = lows.lastIndexOf(prevDayLow);
+
+      let bearishContinuation = false;
+      let bullishContinuation = false;
+
+      if (trend === 'bearish') {
+        bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
+      } else if (trend === 'bullish') {
+        bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
+      }
+
+      const currentRSI = rsi14.at(-1);
+      const prevHighRSI = rsi14[prevHighIdx] ?? null;
+      const prevLowRSI = rsi14[prevLowIdx] ?? null;
+
+      const divergence =
+        (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+        (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+
       const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 
@@ -347,33 +349,31 @@ const divergence =
       const touchedEMA70Today =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
-          
-
 
       results[symbol] = {
-  trend,
-  breakout,
-  bullishBreakout,
-  bearishBreakout,
-  divergence,
-  ema14Bounce,
-  ema70Bounce,
-  currentPrice: lastClose,
-  level,
-  levelType: type,
-  inferredLevel,
-  inferredLevelType,
-  nearOrAtEMA70Divergence,
-  inferredLevelWithinRange,
-  divergenceFromLevel,
-  touchedEMA70Today,
-  bearishContinuation,
-  bullishContinuation,
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
-  todaysLowestLow,
-  todaysHighestHigh,
-};
+        trend,
+        breakout,
+        bullishBreakout,
+        bearishBreakout,
+        divergence,
+        ema14Bounce,
+        ema70Bounce,
+        currentPrice: lastClose,
+        level,
+        levelType: type,
+        inferredLevel,
+        inferredLevelType,
+        nearOrAtEMA70Divergence,
+        inferredLevelWithinRange,
+        divergenceFromLevel,
+        touchedEMA70Today,
+        bearishContinuation,
+        bullishContinuation,
+        intradayHigherHighBreak,
+        intradayLowerLowBreak,
+        todaysLowestLow,
+        todaysHighestHigh,
+      };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
     }
@@ -384,7 +384,9 @@ const divergence =
       signals: results,
     },
   };
-}
+      }
+
+
 
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect } from 'react';
