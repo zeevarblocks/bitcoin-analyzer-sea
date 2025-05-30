@@ -234,25 +234,27 @@ export async function getServerSideProps() {
       const currDayLow = currDay?.low ?? 0;
 
       // Get 15m candles for today only
+const phOffset = 8 * 60; // PH = UTC+8
 const now = new Date();
-const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-const todayStartTimestamp = todayStart.getTime();
+const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+const nowPH = new Date(utc + phOffset * 60000);
+const todayStartPH = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate());
+const todayStartTimestamp = todayStartPH.getTime();
 
-// Filter 15m candles for the current day (PH time if needed, adjust here)
-const candlesToday = candles.filter(c => c.timestamp >= todayStartTimestamp);
+const candlesToday = candles
+  .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
+  .filter(c => c.timestamp >= todayStartTimestamp);
 
-// Find today's lowest low from 15m candles
-const todaysLowestLow = Math.min(...candlesToday.map(c => c.low));
+const todaysLowestLow = candlesToday.length > 0
+  ? Math.min(...candlesToday.map(c => c.low))
+  : null;
 
-// Check if it's lower than previous daily low
-const intradayLowerLowBreak = todaysLowestLow < prevDayLow;
+const todaysHighestHigh = candlesToday.length > 0
+  ? Math.max(...candlesToday.map(c => c.high))
+  : null;
 
-      // Find today's highest high from 15m candles
-const todaysHighestHigh = Math.max(...candlesToday.map(c => c.high));
-
-// Check if it's higher than the previous daily high
-const intradayHigherHighBreak = todaysHighestHigh > prevDayHigh;
-
+const intradayLowerLowBreak = todaysLowestLow !== null && todaysLowestLow < prevDayLow;
+const intradayHigherHighBreak = todaysHighestHigh !== null && todaysHighestHigh > prevDayHigh;
 
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
@@ -435,8 +437,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           {data.bullishContinuation ? 'Yes' : 'No'}
         </span>
       </p>
-      <p>📈 Intraday Higher High: {signal.intradayHigherHighBreak ? 'Yes' : 'No'}</p>
-<p>📉 Intraday Lower Low: {signal.intradayLowerLowBreak ? 'Yes' : 'No'}</p>
+      <p>📈 Intraday Higher High: {signal.intradayHigherHighBreak ? `Yes (${signal.todaysHighestHigh})` : 'No'}</p>
+<p>📉 Intraday Lower Low: {signal.intradayLowerLowBreak ? `Yes (${signal.todaysLowestLow})` : 'No'}</p>
     </div>
   ))}
 </div>
