@@ -19,6 +19,9 @@ interface SignalData {
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
 bullishContinuation: boolean;
+  intradayHigherHighBreak: boolean;
+        intradayLowerLowBreak: boolean;
+  
 }
 
 // fetchCandles, calculateEMA, etc.,.
