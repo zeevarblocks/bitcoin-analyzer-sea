@@ -1,4 +1,5 @@
 import React from 'react';
+import Dashboard from '../components/Dashboard';
 
 interface SignalData {
   trend: string;
