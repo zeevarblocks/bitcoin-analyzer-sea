@@ -395,12 +395,16 @@ const divergence =
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
    <div className="p-4 space-y-6">
-signals.map((signal, index) => (
-  <div key={index}>
-    <h2>{signal.symbol}</h2>
-    ...
-  </div>
-));
+ {signals.map((signal, index) => (
+	   const {
+          intradayHigherHighBreak,
+          intradayLowerLowBreak,
+		breakout,
+          ...displayFields
+        } = signal;
+    <div key={index}>
+      <h2>{signal.symbol}</h2>
+      {/* Your other JSX here */}
 	   
   {Object.entries(signals).map(([symbol, data]) => (
     <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
