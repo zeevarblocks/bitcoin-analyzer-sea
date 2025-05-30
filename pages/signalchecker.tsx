@@ -378,7 +378,6 @@ const divergence =
                   {data.bullishContinuation ? 'Yes' : 'No'}
                 </span>
               </p>
-            </>
           )}
         </div>
       ))}
