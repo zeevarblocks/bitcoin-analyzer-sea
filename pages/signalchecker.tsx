@@ -441,7 +441,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 	    <p>
         🟣 Inferred Level within Range:{' '}
         <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-          {data.inferredLevelWithinRange ? 'Yes' : 'No'}
+          {data.inferredLevelWithinRange ? 'Price is near a key support or resistance level, which may trigger a bounce or breakout soon.' : 'No'}
         </span>
       </p>
       <p>
