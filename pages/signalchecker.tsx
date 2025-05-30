@@ -228,6 +228,7 @@ export async function getServerSideProps() {
 	const currDayLow = currDay?.low ?? 0;
 	const prevDayHigh = prevDay?.high ?? 0;
 	const prevDayLow = prevDay?.low ?? 0;
+	 const prevDayCloseTime = prevDay?.timestamp ?? 0; // Use timestamp as close time (usually candle close time)   
       
       const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
