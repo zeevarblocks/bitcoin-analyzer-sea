@@ -428,15 +428,15 @@ return (
           ))}
         </select>
       </div>
-</div>
+
       {Object.entries(filteredSignals).map(([symbol, data]) => (
-if (!data) return null; // Skip if no data for this symbol
+
         <div
           key={symbol}
           className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
         >
           <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
-</div>
+
           <div className="space-y-1">
             <p>💰 <span className="font-medium text-white/70">Current Price:</span> <span className="text-blue-400">${data.currentPrice.toFixed(2)}</span></p>
             <p>📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase()} Level:</span> <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span></p>
