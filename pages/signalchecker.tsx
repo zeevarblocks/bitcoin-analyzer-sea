@@ -386,16 +386,11 @@ const divergence =
   };
 }
 
-function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
-  const result = { ...obj };
-  for (const key of keys) {
-    delete result[key];
-  }
-  return result;
-}
-
-const displayFields = omit(signals, ['intradayHigherHighBreak', 'intradayLowerLowBreak']);
-
+const {
+  intradayHigherHighBreak,
+  intradayLowerLowBreak,
+  ...displayFields
+} = signal;
 
 
 // In the component SignalChecker, just render the two new fields like this:
