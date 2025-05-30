@@ -221,37 +221,14 @@ export async function getServerSideProps() {
 
     const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-      //breakout logic 
       const dailyCandles = await fetchCandles(symbol, '1d');
-const prevDay = dailyCandles.at(-2);
-const currDay = dailyCandles.at(-1);
+      const prevDay = dailyCandles.at(-2);
+      const currDay = dailyCandles.at(-1);
 
-// Now these are safe:
-const prevDayHigh = prevDay?.high ?? 0;
-const prevDayLow = prevDay?.low ?? 0;
-const currDayHigh = currDay?.high ?? 0;
-const currDayLow = currDay?.low ?? 0;
-
-// Find first daily candle AFTER the previous day
-// This would be the current day candle, but to be safe:
-const candlesAfterPrevDay = dailyCandles.filter(c => c.timestamp > prevDay.timestamp);
-
-const firstBullishBreakoutCandle = candlesAfterPrevDay.find(c => c.high > prevDayHigh);
-const firstBearishBreakoutCandle = candlesAfterPrevDay.find(c => c.low < prevDayLow);
-
-const bullishBreakout = !!firstBullishBreakoutCandle;
-const bearishBreakout = !!firstBearishBreakoutCandle;
-const breakout = bullishBreakout || bearishBreakout;
-
-const firstBreakoutCandle = firstBullishBreakoutCandle ?? firstBearishBreakoutCandle;
-const firstBreakoutTime = firstBreakoutCandle?.timestamp ?? null;
-
-console.log({
-  bullishBreakout,
-  bearishBreakout,
-  breakout,
-  firstBreakoutTime,
-});
+      const dailyHigh = prevDay?.high ?? 0;
+      const dailyLow = prevDay?.low ?? 0;
+      const currDayHigh = currDay?.high ?? 0;
+      const currDayLow = currDay?.low ?? 0;
 
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
@@ -300,6 +277,11 @@ const divergence =
       const touchedEMA70Today =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+
+const bullishBreakout = currDayLow > 0 && inferredLevel > prevDayHigh;
+const bearishBreakout = inferredLevel < prevDayLow;
+const breakout = bullishBreakout || bearishBreakout;
+
 
       results[symbol] = {
   trend,
