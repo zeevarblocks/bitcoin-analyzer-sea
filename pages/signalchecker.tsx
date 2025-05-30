@@ -231,42 +231,28 @@ export async function getServerSideProps() {
       
       const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
+
+	    const lowerTimeframeCandles = await fetchCandles(symbol, '15m', {
+  startTime: prevDayCloseTime + 1, // just after previous daily candle close
+});
 	    
-// Get 23:45 UTC yesterday timestamp
-const now = new Date();
-const utcYesterday2345 = new Date(Date.UTC(
-  now.getUTCFullYear(),
-  now.getUTCMonth(),
-  now.getUTCDate() - 1,
-  23, 45, 0, 0
-));
-const refTimestamp = +utcYesterday2345;
+const firstBullishBreakoutCandle = lowerTimeframeCandles.find(c => c.high > prevDayHigh);
+const firstBearishBreakoutCandle = lowerTimeframeCandles.find(c => c.low < prevDayLow);
 
-// Find the reference candle at 23:45 UTC
-const refCandle = candles.find(c => c.timestamp === refTimestamp);
+const bullishBreakout = !!firstBullishBreakoutCandle;
+const bearishBreakout = !!firstBearishBreakoutCandle;
+const breakout = bullishBreakout || bearishBreakout;
+breakout candle if needed
+const firstBreakoutCandle = firstBullishBreakoutCandle ?? firstBearishBreakoutCandle;
+const firstBreakoutTime = firstBreakoutCandle?.timestamp ?? null;
 
-let bullishBreakout = false;
-let bearishBreakout = false;
-let breakout = false;
-
-if (refCandle) {
-  const candlesAfter = candles.filter(c => c.timestamp > refTimestamp);
-
-  for (const c of candlesAfter) {
-    if (c.low < refCandle.low) {
-      bearishBreakout = true;
-      breakout = true;
-      break; // Stop after first breakout
-    }
-    if (c.high > refCandle.high) {
-      bullishBreakout = true;
-      breakout = true;
-      break; // Stop after first breakout
-    }
-  }
-} else {
-  console.warn(`${symbol}: 23:45 UTC candle not found`);
-}
+console.log({
+  bullishBreakout,
+  bearishBreakout,
+  breakout,
+  firstBreakoutTime,
+});
+	    
       
 let bearishContinuation = false;
 let bullishContinuation = false;
