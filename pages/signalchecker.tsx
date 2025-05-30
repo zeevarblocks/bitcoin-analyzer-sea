@@ -18,9 +18,11 @@ interface SignalData {
   divergenceFromLevel: boolean;
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
-bullishContinuation: boolean;
+	bullishContinuation: boolean;
   intradayHigherHighBreak: boolean;
-        intradayLowerLowBreak: boolean;
+  intradayLowerLowBreak: boolean;
+  todaysLowestLow: number; 
+  todaysHighestHigh: number;
   
 }
 
@@ -329,8 +331,10 @@ const bearishBreakout = todaysLowestLow < prevDayLow;
   touchedEMA70Today,
   bearishContinuation,
   bullishContinuation,
-   intradayHigherHighBreak,
-        intradayLowerLowBreak,
+  intradayHigherHighBreak,
+  intradayLowerLowBreak,
+  todaysLowestLow,
+  todaysHighestHigh,
 };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
