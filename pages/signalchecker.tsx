@@ -230,6 +230,26 @@ export async function getServerSideProps() {
       const currDayHigh = currDay?.high ?? 0;
       const currDayLow = currDay?.low ?? 0;
 
+      // Get 15m candles for today only
+const now = new Date();
+const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const todayStartTimestamp = todayStart.getTime();
+
+// Filter 15m candles for the current day (PH time if needed, adjust here)
+const candlesToday = candles.filter(c => c.timestamp >= todayStartTimestamp);
+
+// Find today's lowest low from 15m candles
+const todaysLowestLow = Math.min(...candlesToday.map(c => c.low));
+
+// Check if it's lower than previous daily low
+const intradayLowerLowBreak = todaysLowestLow < prevDayLow;
+
+      // Find today's highest high from 15m candles
+const todaysHighestHigh = Math.max(...candlesToday.map(c => c.high));
+
+// Check if it's higher than the previous daily high
+const intradayHigherHighBreak = todaysHighestHigh > prevDayHigh;
+
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
       
@@ -278,8 +298,8 @@ const divergence =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-const bullishBreakout = currDayHigh > prevDayHigh;
-      const bearishBreakout = currDayLow < prevDayLow;
+const bullishBreakout = todaysHigh > prevDayHigh;
+const bearishBreakout = todaysLow < prevDayLow;
       const breakout = bullishBreakout || bearishBreakout;
           
 
@@ -303,6 +323,8 @@ const bullishBreakout = currDayHigh > prevDayHigh;
   touchedEMA70Today,
   bearishContinuation,
   bullishContinuation,
+   intradayHigherHighBreak,
+        intradayLowerLowBreak,
 };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -409,6 +431,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           {data.bullishContinuation ? 'Yes' : 'No'}
         </span>
       </p>
+      <p>📈 Intraday Higher High: {signal.intradayHigherHighBreak ? 'Yes' : 'No'}</p>
+<p>📉 Intraday Lower Low: {signal.intradayLowerLowBreak ? 'Yes' : 'No'}</p>
     </div>
   ))}
 </div>
