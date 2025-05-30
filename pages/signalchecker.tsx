@@ -278,7 +278,11 @@ const prevSessionHigh = candlesPrevSession.length > 0 ? Math.max(...candlesPrevS
 // --- Now put this here
 const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
 const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;	
+const bullishBreakout = todaysHighestHigh > prevSessionHigh;
+const bearishBreakout = todaysLowestLow < prevSessionLow;
+const breakout = bullishBreakout || bearishBreakout;
 
+	    
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
       
