@@ -1,4 +1,4 @@
-import SignalChecker from '../pages/signalchecker';
+import SignalData from '../pages/signalchecker';
 
 export default function Dashboard({ signals }: { signals: Record<string, SignalData> }) {
   return (
