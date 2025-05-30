@@ -237,8 +237,6 @@ const currentCandle = candles.at(-1);
 
 // New breakout logic based on 23:45 UTC yesterday
 let bullishBreakout = false;
-// New breakout logic based on 23:45 UTC yesterday
-let bullishBreakout = false;
 let bearishBreakout = false;
 let breakout = false;
 
