@@ -226,6 +226,8 @@ export async function getServerSideProps() {
 const prevDay = dailyCandles.at(-2);
 const prevDayHigh = prevDay?.high ?? 0;
 const prevDayLow = prevDay?.low ?? 0;
+ const currDayHigh = currDay?.high ?? 0;
+      const currDayLow = currDay?.low ?? 0;     
 
 // Find first daily candle AFTER the previous day
 // This would be the current day candle, but to be safe:
