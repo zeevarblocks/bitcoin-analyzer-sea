@@ -232,17 +232,22 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
 
-	    const lowerTimeframeCandles = await fetchCandles(symbol, '15m', {
-  startTime: prevDayCloseTime + 1, // just after previous daily candle close
-});
+const lowerTimeframeCandlesAll = await fetchCandles(symbol, '15m');
+const lowerTimeframeCandles = lowerTimeframeCandlesAll.filter(
+  c => c.timestamp > prevDayCloseTime
+);	    
 	    
-const firstBullishBreakoutCandle = lowerTimeframeCandles.find(c => c.high > prevDayHigh);
-const firstBearishBreakoutCandle = lowerTimeframeCandles.find(c => c.low < prevDayLow);
+const firstBullishBreakoutCandle = lowerTimeframeCandles.find(
+  c => c.high > prevDayHigh
+);
+const firstBearishBreakoutCandle = lowerTimeframeCandles.find(
+  c => c.low < prevDayLow
+);
 
 const bullishBreakout = !!firstBullishBreakoutCandle;
 const bearishBreakout = !!firstBearishBreakoutCandle;
 const breakout = bullishBreakout || bearishBreakout;
-breakout candle if needed
+
 const firstBreakoutCandle = firstBullishBreakoutCandle ?? firstBearishBreakoutCandle;
 const firstBreakoutTime = firstBreakoutCandle?.timestamp ?? null;
 
@@ -252,6 +257,7 @@ console.log({
   breakout,
   firstBreakoutTime,
 });
+
 	    
       
 let bearishContinuation = false;
