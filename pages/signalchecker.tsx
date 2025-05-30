@@ -380,11 +380,13 @@ const divergence =
   }
 
   return {
-    props: {
-      signals: results,
-    },
-  };
-}
+  props: {
+    signals: Object.entries(results).map(([symbol, data]) => ({
+      symbol,
+      ...data,
+    })),
+  },
+};
 
 
 // In the component SignalChecker, just render the two new fields like this:
@@ -393,12 +395,12 @@ const divergence =
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
    <div className="p-4 space-y-6">
- {data.map((signal, index) => {
-        const {
-          intradayHigherHighBreak,
-          intradayLowerLowBreak,
-          ...displayFields
-        } = signal;
+signals.map((signal, index) => (
+  <div key={index}>
+    <h2>{signal.symbol}</h2>
+    ...
+  </div>
+));
 	   
   {Object.entries(signals).map(([symbol, data]) => (
     <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
