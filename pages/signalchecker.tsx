@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface SignalData {
-  
+  trend: string;
     breakout,
         bullishBreakout,
         bearishBreakout,
@@ -11,7 +11,6 @@ interface SignalData {
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
-	trend: string;
   level: number | null; //Acts as a reference point to evaluate potential reversals or confirmations.
   levelType: 'support' | 'resistance' | null; //Helps determine the context — bullish (support) or bearish (resistance).
   inferredLevel: number; //A fallback/secondary level used when the primary calculated level is unreliable or unclear.
@@ -231,8 +230,6 @@ export async function getServerSideProps() {
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
 
-      const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
-
       const dailyCandles = await fetchCandles(symbol, '1d');
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
@@ -271,6 +268,16 @@ const breakout = bullishBreakout || bearishBreakout;
 const pointA = bullishBreakout ? yesterdayHigh : bearishBreakout ? yesterdayLow : 0;
 const pointB = bullishBreakout ? current.high : bearishBreakout ? current.low : 0;
 const pointBTime = new Date(current.timestamp).toLocaleString();
+
+	    const divergence =
+  (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+  (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+
+	    const touchedEMA70Today =
+        dailyHigh >= lastEMA70 && dailyLow <= lastEMA70 &&
+        candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+	    
+	    const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -281,9 +288,6 @@ if (trend === 'bearish') {
   bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
 }
       
-const divergence =
-  (highs.at(-1)! > dailyHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-  (lows.at(-1)! < dailyLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
       
       const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
@@ -298,8 +302,7 @@ const divergence =
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
       const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-
-      const inferredLevelWithinRange =
+	    const inferredLevelWithinRange =
         inferredLevel <= currDayHigh && inferredLevel >= currDayLow;
 
       let divergenceFromLevel = false;
@@ -313,12 +316,10 @@ const divergence =
         }
       }
 
-      const touchedEMA70Today =
-        dailyHigh >= lastEMA70 && dailyLow <= lastEMA70 &&
-        candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       results[symbol] = {
-    breakout,
+    trend,
+	      breakout,
         bullishBreakout,
         bearishBreakout,
         pointA,
@@ -327,7 +328,6 @@ const divergence =
   ema14Bounce,
   ema70Bounce,
   currentPrice: lastClose,
-	      trend,
   level,
   levelType: type,
   inferredLevel,
