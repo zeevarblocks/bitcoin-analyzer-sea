@@ -278,9 +278,10 @@ const divergence =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-const bullishBreakout = currDayLow > 0 && inferredLevel > prevDayHigh;
-const bearishBreakout = inferredLevel < prevDayLow;
-const breakout = bullishBreakout || bearishBreakout;
+const bullishBreakout = currDayHigh > prevDayHigh;
+      const bearishBreakout = currDayLow < prevDayLow;
+      const breakout = bullishBreakout || bearishBreakout;
+          
 
 
       results[symbol] = {
