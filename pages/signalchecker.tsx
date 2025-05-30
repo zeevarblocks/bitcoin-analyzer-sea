@@ -250,25 +250,20 @@ let bearishBreakout = false;
 let breakout = false;
 
 if (refCandle) {
-  // Get candles after 23:45 UTC
   const candlesAfter = candles.filter(c => c.timestamp > refTimestamp);
 
-  // Get highest high and lowest low from those candles
   for (const c of candlesAfter) {
-  if (!bullishBreakout && !bearishBreakout) {
-    if (c.high > refCandle.high) {
-      bullishBreakout = true;
-      breakout = true;
-      break; // stop checking further
-    }
     if (c.low < refCandle.low) {
       bearishBreakout = true;
       breakout = true;
-      break; // stop checking further
+      break; // Stop after first breakout
+    }
+    if (c.high > refCandle.high) {
+      bullishBreakout = true;
+      breakout = true;
+      break; // Stop after first breakout
     }
   }
-  }
-  breakout = bullishBreakout || bearishBreakout;
 } else {
   console.warn(`${symbol}: 23:45 UTC candle not found`);
 }
