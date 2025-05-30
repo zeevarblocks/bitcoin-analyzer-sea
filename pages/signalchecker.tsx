@@ -380,32 +380,18 @@ const divergence =
   }
 
   return {
-  props: {
-    signals: Object.entries(results).map(([symbol, data]) => ({
-      symbol,
-      ...data,
-    })),
-  },
-};
-
+    props: {
+      signals: results,
+    },
+  };
+}
 
 // In the component SignalChecker, just render the two new fields like this:
 
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
-   <div className="p-4 space-y-6">
- {signals.map((signal, index) => (
-	   const {
-          intradayHigherHighBreak,
-          intradayLowerLowBreak,
-		breakout,
-          ...displayFields
-        } = signal;
-    <div key={index}>
-      <h2>{signal.symbol}</h2>
-      {/* Your other JSX here */}
-	   
+   <div className="p-4 space-y-6"> 
   {Object.entries(signals).map(([symbol, data]) => (
     <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
       <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
@@ -493,8 +479,6 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           {data.bullishContinuation ? 'Yes' : 'No'}
         </span>
       </p>
-      <p>📈 Intraday Higher High: {data.intradayHigherHighBreak ? `Yes (${data.todaysHighestHigh})` : 'No'}</p>
-<p>📉 Intraday Lower Low: {data.intradayLowerLowBreak ? `Yes (${data.todaysLowestLow})` : 'No'}</p>
     </div>
   ))}
 </div>
