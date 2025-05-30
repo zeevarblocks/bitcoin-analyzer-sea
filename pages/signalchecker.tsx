@@ -232,9 +232,6 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
 	    
-const prevCandle = candles.at(-2);
-const currentCandle = candles.at(-1);
-
 // Get 23:45 UTC yesterday timestamp
 const now = new Date();
 const utcYesterday2345 = new Date(Date.UTC(
