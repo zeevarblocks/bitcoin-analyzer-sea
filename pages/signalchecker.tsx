@@ -257,8 +257,8 @@ if (trend === 'bearish') {
 }
       
 const divergence =
-  (highs.at(-1)! > high72h && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-  (lows.at(-1)! < low72h && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+  (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+  (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
       
       const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
