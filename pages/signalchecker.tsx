@@ -237,6 +237,8 @@ const currentCandle = candles.at(-1);
 
 // New breakout logic based on 23:45 UTC yesterday
 let bullishBreakout = false;
+// New breakout logic based on 23:45 UTC yesterday
+let bullishBreakout = false;
 let bearishBreakout = false;
 let breakout = false;
 
@@ -255,12 +257,15 @@ const refCandle = candles.find(c => c.timestamp === refTimestamp);
 if (refCandle) {
   const candlesAfterRef = candles.filter(c => c.timestamp > refCandle.timestamp);
 
-  bullishBreakout = candlesAfterRef.some(c => c.high > refCandle.high);
-  bearishBreakout = candlesAfterRef.some(c => c.low < refCandle.low);
+  const highestHigh = Math.max(...candlesAfterRef.map(c => c.high));
+  const lowestLow = Math.min(...candlesAfterRef.map(c => c.low));
+
+  bullishBreakout = highestHigh > refCandle.high;
+  bearishBreakout = lowestLow < refCandle.low;
   breakout = bullishBreakout || bearishBreakout;
 } else {
   console.warn(`${symbol}: Reference candle at 23:45 UTC yesterday not found`);
-}
+	      }
       
 let bearishContinuation = false;
 let bullishContinuation = false;
