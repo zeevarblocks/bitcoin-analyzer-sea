@@ -437,8 +437,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           {data.bullishContinuation ? 'Yes' : 'No'}
         </span>
       </p>
-      <p>📈 Intraday Higher High: {signal.intradayHigherHighBreak ? `Yes (${signal.todaysHighestHigh})` : 'No'}</p>
-<p>📉 Intraday Lower Low: {signal.intradayLowerLowBreak ? `Yes (${signal.todaysLowestLow})` : 'No'}</p>
+      <p>📈 Intraday Higher High: {data.intradayHigherHighBreak ? `Yes (${data.todaysHighestHigh})` : 'No'}</p>
+<p>📉 Intraday Lower Low: {data.intradayLowerLowBreak ? `Yes (${data.todaysLowestLow})` : 'No'}</p>
     </div>
   ))}
 </div>
