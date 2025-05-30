@@ -388,9 +388,6 @@ const divergence =
 
 // In the component SignalChecker, just render the two new fields like this:
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-
   // Filtered list based on search bar
   const filteredSymbols = Object.keys(signals).filter((symbol) =>
     symbol.toLowerCase().includes(search.toLowerCase())
