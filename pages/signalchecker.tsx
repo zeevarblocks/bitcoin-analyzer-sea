@@ -219,27 +219,34 @@ export async function getServerSideProps() {
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
 
-      const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
+    const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
-const dailyCandles = await fetchCandles(symbol, '1d');
+      //breakout logic 
+      const dailyCandles = await fetchCandles(symbol, '1d');
 const prevDay = dailyCandles.at(-2);
-const currDay = dailyCandles.at(-1);
-
 const prevDayHigh = prevDay?.high ?? 0;
 const prevDayLow = prevDay?.low ?? 0;
-const currDayHigh = currDay?.high ?? 0;
-const currDayLow = currDay?.low ?? 0;
 
-const bullishBreakout = currDayHigh > prevDayHigh;
-const bearishBreakout = currDayLow < prevDayLow;
+// Find first daily candle AFTER the previous day
+// This would be the current day candle, but to be safe:
+const candlesAfterPrevDay = dailyCandles.filter(c => c.timestamp > prevDay.timestamp);
+
+const firstBullishBreakoutCandle = candlesAfterPrevDay.find(c => c.high > prevDayHigh);
+const firstBearishBreakoutCandle = candlesAfterPrevDay.find(c => c.low < prevDayLow);
+
+const bullishBreakout = !!firstBullishBreakoutCandle;
+const bearishBreakout = !!firstBearishBreakoutCandle;
 const breakout = bullishBreakout || bearishBreakout;
 
+const firstBreakoutCandle = firstBullishBreakoutCandle ?? firstBearishBreakoutCandle;
+const firstBreakoutTime = firstBreakoutCandle?.timestamp ?? null;
+
 console.log({
-  prevDayLow,
-  currDayLow,
+  bullishBreakout,
   bearishBreakout,
   breakout,
-});      
+  firstBreakoutTime,
+});
 
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
