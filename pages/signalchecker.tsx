@@ -292,7 +292,7 @@ const bullishBreakout = currDayHigh > prevDayHigh;
   divergence,
   ema14Bounce,
   ema70Bounce,
-  currentPrice: lastClose,
+  currentPrice: currDay?.close ?? 0,,
   level,
   levelType: type,
   inferredLevel,
