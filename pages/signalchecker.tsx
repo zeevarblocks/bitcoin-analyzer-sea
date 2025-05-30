@@ -230,12 +230,6 @@ export async function getServerSideProps() {
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
 
-      // --- Calculate today's high/low and previous day's high/low from earlier
-const currDayHigh = todaysHighestHigh!;
-const currDayLow = todaysLowestLow!;
-const prevDayHigh = prevSessionHigh!;
-const prevDayLow = prevSessionLow!;
-
       // Get 15m candles for today only
 const now = new Date();
 
@@ -294,7 +288,12 @@ const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !=
 const bullishBreakout = intradayHigherHighBreak;
 const bearishBreakout = intradayLowerLowBreak;
 const breakout = bullishBreakout || bearishBreakout;
-
+	    
+// --- Calculate today's high/low and previous day's high/low from earlier
+const currDayHigh = todaysHighestHigh!;
+const currDayLow = todaysLowestLow!;
+const prevDayHigh = prevSessionHigh!;
+const prevDayLow = prevSessionLow!;
 	    
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
@@ -386,6 +385,18 @@ const divergence =
     },
   };
 }
+
+function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
+  const result = { ...obj };
+  for (const key of keys) {
+    delete result[key];
+  }
+  return result;
+}
+
+const displayFields = omit(signal, ['intradayHigherHighBreak', 'intradayLowerLowBreak']);
+
+
 
 // In the component SignalChecker, just render the two new fields like this:
 
