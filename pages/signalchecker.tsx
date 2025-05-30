@@ -428,6 +428,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           ))}
         </select>
       </div>
+	    </div>
 {Object.entries(signals).map(([symbol, data]) => {
   if (!data) return null; // Skip if no data for this symbol
 
