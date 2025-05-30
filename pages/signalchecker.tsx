@@ -386,12 +386,6 @@ const divergence =
   };
 }
 
-const {
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
-  ...displayFields
-} = signal;
-
 
 // In the component SignalChecker, just render the two new fields like this:
 
@@ -399,6 +393,13 @@ const {
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
    <div className="p-4 space-y-6">
+ {signals.map((signal, index) => {
+        const {
+          intradayHigherHighBreak,
+          intradayLowerLowBreak,
+          ...displayFields
+        } = signal;
+	   
   {Object.entries(signals).map(([symbol, data]) => (
     <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
       <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
