@@ -325,100 +325,138 @@ const divergence =
 }
 
 // In the component SignalChecker, just render the two new fields like this:
-
-
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
-   <div className="p-4 space-y-6">
-  {Object.entries(signals).map(([symbol, data]) => (
-    <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
-      <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
-      <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
-      <p>
-        🚀 Daily Breakout:{' '}
-        <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
-          {data.breakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟢 Bullish Breakout:{' '}
-        <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bullishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔴 Bearish Breakout:{' '}
-        <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bearishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        📉 RSI Divergence:{' '}
-        <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
-          {data.divergence ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟠 Near/At EMA70 Divergence:{' '}
-        <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
-          {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟣 Inferred Level within Range:{' '}
-        <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-          {data.inferredLevelWithinRange ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔁 EMA14 Bounce:{' '}
-        <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
-          {data.ema14Bounce ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟡 EMA70 Bounce:{' '}
-        <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
-          {data.ema70Bounce ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
-      </p>
-      <p>
-        📊 {data.levelType?.toUpperCase()} Level:{' '}
-        <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-      </p>
-      <p>
-        🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-        <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-      </p>
-      <p>
-        🔍 Divergence From Level:{' '}
-        <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
-          {data.divergenceFromLevel ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🧲 Touched EMA70 Today:{' '}
-        <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-          {data.touchedEMA70Today ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔻 Bearish Continuation:{' '}
-        <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
-          {data.bearishContinuation ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔺 Bullish Continuation:{' '}
-        <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
-          {data.bullishContinuation ? 'Yes' : 'No'}
-        </span>
-      </p>
+    <div className="p-4 space-y-6">
+      {Object.entries(signals).map(([symbol, data]) => (
+        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow text-white space-y-2">
+          <h2 className="text-xl font-bold">{symbol} Signal</h2>
+
+          <p>📈 <strong>Trend:</strong> {data.trend}  
+            <span className="text-gray-400 block text-sm">
+              Market direction based on EMAs (bullish = uptrend, bearish = downtrend).
+            </span>
+          </p>
+
+          <p>🚀 <strong>Daily Breakout:</strong> <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
+            {data.breakout ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Has price broken above or below yesterday’s range?
+            </span>
+          </p>
+
+          <p>🟢 <strong>Bullish Breakout:</strong> <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
+            {data.bullishBreakout ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Price broke above yesterday’s high — upward momentum.
+            </span>
+          </p>
+
+          <p>🔴 <strong>Bearish Breakout:</strong> <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+            {data.bearishBreakout ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Price broke below yesterday’s low — downward momentum.
+            </span>
+          </p>
+
+          <p>📉 <strong>RSI Divergence:</strong> <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
+            {data.divergence ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Momentum (RSI) weakening while price moves in the opposite direction.
+            </span>
+          </p>
+
+          <p>🟠 <strong>Near/At EMA70 Divergence:</strong> <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
+            {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              RSI divergence near a key long-term average — stronger signal.
+            </span>
+          </p>
+
+          <p>🟣 <strong>Inferred Level within Range:</strong> <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
+            {data.inferredLevelWithinRange ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Highest/lowest price from recent candles is within today’s range.
+            </span>
+          </p>
+
+          <p>🔁 <strong>EMA14 Bounce:</strong> <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
+            {data.ema14Bounce ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Price touched and bounced off the short-term EMA.
+            </span>
+          </p>
+
+          <p>🟡 <strong>EMA70 Bounce:</strong> <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
+            {data.ema70Bounce ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Price touched and bounced off the long-term EMA.
+            </span>
+          </p>
+
+          <p>💰 <strong>Current Price:</strong> <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
+            <span className="text-gray-400 block text-sm">
+              The latest price of the asset.
+            </span>
+          </p>
+
+          <p>📊 <strong>{data.levelType?.toUpperCase()} Level:</strong> <span className="text-yellow-300">
+            {data.level ? data.level.toFixed(2) : 'N/A'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Key support or resistance level detected.
+            </span>
+          </p>
+
+          <p>🧭 <strong>Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:</strong> <span className="text-purple-300">
+            {data.inferredLevel.toFixed(2)}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Level based on recent highs/lows; helps spot zones of interest.
+            </span>
+          </p>
+
+          <p>🔍 <strong>Divergence From Level:</strong> <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
+            {data.divergenceFromLevel ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Price moved past a key level, but RSI showed weakness — caution.
+            </span>
+          </p>
+
+          <p>🧲 <strong>Touched EMA70 Today:</strong> <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+            {data.touchedEMA70Today ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              Shows if price interacted with the long-term EMA today.
+            </span>
+          </p>
+
+          <p>🔻 <strong>Bearish Continuation:</strong> <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
+            {data.bearishContinuation ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              The downtrend is likely to continue.
+            </span>
+          </p>
+
+          <p>🔺 <strong>Bullish Continuation:</strong> <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
+            {data.bullishContinuation ? 'Yes' : 'No'}
+          </span>
+            <span className="text-gray-400 block text-sm">
+              The uptrend is likely to continue.
+            </span>
+          </p>
+        </div>
+      ))}
     </div>
-  ))}
-</div>
   );
-	  }
+		}
