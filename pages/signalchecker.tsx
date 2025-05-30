@@ -236,17 +236,28 @@ export async function getServerSideProps() {
       const currDayLow = currDay?.low ?? 0;
 
       // Get 15m candles for today only
-const phOffset = 8 * 60; // PH = UTC+8
 const now = new Date();
 const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-const nowPH = new Date(utc + phOffset * 60000);
-const todayStartPH = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate());
-const todayStartTimestamp = todayStartPH.getTime();
+const nowPH = new Date(utc + 8 * 60 * 60000);
+
+let sessionStart: number, sessionEnd: number;
+
+const today8AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 8, 0, 0);
+const tomorrow745AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() + 1, 7, 45, 0);
+
+if (nowPH >= today8AM) {
+  sessionStart = today8AM.getTime();
+  sessionEnd = tomorrow745AM.getTime();
+} else {
+  const yesterday8AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() - 1, 8, 0, 0);
+  const today745AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 7, 45, 0);
+  sessionStart = yesterday8AM.getTime();
+  sessionEnd = today745AM.getTime();
+}
 
 const candlesToday = candles
   .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
-  .filter(c => c.timestamp >= todayStartTimestamp);
-
+  .filter(c => c.timestamp >= sessionStart && c.timestamp <= sessionEnd);
 const todaysLowestLow = candlesToday.length > 0
   ? Math.min(...candlesToday.map(c => c.low))
   : null;
@@ -257,6 +268,10 @@ const todaysHighestHigh = candlesToday.length > 0
 
 const intradayLowerLowBreak = todaysLowestLow !== null && todaysLowestLow < prevDayLow;
 const intradayHigherHighBreak = todaysHighestHigh !== null && todaysHighestHigh > prevDayHigh;
+
+const bullishBreakout = todaysHighestHigh > prevDayHigh;
+const bearishBreakout = todaysLowestLow < prevDayLow;
+const breakout = bullishBreakout || bearishBreakout;	
 
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
@@ -305,10 +320,6 @@ const divergence =
       const touchedEMA70Today =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
-
-const bullishBreakout = todaysHighestHigh > prevDayHigh;
-const bearishBreakout = todaysLowestLow < prevDayLow;
-      const breakout = bullishBreakout || bearishBreakout;
           
 
 
@@ -320,7 +331,7 @@ const bearishBreakout = todaysLowestLow < prevDayLow;
   divergence,
   ema14Bounce,
   ema70Bounce,
-  currentPrice: currDay?.close ?? 0,
+  currentPrice: lastClose,
   level,
   levelType: type,
   inferredLevel,
