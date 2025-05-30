@@ -230,10 +230,11 @@ export async function getServerSideProps() {
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
 
-      const prevDayHigh = prevDay?.high ?? 0;
-      const prevDayLow = prevDay?.low ?? 0;
-      const currDayHigh = currDay?.high ?? 0;
-      const currDayLow = currDay?.low ?? 0;
+      // --- Calculate today's high/low and previous day's high/low from earlier
+const currDayHigh = todaysHighestHigh!;
+const currDayLow = todaysLowestLow!;
+const prevDayHigh = prevSessionHigh!;
+const prevDayLow = prevSessionLow!;
 
       // Get 15m candles for today only
 const now = new Date();
@@ -306,7 +307,12 @@ if (trend === 'bearish') {
 } else if (trend === 'bullish') {
   bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
 }
-      
+
+// --- Get current RSI and previous RSI values (safeguard against undefined)
+const currentRSI = rsi14.at(-1);
+const prevHighRSI = rsi14[prevHighIdx] ?? null;
+const prevLowRSI = rsi14[prevLowIdx] ?? null;
+	    
 const divergence =
   (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
   (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
