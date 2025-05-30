@@ -232,17 +232,11 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
 
-const lowerTimeframeCandlesAll = await fetchCandles(symbol, '15m');
-const lowerTimeframeCandles = lowerTimeframeCandlesAll.filter(
-  c => c.timestamp > prevDayCloseTime
-);	    
+const all15mCandles = await fetchCandles(symbol, '15m');
+const lowerTimeframeCandles = all15mCandles.filter(c => c.timestamp > prevDayCloseTime);
 	    
-const firstBullishBreakoutCandle = lowerTimeframeCandles.find(
-  c => c.high > prevDayHigh
-);
-const firstBearishBreakoutCandle = lowerTimeframeCandles.find(
-  c => c.low < prevDayLow
-);
+const firstBullishBreakoutCandle = lowerTimeframeCandles.find(c => c.high > prevDayHigh);
+const firstBearishBreakoutCandle = lowerTimeframeCandles.find(c => c.low < prevDayLow);
 
 const bullishBreakout = !!firstBullishBreakoutCandle;
 const bearishBreakout = !!firstBearishBreakoutCandle;
