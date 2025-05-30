@@ -423,9 +423,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
           <option value="">All Pairs</option>
-          {pairs.map((pair) => (
-            <option key={pair} value={pair}>{pair}</option>
-          ))}
+          {Object.keys(signals).map((pair) => (
+  <option key={pair} value={pair}>{pair}</option>
+))}
         </select>
       </div>
 
