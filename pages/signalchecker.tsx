@@ -18,7 +18,7 @@ interface SignalData {
   divergenceFromLevel: boolean;
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
-	bullishContinuation: boolean;
+bullishContinuation: boolean;
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number; 
@@ -393,7 +393,7 @@ const divergence =
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
    <div className="p-4 space-y-6">
- {signals.map((signal, index) => {
+ {data.map((signal, index) => {
         const {
           intradayHigherHighBreak,
           intradayLowerLowBreak,
