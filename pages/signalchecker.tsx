@@ -229,12 +229,12 @@ export async function getServerSideProps() {
 	const prevDayHigh = prevDay?.high ?? 0;
 	const prevDayLow = prevDay?.low ?? 0;
 	 const prevDayCloseTime = prevDay?.timestamp ?? 0; // Use timestamp as close time (usually candle close time)   
-      
+
+	    
       const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);
 
-const all15mCandles = await fetchCandles(symbol, '15m');
-const lowerTimeframeCandles = all15mCandles.filter(c => c.timestamp > prevDayCloseTime);
+const candlesAfterPrevDay = dailyCandles.filter(c => c.timestamp > prevDay.timestamp);
 	    
 const firstBullishBreakoutCandle = candlesAfterPrevDay.find(c => c.high > prevDayHigh);
 const firstBearishBreakoutCandle = candlesAfterPrevDay.find(c => c.low < prevDayLow);
