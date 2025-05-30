@@ -430,7 +430,7 @@ return (
       </div>
 
       {Object.entries(filteredSignals).map(([symbol, data]) => (
-
+{if (!data) return null;}
         <div
           key={symbol}
           className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
