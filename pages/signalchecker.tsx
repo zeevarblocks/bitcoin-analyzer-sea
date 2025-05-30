@@ -225,8 +225,8 @@ export async function getServerSideProps() {
       const prevDay = dailyCandles.at(-2);
       const currDay = dailyCandles.at(-1);
 
-      const dailyHigh = prevDay?.high ?? 0;
-      const dailyLow = prevDay?.low ?? 0;
+      const prevDayHigh = prevDay?.high ?? 0;
+      const prevDayLow = prevDay?.low ?? 0;
       const currDayHigh = currDay?.high ?? 0;
       const currDayLow = currDay?.low ?? 0;
 
