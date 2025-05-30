@@ -240,8 +240,8 @@ const now = new Date();
 const utc = now.getTime() + now.getTimezoneOffset() * 60000;
 const nowPH = new Date(utc + 8 * 60 * 60000);
 
+// --- Current Session: 8:00 AM today → 7:45 AM tomorrow
 let sessionStart: number, sessionEnd: number;
-
 const today8AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 8, 0, 0);
 const tomorrow745AM = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() + 1, 7, 45, 0);
 
@@ -255,23 +255,29 @@ if (nowPH >= today8AM) {
   sessionEnd = today745AM.getTime();
 }
 
+// --- Previous Session: 8:00 AM yesterday → 7:45 AM today
+const prevSessionStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() - 1, 8, 0, 0).getTime();
+const prevSessionEnd = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate(), 7, 45, 0).getTime();
+
+// --- Filter Candles
 const candlesToday = candles
   .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
   .filter(c => c.timestamp >= sessionStart && c.timestamp <= sessionEnd);
-const todaysLowestLow = candlesToday.length > 0
-  ? Math.min(...candlesToday.map(c => c.low))
-  : null;
 
-const todaysHighestHigh = candlesToday.length > 0
-  ? Math.max(...candlesToday.map(c => c.high))
-  : null;
+const candlesPrevSession = candles
+  .filter(c => c.timestamp && c.low !== undefined && c.high !== undefined)
+  .filter(c => c.timestamp >= prevSessionStart && c.timestamp <= prevSessionEnd);
 
-const intradayLowerLowBreak = todaysLowestLow !== null && todaysLowestLow < prevDayLow;
-const intradayHigherHighBreak = todaysHighestHigh !== null && todaysHighestHigh > prevDayHigh;
+// --- Extract High/Low
+const todaysLowestLow = candlesToday.length > 0 ? Math.min(...candlesToday.map(c => c.low)) : null;
+const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map(c => c.high)) : null;
 
-const bullishBreakout = todaysHighestHigh > prevDayHigh;
-const bearishBreakout = todaysLowestLow < prevDayLow;
-const breakout = bullishBreakout || bearishBreakout;	
+const prevSessionLow = candlesPrevSession.length > 0 ? Math.min(...candlesPrevSession.map(c => c.low)) : null;
+const prevSessionHigh = candlesPrevSession.length > 0 ? Math.max(...candlesPrevSession.map(c => c.high)) : null;
+
+// --- Now put this here
+const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
+const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;	
 
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
