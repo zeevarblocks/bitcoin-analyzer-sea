@@ -428,8 +428,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           ))}
         </select>
       </div>
-
-      {Object.entries(signals).map(([symbol, data]) => {
+{Object.entries(signals).map(([symbol, data]) => {
   if (!data) return null; // Skip if no data for this symbol
 
   return (
@@ -489,3 +488,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     </div>
   );
 })}
+
