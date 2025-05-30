@@ -1,5 +1,4 @@
 import React from 'react';
-import Dashboard from '../components/Dashboard';
 
 interface SignalData {
   trend: string;
@@ -390,72 +389,67 @@ const divergence =
 // In the component SignalChecker, just render the two new fields like this:
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
       {Object.entries(signals).map(([symbol, data]) => (
-        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
-          <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
+        <div
+          key={symbol}
+          className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
+        >
+          <h2 className="text-2xl font-bold text-yellow-400">
+            📡 {symbol} Signal Overview
+          </h2>
 
-          {/* Always show these */}
-          <p>💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span></p>
-          <p>
-            📊 {data.levelType?.toUpperCase()} Level:{' '}
-            <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-          </p>
-          <p>
-            🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-            <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-          </p>
-          <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+          <div className="space-y-1">
+            <p>💰 <span className="font-medium text-white/70">Current Price:</span> <span className="text-blue-400">${data.currentPrice.toFixed(2)}</span></p>
+            <p>📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase()} Level:</span> <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span></p>
+            <p>🧭 <span className="font-medium text-white/70">Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:</span> <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span></p>
+            <p>📈 <span className="font-medium text-white/70">Trend:</span> <span className="font-semibold text-cyan-300">{data.trend}</span></p>
+          </div>
 
           {/* 📊 Breakout Signals */}
-          {data.bullishBreakout && (
-            <div className="mt-4">
-              <h3 className="text-white font-semibold">📊 Breakout Signals</h3>
-              <p className="text-green-400">🟢 Bullish Breakout: Yes</p>
-            </div>
-          )}
-          {data.bearishBreakout && (
-            <div className="mt-4">
-              <h3 className="text-white font-semibold">📊 Breakout Signals</h3>
-              <p className="text-green-400">🔴 Bearish Breakout: Yes</p>
+          {(data.bullishBreakout || data.bearishBreakout) && (
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <h3 className="text-lg font-semibold text-white">📊 Breakout Signals</h3>
+              {data.bullishBreakout && <p className="text-green-400">🟢 Bullish Breakout: <span className="font-semibold">Yes</span></p>}
+              {data.bearishBreakout && <p className="text-red-400">🔴 Bearish Breakout: <span className="font-semibold">Yes</span></p>}
             </div>
           )}
 
           {/* 🔄 Trend Continuation */}
           {(data.bearishContinuation || data.bullishContinuation) && (
-            <div className="mt-4">
-              <h3 className="text-white font-semibold">🔄 Trend Continuation</h3>
-              {data.bearishContinuation && <p className="text-red-400">🔻 Bearish Continuation: Yes</p>}
-              {data.bullishContinuation && <p className="text-green-400">🔺 Bullish Continuation: Yes</p>}
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <h3 className="text-lg font-semibold text-white">🔄 Trend Continuation</h3>
+              {data.bearishContinuation && <p className="text-red-400">🔻 Bearish Continuation: <span className="font-semibold">Yes</span></p>}
+              {data.bullishContinuation && <p className="text-green-400">🔺 Bullish Continuation: <span className="font-semibold">Yes</span></p>}
             </div>
           )}
 
-          {/* 🧲 EMA Bounce & Zone Testing */}
+          {/* 🧲 EMA Bounce */}
           {(data.ema14Bounce || data.ema70Bounce || data.touchedEMA70Today) && (
-            <div className="mt-4">
-              <h3 className="text-white font-semibold">🧲 EMA Bounce & Zone Testing</h3>
-              {data.ema14Bounce && <p className="text-green-400">🔁 EMA14 Short-Term Bounce: Yes</p>}
-              {data.ema70Bounce && <p className="text-green-400">🟡 EMA70 Mid-Term Bounce: Yes</p>}
-              {data.touchedEMA70Today && <p className="text-green-400">🧲 EMA70 Tested Today: Yes</p>}
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <h3 className="text-lg font-semibold text-white">🧲 EMA Bounce & Zone Testing</h3>
+              {data.ema14Bounce && <p className="text-green-400">🔁 EMA14 Bounce: <span className="font-semibold">Yes</span></p>}
+              {data.ema70Bounce && <p className="text-yellow-300">🟡 EMA70 Bounce: <span className="font-semibold">Yes</span></p>}
+              {data.touchedEMA70Today && <p className="text-blue-300">🧲 EMA70 Tested Today: <span className="font-semibold">Yes</span></p>}
             </div>
           )}
 
           {/* 📉 RSI Divergence */}
           {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
-            <div className="mt-4">
-              <h3 className="text-white font-semibold">📉 RSI Divergence</h3>
-              {data.divergenceFromLevel && <p className="text-green-400">🔍 RSI Divergence vs Level: Yes</p>}
-              {data.divergence && <p className="text-green-400">📉 RSI High/Low Divergence: Yes</p>}
-              {data.nearOrAtEMA70Divergence && <p className="text-green-400">🟠 EMA70 Zone Divergence: Yes</p>}
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+              {data.divergenceFromLevel && <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>}
+              {data.divergence && <p className="text-orange-400">📉 RSI High/Low Divergence: <span className="font-semibold">Yes</span></p>}
+              {data.nearOrAtEMA70Divergence && <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>}
             </div>
           )}
 
           {/* 🧭 Inferred Support/Resistance */}
           {data.inferredLevelWithinRange && (
-            <div className="mt-4">
-              <h3 className="text-white font-semibold">🧭 Inferred Levels</h3>
-              <p className="text-green-400">
-                🟣 In Range Today: Yes → "Price is near a key support or resistance level, which may trigger a bounce or breakout soon."
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <h3 className="text-lg font-semibold text-white">🧭 Inferred Key Level Range</h3>
+              <p className="text-green-300 italic">
+                🟣 In Range Today — “Price is near a key support or resistance level, which may trigger a bounce or breakout soon.”
               </p>
             </div>
           )}
@@ -463,4 +457,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       ))}
     </div>
   );
-}
+	    }
