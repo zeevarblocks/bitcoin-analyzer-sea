@@ -400,7 +400,10 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               📊 {data.levelType?.toUpperCase()} Level:{' '}
               <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
             </p>
-		<h3 className="text-white font-semibold">🧭 Inferred Levels</h3>
+		<p>
+              🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
+              <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
+            </p>
 		
 		<p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
 
@@ -488,14 +491,10 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           <div className="mt-4">
             <h3 className="text-white font-semibold">🧭 Inferred Levels</h3>
             <p>
-              🟣 Inferred Level within Range:{' '}
+              🟣 In Range Today:{' '}
               <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-                {data.inferredLevelWithinRange ? 'Yes → Watch for potential breakout or reversal.' : 'No'}
+                {data.inferredLevelWithinRange ? 'Yes → "Price is near a key support or resistance level, which may trigger a bounce or breakout soon."' : 'No'}
               </span>
-            </p>
-            <p>
-              🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-              <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
             </p>
           </div>
         </div>
