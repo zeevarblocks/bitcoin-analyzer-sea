@@ -395,7 +395,10 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   {Object.entries(signals).map(([symbol, data]) => (
     <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
       <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
-      <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+	    <p>
+        💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
+      </p>
+	    <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
       <p>
         🟢 Bullish Breakout:{' '}
         <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
@@ -441,8 +444,12 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 	    <p>
         🟣 Inferred Level within Range:{' '}
         <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-          {data.inferredLevelWithinRange ? 'Price is near a key support or resistance level, which may trigger a bounce or breakout soon.' : 'No'}
-        </span>
+          {data.inferredLevelWithinRange ? 'Yes → Watch for potential breakout or reversal.' : 'No'}
+        </span>	    
+      </p>
+	    <p>
+        🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
+        <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
       </p>
       <p>
         🧲 Touched EMA70 Today:{' '}
@@ -465,15 +472,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       <p>
         📊 {data.levelType?.toUpperCase()} Level:{' '}
         <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-      </p>
-	    <p>
-        💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
-      </p>
-      <p>
-        🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-        <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-      </p>
-    </div>
+   </p>
+      </div>
   ))}
 </div>
   );
