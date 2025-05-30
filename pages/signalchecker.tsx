@@ -250,6 +250,7 @@ const todaysHighestHigh = Math.max(...candlesToday.map(c => c.high));
 // Check if it's higher than the previous daily high
 const intradayHigherHighBreak = todaysHighestHigh > prevDayHigh;
 
+
 const prevHighIdx = highs.lastIndexOf(prevDayHigh);
 const prevLowIdx = lows.lastIndexOf(prevDayLow);	    
       
@@ -298,8 +299,8 @@ const divergence =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-const bullishBreakout = todaysHigh > prevDayHigh;
-const bearishBreakout = todaysLow < prevDayLow;
+const bullishBreakout = todaysHighestHigh > prevDayHigh;
+const bearishBreakout = todaysLowestLow < prevDayLow;
       const breakout = bullishBreakout || bearishBreakout;
           
 
