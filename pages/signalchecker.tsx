@@ -387,94 +387,121 @@ const divergence =
 }
 
 // In the component SignalChecker, just render the two new fields like this:
-
-
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   return (
-   <div className="p-4 space-y-6"> 
-  {Object.entries(signals).map(([symbol, data]) => (
-    <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
-      <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
-	    <p>
-        💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span>
-      </p>
-	    <p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
-      <p>
-        🟢 Bullish Breakout:{' '}
-        <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bullishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔴 Bearish Breakout:{' '}
-        <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
-          {data.bearishBreakout ? 'Yes' : 'No'}
-        </span>
-      </p>
-	    <p>
-        🔻 Bearish Continuation:{' '}
-        <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
-          {data.bearishContinuation ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🔺 Bullish Continuation:{' '}
-        <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
-          {data.bullishContinuation ? 'Yes' : 'No'}
-        </span>
-      </p>
-	    <p>
-        🔁 EMA14 Bounce:{' '}
-        <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
-          {data.ema14Bounce ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟡 EMA70 Bounce:{' '}
-        <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
-          {data.ema70Bounce ? 'Yes' : 'No'}
-        </span>
-      </p>
-	    <p>
-        🔍 Divergence From Level:{' '}
-        <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
-          {data.divergenceFromLevel ? 'Yes' : 'No'}
-        </span>
-      </p>
-	    <p>
-        🟣 Inferred Level within Range:{' '}
-        <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
-          {data.inferredLevelWithinRange ? 'Yes → Watch for potential breakout or reversal.' : 'No'}
-        </span>	    
-      </p>
-	    <p>
-        🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
-        <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
-      </p>
-      <p>
-        🧲 Touched EMA70 Today:{' '}
-        <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-          {data.touchedEMA70Today ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        📉 RSI Divergence:{' '}
-        <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
-          {data.divergence ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        🟠 Near/At EMA70 Divergence:{' '}
-        <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
-          {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <p>
-        📊 {data.levelType?.toUpperCase()} Level:{' '}
-        <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
-   </p>
-      </div>
-  ))}
-</div>
+    <div className="p-4 space-y-6">
+      {Object.entries(signals).map(([symbol, data]) => (
+        <div key={symbol} className="bg-black/60 backdrop-blur-md rounded-xl p-4 shadow">
+          <h2 className="text-xl font-bold text-white">{symbol} Signal</h2>
+
+          {/* Basic Info */}
+          <p>💰 Current Price: <span className="text-blue-400">{data.currentPrice.toFixed(2)}</span></p>
+                     <p>
+              📊 {data.levelType?.toUpperCase()} Level:{' '}
+              <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span>
+            </p>
+		<h3 className="text-white font-semibold">🧭 Inferred Levels</h3>
+		
+		<p>📈 Trend: <span className="font-semibold">{data.trend}</span></p>
+
+          {/* 📊 Breakout Signals */}
+          <div className="mt-4">
+            <h3 className="text-white font-semibold">📊 Breakout Signals</h3>
+            <p>
+              🟢 Bullish Breakout:{' '}
+              <span className={data.bullishBreakout ? 'text-green-400' : 'text-red-400'}>
+                {data.bullishBreakout ? 'Yes' : 'No'}
+              </span>
+            </p>
+            <p>
+              🔴 Bearish Breakout:{' '}
+              <span className={data.bearishBreakout ? 'text-green-400' : 'text-red-400'}>
+                {data.bearishBreakout ? 'Yes' : 'No'}
+              </span>
+            </p>
+          </div>
+
+          {/* 🔄 Trend Continuation */}
+          <div className="mt-4">
+            <h3 className="text-white font-semibold">🔄 Trend Continuation</h3>
+            <p>
+              🔻 Bearish Continuation:{' '}
+              <span className={data.bearishContinuation ? 'text-red-400' : 'text-gray-400'}>
+                {data.bearishContinuation ? 'Yes' : 'No'}
+              </span>
+            </p>
+            <p>
+              🔺 Bullish Continuation:{' '}
+              <span className={data.bullishContinuation ? 'text-green-400' : 'text-gray-400'}>
+                {data.bullishContinuation ? 'Yes' : 'No'}
+              </span>
+            </p>
+          </div>
+
+          {/* 🧲 EMA Bounce & Zone Testing */}
+          <div className="mt-4">
+            <h3 className="text-white font-semibold">🧲 EMA Bounce & Zone Testing</h3>
+            <p>
+              🔁 EMA14 Short-Term Bounce:{' '}
+              <span className={data.ema14Bounce ? 'text-green-400' : 'text-red-400'}>
+                {data.ema14Bounce ? 'Yes' : 'No'}
+              </span>
+            </p>
+            <p>
+              🟡 EMA70 Mid-Term Bounce:{' '}
+              <span className={data.ema70Bounce ? 'text-green-400' : 'text-red-400'}>
+                {data.ema70Bounce ? 'Yes' : 'No'}
+              </span>
+            </p>
+            <p>
+              🧲 EMA70 Tested Today:{' '}
+              <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+                {data.touchedEMA70Today ? 'Yes' : 'No'}
+              </span>
+            </p>
+          </div>
+
+          {/* 📉 RSI Divergence */}
+          <div className="mt-4">
+            <h3 className="text-white font-semibold">📉 RSI Divergence</h3>
+            <p>
+              🔍 RSI Divergence vs Level:{' '}
+              <span className={data.divergenceFromLevel ? 'text-green-400' : 'text-red-400'}>
+                {data.divergenceFromLevel ? 'Yes' : 'No'}
+              </span>
+            </p>
+            <p>
+              📉 RSI High/Low Divergence:{' '}
+              <span className={data.divergence ? 'text-green-400' : 'text-red-400'}>
+                {data.divergence ? 'Yes' : 'No'}
+              </span>
+            </p>
+            <p>
+              🟠 EMA70 Zone Divergence:{' '}
+              <span className={data.nearOrAtEMA70Divergence ? 'text-green-400' : 'text-red-400'}>
+                {data.nearOrAtEMA70Divergence ? 'Yes' : 'No'}
+              </span>
+            </p>
+          </div>
+
+          {/* 🧭 Inferred Support/Resistance */}
+          <div className="mt-4">
+            <h3 className="text-white font-semibold">🧭 Inferred Levels</h3>
+            <p>
+              🟣 Inferred Level within Range:{' '}
+              <span className={data.inferredLevelWithinRange ? 'text-green-400' : 'text-red-400'}>
+                {data.inferredLevelWithinRange ? 'Yes → Watch for potential breakout or reversal.' : 'No'}
+              </span>
+            </p>
+            <p>
+              🧭 Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:{' '}
+              <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span>
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
   );
-          }
+}
+
+
