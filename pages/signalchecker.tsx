@@ -394,7 +394,7 @@ function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K
   return result;
 }
 
-const displayFields = omit(data, ['intradayHigherHighBreak', 'intradayLowerLowBreak']);
+const displayFields = omit(signals, ['intradayHigherHighBreak', 'intradayLowerLowBreak']);
 
 
 
