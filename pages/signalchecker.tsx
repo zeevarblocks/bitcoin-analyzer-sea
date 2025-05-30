@@ -387,7 +387,22 @@ const divergence =
 }
 
 // In the component SignalChecker, just render the two new fields like this:
+import { useState } from 'react';
+
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
+  // Filtered list based on search bar
+  const filteredSymbols = Object.keys(signals).filter((symbol) =>
+    symbol.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Determine which signals to show
+  const signalsToShow = selectedSymbol
+    ? { [selectedSymbol]: signals[selectedSymbol] }
+    : Object.fromEntries(filteredSymbols.map((s) => [s, signals[s]]));
+
   return (
     <div className="p-6 space-y-6 bg-gradient-to-b from-gray-900 to-black min-h-screen">
       {/* 🔍 Search Bar */}
