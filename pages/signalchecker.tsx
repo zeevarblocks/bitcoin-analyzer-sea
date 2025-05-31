@@ -322,8 +322,16 @@ if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prev
   divergenceType = 'bearish';
 }
 
-      const nearOrAtEMA70Divergence =
-        divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
+const divergence = divergenceType !== null;
+
+data.divergence = divergence;
+data.divergenceType = divergenceType;
+
+const nearOrAtEMA70Divergence =
+  divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
+data.nearOrAtEMA70Divergence = nearOrAtEMA70Divergence;
+
+      
 
       const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
