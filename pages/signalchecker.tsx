@@ -383,6 +383,7 @@ const nearOrAtEMA70Divergence =
         todaysLowestLow,
         todaysHighestHigh,
 	url: `https://okx.com/join/96631749`,
+	price,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
