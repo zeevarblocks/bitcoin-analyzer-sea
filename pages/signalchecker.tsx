@@ -520,18 +520,29 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       key={symbol}
       onClick={() => window.open(signal.url, '_blank')}
       style={{
-        padding: '12px 24px',
+        padding: '14px 28px',
         margin: '10px 0',
-        backgroundColor: '#0070f3', 
+        background: 'linear-gradient(135deg, #0070f3 0%, #00b4d8 100%)', // Gradient blue
         color: '#fff',
         border: 'none',
-        borderRadius: '5px',
+        borderRadius: '8px',
         fontSize: '16px',
+        fontWeight: '600',
         cursor: 'pointer',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)'
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = '0 6px 15px rgba(0, 0, 0, 0.2)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.15)';
+      }}
+      title={`Access the best ${symbol} trading signals`}
     >
-      🚀 Trade Now - Access the best trading signals here!
+      🚀 Trade Now — Access the Best Signals Here!
     </button>
   ))}
 </div>
