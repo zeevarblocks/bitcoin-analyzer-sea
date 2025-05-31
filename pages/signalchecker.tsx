@@ -23,6 +23,7 @@ bullishContinuation: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number; 
   todaysHighestHigh: number;
+url: string;
   
 }
 
@@ -373,6 +374,7 @@ export async function getServerSideProps() {
         intradayLowerLowBreak,
         todaysLowestLow,
         todaysHighestHigh,
+	url: `https://okx.com/join/96631749`,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
