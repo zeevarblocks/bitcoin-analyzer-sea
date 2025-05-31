@@ -393,7 +393,7 @@ import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [allPairs, setAllPairs] = useState<string[]>([]);
-  const [pairs, setPairs] = useState<string[]>([]);
+  const [filteredPairs, setFilteredPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -405,7 +405,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         const data = await response.json();
         const fetchedPairs = data.data.map((item: any) => item.instId);
         setAllPairs(fetchedPairs);
-        setPairs(fetchedPairs);
+        setFilteredPairs(fetchedPairs);
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
       }
@@ -413,54 +413,64 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     fetchPairs();
   }, []);
 
-  // Debounced local filtering
+  // Handle search and selection
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    if (searchQuery === '') {
+      setFilteredPairs(allPairs);
+      setSelectedPair(null); // Show all signals
+    } else {
       const filtered = allPairs.filter((pair) =>
         pair.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setPairs(filtered);
-    }, 300); // 300ms debounce
+      setFilteredPairs(filtered);
 
-    return () => clearTimeout(timeout);
+      // If only one match, auto-select it
+      if (filtered.length === 1) {
+        setSelectedPair(filtered[0]);
+      } else {
+        setSelectedPair(null);
+      }
+    }
   }, [searchQuery, allPairs]);
 
-  // Filtered signals
-  const filteredSignals = selectedPair ? { [selectedPair]: signals[selectedPair] } : signals;
+  // Final filtered signals
+  const finalSignals = selectedPair ? { [selectedPair]: signals[selectedPair] } : signals;
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Searchable input */}
+      {/* Searchable input that acts as both search and select */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="search" className="text-white font-semibold">🔍 Search Pair:</label>
+        <label htmlFor="pairSearch" className="text-white font-semibold">🔍 Search or Select Pair:</label>
         <input
-          id="search"
+          id="pairSearch"
           type="text"
           className="p-2 rounded border bg-gray-800 text-white"
-          placeholder="Type to search..."
+          placeholder="Type to search or select..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* Dropdown */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="tradingPair" className="text-white font-semibold">Select Trading Pair:</label>
-        <select
-          id="tradingPair"
-          className="p-2 rounded border bg-gray-800 text-white"
-          value={selectedPair ?? ''}
-          onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
-        >
-          <option value="">All Pairs</option>
-          {pairs.map((pair) => (
-            <option key={pair} value={pair}>{pair}</option>
+      {/* Show matching pairs as a list of suggestions */}
+      {searchQuery && filteredPairs.length > 0 && (
+        <div className="bg-gray-800 text-white rounded shadow p-2 max-h-40 overflow-y-auto">
+          {filteredPairs.map((pair) => (
+            <div
+              key={pair}
+              className="p-1 hover:bg-gray-700 cursor-pointer"
+              onClick={() => {
+                setSearchQuery(pair);
+                setSelectedPair(pair);
+              }}
+            >
+              {pair}
+            </div>
           ))}
-        </select>
-      </div>
+        </div>
+      )}
 
       {/* Signal overview */}
-      {Object.entries(filteredSignals).map(([symbol, data]) => {
+      {Object.entries(finalSignals).map(([symbol, data]) => {
         if (!data) return null;
 
         return (
@@ -524,4 +534,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-	    }
+		}
