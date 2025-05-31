@@ -505,17 +505,6 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             )}
               
 
-    {data.nearOrAtEMA70Divergence && (
-      <p className="text-violet-400">
-        🟠 EMA70 Zone Divergence:
-        <span className="font-semibold">
-          {data.divergenceTypeNearEMA70 === 'bullish' ? ' Bullish' : data.divergenceTypeNearEMA70 === 'bearish' ? ' Bearish' : ' Yes'}
-        </span>
-      </p>
-    )}
-  </div>
-)}
-
             {data.inferredLevelWithinRange && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">🧭 Inferred Key Level Range</h3>
@@ -528,7 +517,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
      <div className="flex justify-center pt-4">
               <button
                 onClick={() => window.open(data.url, '_blank')}
-                className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
+                className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-gray-to-r from-blue-600 to-cyan-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
                 title={`Access the best ${symbol} trading signals`}
               >
                 🚀 Trade Now — Access the Best Signals Here!
