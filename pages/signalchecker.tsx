@@ -25,7 +25,6 @@ bullishContinuation: boolean;
   todaysLowestLow: number; 
   todaysHighestHigh: number;  
 url: string;
-price: number;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -383,7 +382,6 @@ const nearOrAtEMA70Divergence =
         todaysLowestLow,
         todaysHighestHigh,
 	url: `https://okx.com/join/96631749`,
-	price,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -538,10 +536,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         textAlign: 'center',
       }}
     >
-      <strong style={{ fontSize: '18px' }}>🚀 {symbol}</strong>
-      <span style={{ fontSize: '14px', marginTop: '4px' }}>
-        Price: ${signal.price}
-      </span>
+      <strong style={{ fontSize: '18px' }}>🚀 {symbol}</strong> 
       <span style={{ fontSize: '12px', fontStyle: 'italic', marginTop: '2px' }}>
         {signal.summary}
       </span>
