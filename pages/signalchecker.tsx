@@ -512,12 +512,13 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 <p className="text-green-300 italic">
                   🟣 In Range Today — “Price is near a key support or resistance level, which may trigger a bounce or breakout soon.”
                 </p>
-              <button onClick={() => window.open(signal.url, '_blank')}>
-  Trade {symbol}
-</button>
-	     
 	      </div>
             )}
+		  {signals.map(signal => (
+  <button onClick={() => window.open(signal.url, '_blank')}>
+    Trade {symbol}
+  </button>
+))}
           </div>
         );
       })}
