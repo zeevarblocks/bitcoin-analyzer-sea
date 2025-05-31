@@ -394,7 +394,6 @@ import { useState, useEffect } from 'react';
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
-  const [search, setSearch] = useState<string>(''); // Search input state
 
   // Fetch trading pairs from OKX
   useEffect(() => {
@@ -411,46 +410,30 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     fetchPairs();
   }, []);
 
-  // Filter pairs based on search input
-  const filteredPairs = pairs.filter(pair =>
-    pair.toLowerCase().includes(search.toLowerCase())
-  );
-
   // Filtered signals based on selectedPair
   const filteredSignals = selectedPair ? { [selectedPair]: signals[selectedPair] } : signals;
 
+  // Only show dropdown options that actually exist in signals
+  const availablePairs = Object.keys(signals);
+
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Search input for pairs */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-center">
-        <label htmlFor="searchInput" className="text-white font-semibold">🔍 Search Pairs:</label>
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Type to search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="p-2 rounded border border-white/10 bg-gray-800 text-white w-full md:w-1/2"
-        />
-      </div>
-
       {/* Dropdown for Trading Pairs */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-center">
+      <div className="flex flex-col md:flex-row gap-4 items-center">
         <label htmlFor="tradingPair" className="text-white font-semibold">Select Trading Pair:</label>
         <select
           id="tradingPair"
-          className="p-2 rounded border border-white/10 bg-gray-800 text-white w-full md:w-1/2"
+          className="p-2 rounded border bg-gray-800 text-white"
           value={selectedPair ?? ''}
           onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
           <option value="">All Pairs</option>
-          {filteredPairs.map((pair) => (
+          {availablePairs.map((pair) => (
             <option key={pair} value={pair}>{pair}</option>
           ))}
         </select>
       </div>
 
-      {/* Display signals */}
       {Object.entries(filteredSignals).map(([symbol, data]) => {
         if (!data) return null;
 
@@ -515,4 +498,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-			}
+		}
