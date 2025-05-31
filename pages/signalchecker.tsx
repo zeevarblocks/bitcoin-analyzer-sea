@@ -6,7 +6,7 @@ interface SignalData {
   bullishBreakout: boolean; 
   bearishBreakout: boolean; 
   divergence: boolean;
-divergenceType: 'bullish' | 'bearish' | null;
+divergenceType?: 'bullish' | 'bearish' | null;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
@@ -323,7 +323,8 @@ if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prev
 } else if (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
   divergenceType = 'bearish';
 }
-
+const divergence = divergenceType !== null;
+	    
 const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
       
@@ -508,19 +509,19 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">🧭 Inferred Key Level Range</h3>
                 <p className="text-green-300 italic">
-                  🟣 In Range Today — “Price is near a key support or resistance level, which may trigger a bounce or breakout soon.”
+                  🟣 In Range Today — “Price is near a key support or resistance level.”
                 </p>
               </div>
             )}
 
      <div className="flex justify-center pt-4">
               <button
-                onClick={() => window.open(data.url, '_blank')}
-                className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-gray-to-r from-blue-600 to-cyan-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
-                title={`Access the best ${symbol} trading signals`}
-              >
-                🚀 Trade Now — Access the Best Signals Here!
-              </button>
+  onClick={() => window.open(data.url, '_blank')}
+  className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
+  title={`Access the best ${symbol} trading signals`}
+>
+  🚀 Trade Now — Access the Best Signals Here!
+</button>
             </div>
 
           </div>
