@@ -6,6 +6,7 @@ interface SignalData {
   bullishBreakout: boolean; 
   bearishBreakout: boolean; 
   divergence: boolean;
+divergenceType?: 'bullish' | 'bearish' | null;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
@@ -368,6 +369,7 @@ data.nearOrAtEMA70Divergence = nearOrAtEMA70Divergence;
         bullishBreakout,
         bearishBreakout,
         divergence,
+	divergenceType,
         ema14Bounce,
         ema70Bounce,
         currentPrice: lastClose,
