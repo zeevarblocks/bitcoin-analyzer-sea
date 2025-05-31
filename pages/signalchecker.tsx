@@ -515,25 +515,35 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 	      </div>
             )}
 		<div style={{ display: 'flex', justifyContent: 'center' }}>
-  {Object.entries(signals).slice(0, 1).map(([symbol, signal]) => (
+  {Object.entries(signals).map(([symbol, signal]) => (
     <button
       key={symbol}
       onClick={() => window.open(signal.url, '_blank')}
       title={`Trade ${symbol} with the latest signals`}
-      aria-label={`Trade ${symbol} Now - Access the best trading signals here`}
+      aria-label={`Trade ${symbol} Now - Access the best trading signals for ${symbol}`}
       style={{
-        padding: '12px 24px',
-        margin: '10px 0',
-        backgroundColor: '#28a745', // Green color for better visual clarity
+        padding: '16px 28px',
+        margin: '10px',
+        backgroundColor: '#007bff', // Blue color for vibrancy
         color: '#fff',
         border: 'none',
         borderRadius: '5px',
         fontSize: '16px',
         cursor: 'pointer',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)'
+        boxShadow: '0 3px 6px rgba(0, 0, 0, 0.2)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
       }}
     >
-      🚀 Trade {symbol} Now - Best Trading Signals!
+      <strong style={{ fontSize: '18px' }}>🚀 {symbol}</strong>
+      <span style={{ fontSize: '14px', marginTop: '4px' }}>
+        Price: ${signal.price}
+      </span>
+      <span style={{ fontSize: '12px', fontStyle: 'italic', marginTop: '2px' }}>
+        {signal.summary}
+      </span>
     </button>
   ))}
 </div>
