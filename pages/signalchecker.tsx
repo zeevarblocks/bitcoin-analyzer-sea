@@ -25,6 +25,7 @@ bullishContinuation: boolean;
   todaysLowestLow: number; 
   todaysHighestHigh: number;  
 url: string;
+price: number;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -519,7 +520,6 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     <button
       key={symbol}
       onClick={() => window.open(signal.url, '_blank')}
-      title={`Trade ${symbol} with the latest signals`}
       aria-label={`Trade ${symbol} Now - Access the best trading signals for ${symbol}`}
       style={{
         padding: '16px 28px',
