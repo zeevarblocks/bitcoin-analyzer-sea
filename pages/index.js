@@ -1,5 +1,5 @@
 import React from 'react';
-import TradingViewWidget from './tradingviewwidget';
+import SignalChecker from './signalchecker';
 import BitcoinSignalAnalyzer from './bitcoin-signal-analyzer';
 
 export default function Home() {
@@ -12,7 +12,7 @@ export default function Home() {
         </div>
 
         <BitcoinSignalAnalyzer />
-      
+      <SignalChecker />
 
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
         <p>
