@@ -1,7 +1,16 @@
 import React from 'react';
-import SignalData from '../signalChecker/functions';
 import getServerSideProps from '../signalChecker/logic';
 import SignalChecker from '../signalChecker/uidashboard';
+import {
+  fetchCandles,
+  calculateEMA,
+  calculateRSI,
+  findRelevantLevel,
+  detectBearishContinuation,
+  detectBullishContinuation,
+} from '../signalChecker/functions';
+
+import type { SignalData, Candle } from '../signalChecker/functions';
 
 export default function Home() {
   return (
