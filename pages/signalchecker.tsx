@@ -206,7 +206,7 @@ function detectBullishContinuation(
 // logic in getServerSideProps:
 export async function getServerSideProps() {
   // --- Helper: Fetch Top 50 Pairs by Volume
-  async function fetchTopPairs(limit = 50): Promise<string[]> {
+  async function fetchTopPairs(limit = 30): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -397,15 +397,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Fetch top 100 pairs by volume once
+  // Fetch top 30 pairs by volume once
   useEffect(() => {
     const fetchTopPairs = async () => {
       try {
-        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=FUTURES');
         const data = await response.json();
         const sortedPairs = data.data
           .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-          .slice(0, 100)
+          .slice(0, 30)
           .map((item: any) => item.instId);
 
         setAllPairs(sortedPairs);
