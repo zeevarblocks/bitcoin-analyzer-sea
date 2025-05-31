@@ -404,16 +404,13 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
-  // Fetch top 30 trading pairs from OKX
+  // Fetch the top 30 trading pairs from OKX
   useEffect(() => {
     const fetchPairs = async () => {
       try {
         const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
         const data = await response.json();
-        // Only take the top 30 pairs
-        const top30Pairs = data.data
-          .slice(0, 30) // get first 30
-          .map((item: any) => item.instId);
+        const top30Pairs = data.data.slice(0, 30).map((item: any) => item.instId);
         setPairs(top30Pairs);
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
@@ -487,24 +484,24 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             )}
 
             {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-    {data.divergenceFromLevel && (
-      <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>
-    )}
-    {data.divergence && (
-      <p className="text-orange-400">
-        📉 RSI High/Low Divergence:
-        <span className="font-semibold">
-          {data.divergenceType === 'bullish' ? ' Bullish' : ' Bearish'}
-        </span>
-      </p>
-    )}
-    {data.nearOrAtEMA70Divergence && (
-      <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
-    )}
-  </div>
-)}
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+                {data.divergenceFromLevel && (
+                  <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>
+                )}
+                {data.divergence && (
+                  <p className="text-orange-400">
+                    📉 RSI High/Low Divergence:
+                    <span className="font-semibold">
+                      {data.divergenceType === 'bullish' ? ' Bullish' : ' Bearish'}
+                    </span>
+                  </p>
+                )}
+                {data.nearOrAtEMA70Divergence && (
+                  <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
+                )}
+              </div>
+            )}
 
             {data.inferredLevelWithinRange && (
               <div className="pt-4 border-t border-white/10 space-y-2">
@@ -512,43 +509,22 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 <p className="text-green-300 italic">
                   🟣 In Range Today — “Price is near a key support or resistance level, which may trigger a bounce or breakout soon.”
                 </p>
-	      </div>
+              </div>
             )}
-		<div style={{ display: 'flex', justifyContent: 'center' }}>
-  {Object.entries(signals).slice(0, 1).map(([symbol, signal]) => (
-    <button
-      key={symbol}
-      onClick={() => window.open(signal.url, '_blank')}
-      style={{
-        padding: '14px 28px',
-        margin: '10px 0',
-        background: 'linear-gradient(135deg, #0070f3 0%, #00b4d8 100%)', // Gradient blue
-        color: '#fff',
-        border: 'none',
-        borderRadius: '8px',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 6px 15px rgba(0, 0, 0, 0.2)';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.15)';
-      }}
-      title={`Access the best ${symbol} trading signals`}
-    >
-      🚀 Trade Now — Access the Best Signals Here!
-    </button>
-  ))}
-</div>
+
+            {/* Beautiful Trade Now Button */}
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => window.open(data.url, '_blank')}
+                className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
+                title={`Access the best ${symbol} trading signals`}
+              >
+                🚀 Trade Now — Access the Best Signals Here!
+              </button>
+            </div>
           </div>
         );
       })}
     </div>
   );
-					   }
+	    }
