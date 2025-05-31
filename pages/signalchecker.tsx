@@ -383,40 +383,37 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
-  // Fetch trading pairs from OKX, sort by volume, and auto-select top pair
   useEffect(() => {
     const fetchPairs = async () => {
       try {
         const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
         const data = await response.json();
 
-        // Sort by 24h volume descending
         const sortedPairs = data.data
           .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
           .map((item: any) => item.instId);
 
         setPairs(sortedPairs);
 
-        // Set the top volume pair as the default selected
-        if (sortedPairs.length > 0) {
-          setSelectedPair(sortedPairs[0]);
+        // Find the first pair in the sorted list that exists in the signals
+        const defaultPair = sortedPairs.find((pair) => signals[pair]);
+        if (defaultPair) {
+          setSelectedPair(defaultPair);
         }
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
       }
     };
 
-    // Initial fetch
     fetchPairs();
 
-    // Auto-refresh every 5 minutes
     const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
-
     return () => clearInterval(intervalId);
-  }, []);
+  }, [signals]); // <== Depend on signals so it recalculates if signals update
 
-  // Filtered signals based on selectedPair
-  const filteredSignals = selectedPair && signals[selectedPair] ? { [selectedPair]: signals[selectedPair] } : {};
+  // Filter signals based on selectedPair
+  const filteredSignals =
+    selectedPair && signals[selectedPair] ? { [selectedPair]: signals[selectedPair] } : {};
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
@@ -429,7 +426,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           value={selectedPair ?? ''}
           onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
-          {pairs.map((pair) => (
+          {pairs.filter((pair) => signals[pair]).map((pair) => (
             <option key={pair} value={pair}>{pair}</option>
           ))}
         </select>
@@ -521,3 +518,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     </div>
   );
       }
+
