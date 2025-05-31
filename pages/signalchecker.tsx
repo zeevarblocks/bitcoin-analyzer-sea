@@ -1,5 +1,5 @@
-import SignalData from '../components/SignalData';
-import SignalChecker from '../components/SignalChecker';
+import SignalData from '../signalChecker/functions';
+import SignalChecker from '../signalChecker/uidashboard';
 
 export default function SignalCheckerPage() {
   return (
