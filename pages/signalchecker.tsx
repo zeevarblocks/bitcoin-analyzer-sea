@@ -514,9 +514,23 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 </p>
 	      </div>
             )}
-		  {Object.entries(signals).map(([symbol, signal]) => (
-  <button key={symbol} onClick={() => window.open(signal.url, '_blank')}>
-    Trade {symbol}
+		  {Object.entries(signals).slice(0, 1).map(([symbol, signal]) => (
+  <button
+    key={symbol}
+    onClick={() => window.open(signal.url, '_blank')}
+    style={{
+      padding: '12px 24px',
+      margin: '10px 0',
+      backgroundColor: '#28a745', // Bright green
+      color: '#fff',
+      border: 'none',
+      borderRadius: '5px',
+      fontSize: '16px',
+      cursor: 'pointer',
+      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)'
+    }}
+  >
+    ✅ Trade {symbol}
   </button>
 ))}
           </div>
