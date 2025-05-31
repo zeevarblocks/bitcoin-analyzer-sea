@@ -1,5 +1,5 @@
 import React from 'react';
-import getServerSideProps from '../signalChecker/logic';
+import { getServerSideProps } from '../signalChecker/logic';
 import SignalChecker from '../signalChecker/uidashboard';
 import {
   fetchCandles,
