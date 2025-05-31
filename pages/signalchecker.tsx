@@ -210,19 +210,19 @@ export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
+
     const sorted = data.data
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
       .slice(0, limit);
+
     return sorted.map((ticker: any) => ticker.instId);
   }
 
   const symbols = await fetchTopPairs(100);
-  const defaultPairsLimit = 5;
-  const defaultSymbols = symbols.slice(0, defaultPairsLimit);
 
-  const defaultSignals: { symbol: string; signal: SignalData }[] = [];
+  const signals: Record<string, SignalData> = {};
 
-  for (const symbol of defaultSymbols) {
+  for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
       const closes = candles.map(c => c.close);
@@ -333,7 +333,7 @@ export async function getServerSideProps() {
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-      const signalData: SignalData = {
+      signals[symbol] = {
         trend,
         breakout,
         bullishBreakout,
@@ -359,57 +359,18 @@ export async function getServerSideProps() {
         todaysHighestHigh,
         url: `https://okx.com/join/96631749`,
       };
-
-      defaultSignals.push({
-        symbol,
-        signal: signalData,
-      });
     } catch (err) {
-      console.error(`Error for ${symbol}:`, err);
-
-      // Fallback default signal
-      defaultSignals.push({
-        symbol,
-        signal: {
-          trend: 'unknown',
-          breakout: false,
-          bullishBreakout: false,
-          bearishBreakout: false,
-          divergence: false,
-          divergenceType: null,
-          ema14Bounce: false,
-          ema70Bounce: false,
-          currentPrice: 0,
-          level: null,
-          levelType: null,
-          inferredLevel: 0,
-          inferredLevelType: 'support',
-          nearOrAtEMA70Divergence: false,
-          inferredLevelWithinRange: false,
-          divergenceFromLevel: false,
-          touchedEMA70Today: false,
-          bearishContinuation: false,
-          bullishContinuation: false,
-          intradayHigherHighBreak: false,
-          intradayLowerLowBreak: false,
-          todaysLowestLow: 0,
-          todaysHighestHigh: 0,
-          url: '',
-        },
-      });
+      console.error(`Error fetching signal for ${symbol}:`, err);
     }
   }
 
-  const signalsObject = defaultSignals.reduce((acc, { symbol, signal }) => {
-    acc[symbol] = signal;
-    return acc;
-  }, {} as Record<string, SignalData>);
+  const defaultSymbol = symbols[0];
 
   return {
     props: {
       symbols,
-      defaultPairsLimit,
-      defaultSignals: signalsObject,
+      signals,
+      defaultSymbol,
     },
   };
         }
@@ -420,35 +381,23 @@ export async function getServerSideProps() {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect } from 'react';
 
-export default function SignalChecker({
-  signals,
-}: {
-  signals: Record<string, SignalData>;
-}) {
-  const defaultPairsLimit = 5; // 🔥 Change this to your desired default limit!
-
+export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
-  const [pairsLimit, setPairsLimit] = useState<number>(defaultPairsLimit);
 
   useEffect(() => {
     const fetchPairs = async () => {
       try {
-        const response = await fetch(
-          'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
-        );
+        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
         const data = await response.json();
 
         const sortedPairs = data.data
-          .sort(
-            (a: any, b: any) =>
-              parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
-          )
+          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
           .map((item: any) => item.instId);
 
         setPairs(sortedPairs);
 
-        // Find the first pair that exists in signals
+        // Find the first pair that exists in signals and has valid data
         const defaultPair = sortedPairs.find(
           (pair) => signals?.[pair]?.currentPrice !== undefined
         );
@@ -466,18 +415,13 @@ export default function SignalChecker({
     return () => clearInterval(intervalId);
   }, [signals]);
 
-  // Determine pairs to display
-  const displayedPairs = pairs.slice(0, pairsLimit);
-
-  // Determine filtered signals for the selected pair
+  // Filter signals based on selectedPair
   const filteredSignals =
-    selectedPair && signals?.[selectedPair]
-      ? { [selectedPair]: signals[selectedPair] }
-      : {};
+    selectedPair && signals?.[selectedPair] ? { [selectedPair]: signals[selectedPair] } : {};
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Dropdown */}
+      {/* Dropdown for Trading Pairs */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <label htmlFor="tradingPair" className="text-white font-semibold">
           Select Trading Pair:
@@ -486,213 +430,170 @@ export default function SignalChecker({
           id="tradingPair"
           className="p-2 rounded border bg-gray-800 text-white"
           value={selectedPair ?? ''}
-          onChange={(e) =>
-            setSelectedPair(e.target.value === '' ? null : e.target.value)
-          }
+          onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
-          {displayedPairs
-            .filter((pair) => signals?.[pair])
-            .map((pair) => (
-              <option key={pair} value={pair}>
-                {pair}
-              </option>
-            ))}
+          {pairs.filter((pair) => signals?.[pair]).map((pair) => (
+            <option key={pair} value={pair}>
+              {pair}
+            </option>
+          ))}
         </select>
       </div>
 
-      {/* Responsive grid of signals */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {displayedPairs.map((pair) => {
-          const data = signals[pair];
-          if (!data) return null;
+      {Object.entries(filteredSignals).map(([symbol, data]) => {
+        if (!data) return null;
 
-          return (
-            <div
-              key={pair}
-              className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
-            >
-              <h2 className="text-2xl font-bold text-yellow-400">
-                📡 {pair} Signal Overview
-              </h2>
-
-              <div className="space-y-1">
-                <p>
-                  💰{' '}
-                  <span className="font-medium text-white/70">
-                    Current Price:
-                  </span>{' '}
-                  <span className="text-blue-400">
-                    {data.currentPrice !== undefined
-                      ? `$${data.currentPrice.toFixed(2)}`
-                      : 'N/A'}
-                  </span>
-                </p>
-                <p>
-                  📊{' '}
-                  <span className="font-medium text-white/70">
-                    {data.levelType?.toUpperCase() ?? 'N/A'} Level:
-                  </span>{' '}
-                  <span className="text-yellow-300">
-                    {data.level !== undefined ? data.level.toFixed(2) : 'N/A'}
-                  </span>
-                </p>
-                <p>
-                  🧭{' '}
-                  <span className="font-medium text-white/70">
-                    Inferred{' '}
-                    {data.inferredLevelType === 'support'
-                      ? 'Support'
-                      : 'Resistance'}
-                    :
-                  </span>{' '}
-                  <span className="text-purple-300">
-                    {data.inferredLevel !== undefined
-                      ? data.inferredLevel.toFixed(2)
-                      : 'N/A'}
-                  </span>
-                </p>
-                <p>
-                  📈{' '}
-                  <span className="font-medium text-white/70">Trend:</span>{' '}
-                  <span className="font-semibold text-cyan-300">
-                    {data.trend ?? 'N/A'}
-                  </span>
-                </p>
-              </div>
-
-              {(data.bullishBreakout || data.bearishBreakout) && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    📊 Breakout Signals
-                  </h3>
-                  {data.bullishBreakout && (
-                    <p className="text-green-400">
-                      🟢 Bullish Breakout: <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                  {data.bearishBreakout && (
-                    <p className="text-red-400">
-                      🔴 Bearish Breakout: <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {(data.bearishContinuation || data.bullishContinuation) && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    🔄 Trend Continuation
-                  </h3>
-                  {data.bearishContinuation && (
-                    <p className="text-red-400">
-                      🔻 Bearish Continuation:{' '}
-                      <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                  {data.bullishContinuation && (
-                    <p className="text-green-400">
-                      🔺 Bullish Continuation:{' '}
-                      <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {(data.ema14Bounce || data.ema70Bounce || data.touchedEMA70Today) && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    🧲 EMA Bounce & Zone Testing
-                  </h3>
-                  {data.ema14Bounce && (
-                    <p className="text-green-400">
-                      🔁 EMA14 Bounce: <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                  {data.ema70Bounce && (
-                    <p className="text-yellow-300">
-                      🟡 EMA70 Bounce: <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                  {data.touchedEMA70Today && (
-                    <p className="text-blue-300">
-                      🧲 EMA70 Tested Today:{' '}
-                      <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {(data.divergenceFromLevel ||
-                data.divergence ||
-                data.nearOrAtEMA70Divergence) && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    📉 RSI Divergence
-                  </h3>
-                  {data.divergenceFromLevel && (
-                    <p className="text-pink-400">
-                      🔍 Divergence vs Level:{' '}
-                      <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                  {data.divergence && (
-                    <p className="text-orange-400">
-                      📉 RSI High/Low Divergence:{' '}
-                      <span className="font-semibold">
-                        {data.divergenceType === 'bullish'
-                          ? 'Bullish'
-                          : 'Bearish'}
-                      </span>
-                    </p>
-                  )}
-                  {data.nearOrAtEMA70Divergence && (
-                    <p className="text-violet-400">
-                      🟠 EMA70 Zone Divergence:{' '}
-                      <span className="font-semibold">Yes</span>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {data.inferredLevelWithinRange && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    🧭 Inferred Key Level Range
-                  </h3>
-                  <p className="text-green-300 italic">
-                    🟣 In Range Today — “Price is near a key support or
-                    resistance level.”
-                  </p>
-                </div>
-              )}
-
-              <div className="flex justify-center pt-4">
-                <button
-                  onClick={() => window.open(data.url ?? '#', '_blank')}
-                  className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
-                  title={`Access the best ${pair} trading signals`}
-                >
-                  🚀 Trade Now — Access the Best Signals Here!
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Increment Button */}
-      {pairsLimit < pairs.length && (
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={() => setPairsLimit(pairsLimit + 5)}
-            className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
+        return (
+          <div
+            key={symbol}
+            className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
           >
-            ➕ Load 5 More Pairs
-          </button>
-        </div>
-      )}
+            <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
+
+            <div className="space-y-1">
+              <p>
+                💰{' '}
+                <span className="font-medium text-white/70">Current Price:</span>{' '}
+                <span className="text-blue-400">
+                  {data.currentPrice !== undefined
+                    ? `$${data.currentPrice.toFixed(2)}`
+                    : 'N/A'}
+                </span>
+              </p>
+              <p>
+                📊{' '}
+                <span className="font-medium text-white/70">
+                  {data.levelType?.toUpperCase() ?? 'N/A'} Level:
+                </span>{' '}
+                <span className="text-yellow-300">
+                  {data.level !== undefined ? data.level.toFixed(2) : 'N/A'}
+                </span>
+              </p>
+              <p>
+                🧭{' '}
+                <span className="font-medium text-white/70">
+                  Inferred{' '}
+                  {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:
+                </span>{' '}
+                <span className="text-purple-300">
+                  {data.inferredLevel !== undefined
+                    ? data.inferredLevel.toFixed(2)
+                    : 'N/A'}
+                </span>
+              </p>
+              <p>
+                📈{' '}
+                <span className="font-medium text-white/70">Trend:</span>{' '}
+                <span className="font-semibold text-cyan-300">
+                  {data.trend ?? 'N/A'}
+                </span>
+              </p>
+            </div>
+
+            {(data.bullishBreakout || data.bearishBreakout) && (
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">📊 Breakout Signals</h3>
+                {data.bullishBreakout && (
+                  <p className="text-green-400">
+                    🟢 Bullish Breakout: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+                {data.bearishBreakout && (
+                  <p className="text-red-400">
+                    🔴 Bearish Breakout: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {(data.bearishContinuation || data.bullishContinuation) && (
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">🔄 Trend Continuation</h3>
+                {data.bearishContinuation && (
+                  <p className="text-red-400">
+                    🔻 Bearish Continuation: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+                {data.bullishContinuation && (
+                  <p className="text-green-400">
+                    🔺 Bullish Continuation: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {(data.ema14Bounce || data.ema70Bounce || data.touchedEMA70Today) && (
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">
+                  🧲 EMA Bounce & Zone Testing
+                </h3>
+                {data.ema14Bounce && (
+                  <p className="text-green-400">
+                    🔁 EMA14 Bounce: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+                {data.ema70Bounce && (
+                  <p className="text-yellow-300">
+                    🟡 EMA70 Bounce: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+                {data.touchedEMA70Today && (
+                  <p className="text-blue-300">
+                    🧲 EMA70 Tested Today: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {(data.divergenceFromLevel ||
+              data.divergence ||
+              data.nearOrAtEMA70Divergence) && (
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+                {data.divergenceFromLevel && (
+                  <p className="text-pink-400">
+                    🔍 Divergence vs Level: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+                {data.divergence && (
+                  <p className="text-orange-400">
+                    📉 RSI High/Low Divergence:{' '}
+                    <span className="font-semibold">
+                      {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'}
+                    </span>
+                  </p>
+                )}
+                {data.nearOrAtEMA70Divergence && (
+                  <p className="text-violet-400">
+                    🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {data.inferredLevelWithinRange && (
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">
+                  🧭 Inferred Key Level Range
+                </h3>
+                <p className="text-green-300 italic">
+                  🟣 In Range Today — “Price is near a key support or resistance level.”
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => window.open(data.url ?? '#', '_blank')}
+                className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
+                title={`Access the best ${symbol} trading signals`}
+              >
+                🚀 Trade Now — Access the Best Signals Here!
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
-
-
