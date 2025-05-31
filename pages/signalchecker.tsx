@@ -536,10 +536,6 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         textAlign: 'center',
       }}
     >
-      <strong style={{ fontSize: '18px' }}>🚀 {symbol}</strong> 
-      <span style={{ fontSize: '12px', fontStyle: 'italic', marginTop: '2px' }}>
-        {signal.summary}
-      </span>
     </button>
   ))}
 </div>
