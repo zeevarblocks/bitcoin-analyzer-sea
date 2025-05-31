@@ -23,8 +23,7 @@ bullishContinuation: boolean;
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number; 
-  todaysHighestHigh: number;
-  
+  todaysHighestHigh: number;  
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -381,6 +380,7 @@ const nearOrAtEMA70Divergence =
         intradayLowerLowBreak,
         todaysLowestLow,
         todaysHighestHigh,
+	url: `https://www.okx.com/trade-spot/${symbol}`,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -511,7 +511,11 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 <p className="text-green-300 italic">
                   🟣 In Range Today — “Price is near a key support or resistance level, which may trigger a bounce or breakout soon.”
                 </p>
-              </div>
+              <button onClick={() => window.open(signal.url, '_blank')}>
+  Trade {symbol}
+</button>
+	     
+	      </div>
             )}
           </div>
         );
