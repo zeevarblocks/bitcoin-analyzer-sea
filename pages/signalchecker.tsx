@@ -6,7 +6,6 @@ interface SignalData {
   bullishBreakout: boolean; 
   bearishBreakout: boolean; 
   divergence: boolean;
-divergenceType?: 'bullish' | 'bearish' | null;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
@@ -23,8 +22,8 @@ bullishContinuation: boolean;
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number; 
-  todaysHighestHigh: number;  
-url: string;
+  todaysHighestHigh: number;
+  
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -206,8 +205,8 @@ function detectBullishContinuation(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  // --- Helper: Fetch Top 30 Pairs by Volume
-  async function fetchTopPairs(limit = 30): Promise<string[]> {
+  // --- Helper: Fetch Top 50 Pairs by Volume
+  async function fetchTopPairs(limit = 50): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -220,7 +219,7 @@ export async function getServerSideProps() {
   }
 
   // --- Get Top Pairs
-  const symbols = await fetchTopPairs(30);
+  const symbols = await fetchTopPairs(50);
 
   const results: Record<string, SignalData> = {};
 
@@ -315,19 +314,13 @@ export async function getServerSideProps() {
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
       const prevLowRSI = rsi14[prevLowIdx] ?? null;
 
-      let divergenceType: 'bullish' | 'bearish' | null = null;
+      const divergence =
+        (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
+        (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
 
-if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]) {
-  divergenceType = 'bullish';
-} else if (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
-  divergenceType = 'bearish';
-}
+      const nearOrAtEMA70Divergence =
+        divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 
-const divergence = divergenceType !== null;
-
-const nearOrAtEMA70Divergence =
-  divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
- 
       const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
@@ -363,7 +356,6 @@ const nearOrAtEMA70Divergence =
         bullishBreakout,
         bearishBreakout,
         divergence,
-	divergenceType,
         ema14Bounce,
         ema70Bounce,
         currentPrice: lastClose,
@@ -381,7 +373,6 @@ const nearOrAtEMA70Divergence =
         intradayLowerLowBreak,
         todaysLowestLow,
         todaysHighestHigh,
-	url: `https://okx.com/join/96631749`,
       };
     } catch (err) {
       console.error(`Error fetching ${symbol}:`, err);
@@ -404,14 +395,14 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
-  // Fetch the top 30 trading pairs from OKX
+  // Fetch trading pairs from OKX
   useEffect(() => {
     const fetchPairs = async () => {
       try {
         const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
         const data = await response.json();
-        const top30Pairs = data.data.slice(0, 30).map((item: any) => item.instId);
-        setPairs(top30Pairs);
+        const pairsList = data.data.map((item: any) => item.instId);
+        setPairs(pairsList);
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
       }
@@ -434,13 +425,12 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
           <option value="">All Pairs</option>
-          {pairs.map((pair) => (
-            <option key={pair} value={pair}>{pair}</option>
-          ))}
+          {Object.keys(signals).map((pair) => (
+  <option key={pair} value={pair}>{pair}</option>
+))}
         </select>
       </div>
 
-      {/* Display filtered signals */}
       {Object.entries(filteredSignals).map(([symbol, data]) => {
         if (!data) return null;
 
@@ -486,20 +476,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-                {data.divergenceFromLevel && (
-                  <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>
-                )}
-                {data.divergence && (
-                  <p className="text-orange-400">
-                    📉 RSI High/Low Divergence:
-                    <span className="font-semibold">
-                      {data.divergenceType === 'bullish' ? ' Bullish' : ' Bearish'}
-                    </span>
-                  </p>
-                )}
-                {data.nearOrAtEMA70Divergence && (
-                  <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
-                )}
+                {data.divergenceFromLevel && <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>}
+                {data.divergence && <p className="text-orange-400">📉 RSI High/Low Divergence: <span className="font-semibold">Yes</span></p>}
+                {data.nearOrAtEMA70Divergence && <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>}
               </div>
             )}
 
@@ -512,8 +491,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               </div>
             )}
 
-            {/* Beautiful Trade Now Button */}
-            <div className="flex justify-center pt-4">
+     <div className="flex justify-center pt-4">
               <button
                 onClick={() => window.open(data.url, '_blank')}
                 className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
@@ -522,9 +500,10 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 🚀 Trade Now — Access the Best Signals Here!
               </button>
             </div>
+
           </div>
         );
       })}
     </div>
   );
-	    }
+	  }
