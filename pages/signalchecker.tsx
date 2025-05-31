@@ -354,7 +354,6 @@ let divergenceFromLevel = false;
           divergenceFromLevel = true;
         }
       }
-						  }
 
       const touchedEMA70Today =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
