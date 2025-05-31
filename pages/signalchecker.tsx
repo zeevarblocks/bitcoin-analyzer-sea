@@ -395,14 +395,17 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
-  // Fetch trading pairs from OKX
+  // Fetch top 30 trading pairs from OKX
   useEffect(() => {
     const fetchPairs = async () => {
       try {
         const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
         const data = await response.json();
-        const pairsList = data.data.map((item: any) => item.instId);
-        setPairs(pairsList);
+        // Only take the top 30 pairs
+        const top30Pairs = data.data
+          .slice(0, 30) // get first 30
+          .map((item: any) => item.instId);
+        setPairs(top30Pairs);
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
       }
@@ -425,12 +428,13 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
           <option value="">All Pairs</option>
-          {Object.keys(signals).map((pair) => (
-  <option key={pair} value={pair}>{pair}</option>
-))}
+          {pairs.map((pair) => (
+            <option key={pair} value={pair}>{pair}</option>
+          ))}
         </select>
       </div>
 
+      {/* Display filtered signals */}
       {Object.entries(filteredSignals).map(([symbol, data]) => {
         if (!data) return null;
 
@@ -495,4 +499,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-		      }
+					   }
