@@ -15,10 +15,8 @@ divergenceType: 'bullish' | 'bearish' | null;
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
   nearOrAtEMA70Divergence: boolean;
-divergenceTypeNearEMA70: 'bullish' | 'bearish' | null;
   inferredLevelWithinRange: boolean;
   divergenceFromLevel: boolean;
-divergenceTypeFromLevel: 'bullish' | 'bearish' | null;
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
 bullishContinuation: boolean;
@@ -327,7 +325,6 @@ if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prev
   divergenceType = 'bearish';
 }
 
-let divergenceTypeNearEMA70: 'bullish' | 'bearish' | null = null;
 const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
       
@@ -346,7 +343,7 @@ const nearOrAtEMA70Divergence =
       const inferredLevelWithinRange =
         inferredLevel <= currDayHigh && inferredLevel >= currDayLow;
 
-	    let divergenceTypeFromLevel: 'bullish' | 'bearish' | null = null;
+	   // Divergence from Level
 let divergenceFromLevel = false;
       if (type && level !== null) {
         const levelIdx = closes.findIndex(c => Math.abs(c - level) / c < 0.002);
@@ -357,6 +354,7 @@ let divergenceFromLevel = false;
           divergenceFromLevel = true;
         }
       }
+						  }
 
       const touchedEMA70Today =
         prevDayHigh >= lastEMA70 && prevDayLow <= lastEMA70 &&
@@ -377,10 +375,8 @@ let divergenceFromLevel = false;
         inferredLevel,
         inferredLevelType,
         nearOrAtEMA70Divergence,
-	divergenceTypeNearEMA70,
         inferredLevelWithinRange,
         divergenceFromLevel,
-	divergenceTypeFromLevel,
         touchedEMA70Today,
         bearishContinuation,
         bullishContinuation,
@@ -488,28 +484,27 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 {data.touchedEMA70Today && <p className="text-blue-300">🧲 EMA70 Tested Today: <span className="font-semibold">Yes</span></p>}
               </div>
             )}
-
-            {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-    
-    {data.divergenceFromLevel && (
-      <p className="text-pink-400">
-        🔍 Divergence vs Level:
-        <span className="font-semibold">
-          {data.divergenceTypeFromLevel === 'bullish' ? ' Bullish' : data.divergenceTypeFromLevel === 'bearish' ? ' Bearish' : ' Yes'}
-        </span>
-      </p>
-    )}
-
-    {data.divergence && (
-      <p className="text-orange-400">
-        📉 RSI High/Low Divergence:
-        <span className="font-semibold">
-          {data.divergenceType === 'bullish' ? ' Bullish' : data.divergenceType === 'bearish' ? ' Bearish' : ' Yes'}
-        </span>
-      </p>
-    )}
+		  
+   {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+                {data.divergenceFromLevel && (
+                  <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>
+                )}
+                {data.divergence && (
+                  <p className="text-orange-400">
+                    📉 RSI High/Low Divergence:
+                    <span className="font-semibold">
+                      {data.divergenceType === 'bullish' ? ' Bullish' : ' Bearish'}
+                    </span>
+                  </p>
+                )}
+                {data.nearOrAtEMA70Divergence && (
+                  <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
+                )}
+              </div>
+            )}
+              
 
     {data.nearOrAtEMA70Divergence && (
       <p className="text-violet-400">
