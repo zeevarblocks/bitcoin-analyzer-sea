@@ -478,13 +478,24 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             )}
 
             {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
-              <div className="pt-4 border-t border-white/10 space-y-2">
-                <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-                {data.divergenceFromLevel && <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>}
-                {data.divergence && <p className="text-orange-400">📉 RSI High/Low Divergence: <span className="font-semibold">Yes</span></p>}
-                {data.nearOrAtEMA70Divergence && <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>}
-              </div>
-            )}
+  <div className="pt-4 border-t border-white/10 space-y-2">
+    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+    {data.divergenceFromLevel && (
+      <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>
+    )}
+    {data.divergence && (
+      <p className="text-orange-400">
+        📉 RSI High/Low Divergence:
+        <span className="font-semibold">
+          {data.divergenceType === 'bullish' ? ' Bullish' : ' Bearish'}
+        </span>
+      </p>
+    )}
+    {data.nearOrAtEMA70Divergence && (
+      <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
+    )}
+  </div>
+)}
 
             {data.inferredLevelWithinRange && (
               <div className="pt-4 border-t border-white/10 space-y-2">
