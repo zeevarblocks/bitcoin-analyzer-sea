@@ -392,20 +392,17 @@ export async function getServerSideProps() {
 import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [allPairs, setAllPairs] = useState<string[]>([]);
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Fetch pairs once
+  // Fetch trading pairs from OKX
   useEffect(() => {
     const fetchPairs = async () => {
       try {
         const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
         const data = await response.json();
-        const fetchedPairs = data.data.map((item: any) => item.instId);
-        setAllPairs(fetchedPairs);
-        setPairs(fetchedPairs);
+        const pairsList = data.data.map((item: any) => item.instId);
+        setPairs(pairsList);
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
       }
@@ -413,37 +410,12 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     fetchPairs();
   }, []);
 
-  // Debounced local filtering
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const filtered = allPairs.filter((pair) =>
-        pair.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setPairs(filtered);
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeout);
-  }, [searchQuery, allPairs]);
-
-  // Filtered signals
+  // Filtered signals based on selectedPair
   const filteredSignals = selectedPair ? { [selectedPair]: signals[selectedPair] } : signals;
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Searchable input */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="search" className="text-white font-semibold">🔍 Search Pair:</label>
-        <input
-          id="search"
-          type="text"
-          className="p-2 rounded border bg-gray-800 text-white"
-          placeholder="Type to search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      {/* Dropdown */}
+      {/* Dropdown for Trading Pairs */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <label htmlFor="tradingPair" className="text-white font-semibold">Select Trading Pair:</label>
         <select
@@ -453,13 +425,12 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
           onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
         >
           <option value="">All Pairs</option>
-          {pairs.map((pair) => (
-            <option key={pair} value={pair}>{pair}</option>
-          ))}
+          {Object.keys(signals).map((pair) => (
+  <option key={pair} value={pair}>{pair}</option>
+))}
         </select>
       </div>
 
-      {/* Signal overview */}
       {Object.entries(filteredSignals).map(([symbol, data]) => {
         if (!data) return null;
 
@@ -524,4 +495,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-        }
+		      }
