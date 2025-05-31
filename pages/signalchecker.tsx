@@ -397,13 +397,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Fetch pairs once
+  // Fetch pairs once and filter to USDT pairs
   useEffect(() => {
     const fetchPairs = async () => {
       try {
         const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
         const data = await response.json();
-        const fetchedPairs = data.data.map((item: any) => item.instId);
+        const fetchedPairs = data.data
+          .map((item: any) => item.instId)
+          .filter((pair: string) => pair.endsWith('USDT')); // Only USDT pairs
         setAllPairs(fetchedPairs);
         setFilteredPairs(fetchedPairs);
       } catch (error) {
@@ -417,14 +419,13 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   useEffect(() => {
     if (searchQuery === '') {
       setFilteredPairs(allPairs);
-      setSelectedPair(null); // Show all signals
+      setSelectedPair(null);
     } else {
       const filtered = allPairs.filter((pair) =>
         pair.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredPairs(filtered);
 
-      // If only one match, auto-select it
       if (filtered.length === 1) {
         setSelectedPair(filtered[0]);
       } else {
@@ -438,20 +439,20 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Searchable input that acts as both search and select */}
+      {/* Searchable input */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="pairSearch" className="text-white font-semibold">🔍 Search or Select Pair:</label>
+        <label htmlFor="pairSearch" className="text-white font-semibold">🔍 Search USDT Pair:</label>
         <input
           id="pairSearch"
           type="text"
           className="p-2 rounded border bg-gray-800 text-white"
-          placeholder="Type to search or select..."
+          placeholder="Type to search USDT pairs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* Show matching pairs as a list of suggestions */}
+      {/* Show matching pairs */}
       {searchQuery && filteredPairs.length > 0 && (
         <div className="bg-gray-800 text-white rounded shadow p-2 max-h-40 overflow-y-auto">
           {filteredPairs.map((pair) => (
@@ -534,4 +535,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-		}
+		      }
