@@ -318,8 +318,8 @@ export async function getServerSideProps() {
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
       const prevLowRSI = rsi14[prevLowIdx] ?? null;
 
-	const divergence = divergenceType !== null;    
       let divergenceType: 'bullish' | 'bearish' | null = null;
+	    const divergence = divergenceType !== null;    
 
 if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]) {
   divergenceType = 'bullish';
