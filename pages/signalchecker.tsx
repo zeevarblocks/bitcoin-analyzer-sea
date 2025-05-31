@@ -219,7 +219,7 @@ export async function getServerSideProps() {
   }
 
   // --- Get Top Pairs
-  const symbols = await fetchTopPairs(50);
+  const symbols = await fetchTopPairs(500);
 
   const results: Record<string, SignalData> = {};
 
