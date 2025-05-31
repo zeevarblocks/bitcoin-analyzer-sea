@@ -217,10 +217,8 @@ export async function getServerSideProps() {
   }
 
   const symbols = await fetchTopPairs(100);
-
-  const defaultPairsLimit = 5; // 👈 You can easily change this number later
+  const defaultPairsLimit = 5;
   const defaultSymbols = symbols.slice(0, defaultPairsLimit);
-
   const defaultSignals: { symbol: string; signal: SignalData }[] = [];
 
   for (const symbol of defaultSymbols) {
@@ -358,8 +356,7 @@ export async function getServerSideProps() {
         intradayLowerLowBreak,
         todaysLowestLow,
         todaysHighestHigh,
-         url: `https://okx.com/join/96631749`,
-        
+        url: `https://okx.com/join/96631749`,
       };
 
       defaultSignals.push({
@@ -370,22 +367,22 @@ export async function getServerSideProps() {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
   }
-  
-const signalsObject = defaultSignals.reduce((acc, { symbol, signal }) => {
-  acc[symbol] = signal;
-  return acc;
-}, {} as Record<string, SignalData>);
 
-  
+  // 🔧 Convert signals array to an object
+  const signalsObject = defaultSignals.reduce((acc, { symbol, signal }) => {
+    acc[symbol] = signal;
+    return acc;
+  }, {} as Record<string, SignalData>);
 
   return {
     props: {
       symbols,
       defaultPairsLimit,
-       defaultSignals: signalsObject,
+      defaultSignals: signalsObject, // now an object, fixes the client error
     },
   };
-    }
+        }
+
 
 
 
