@@ -219,6 +219,7 @@ export async function getServerSideProps() {
   const symbols = await fetchTopPairs(100);
   const defaultPairsLimit = 5;
   const defaultSymbols = symbols.slice(0, defaultPairsLimit);
+
   const defaultSignals: { symbol: string; signal: SignalData }[] = [];
 
   for (const symbol of defaultSymbols) {
@@ -364,11 +365,41 @@ export async function getServerSideProps() {
         signal: signalData,
       });
     } catch (err) {
-      console.error(`Error fetching signal for ${symbol}:`, err);
+      console.error(`Error for ${symbol}:`, err);
+
+      // Fallback default signal
+      defaultSignals.push({
+        symbol,
+        signal: {
+          trend: 'unknown',
+          breakout: false,
+          bullishBreakout: false,
+          bearishBreakout: false,
+          divergence: false,
+          divergenceType: null,
+          ema14Bounce: false,
+          ema70Bounce: false,
+          currentPrice: 0,
+          level: null,
+          levelType: null,
+          inferredLevel: 0,
+          inferredLevelType: 'support',
+          nearOrAtEMA70Divergence: false,
+          inferredLevelWithinRange: false,
+          divergenceFromLevel: false,
+          touchedEMA70Today: false,
+          bearishContinuation: false,
+          bullishContinuation: false,
+          intradayHigherHighBreak: false,
+          intradayLowerLowBreak: false,
+          todaysLowestLow: 0,
+          todaysHighestHigh: 0,
+          url: '',
+        },
+      });
     }
   }
 
-  // 🔧 Convert signals array to an object
   const signalsObject = defaultSignals.reduce((acc, { symbol, signal }) => {
     acc[symbol] = signal;
     return acc;
@@ -378,11 +409,10 @@ export async function getServerSideProps() {
     props: {
       symbols,
       defaultPairsLimit,
-      defaultSignals: signalsObject, // now an object, fixes the client error
+      defaultSignals: signalsObject,
     },
   };
         }
-
 
 
 
