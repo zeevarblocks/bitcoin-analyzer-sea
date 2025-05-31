@@ -370,17 +370,22 @@ export async function getServerSideProps() {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
   }
+  
+const signalsObject = defaultSignals.reduce((acc, { symbol, signal }) => {
+  acc[symbol] = signal;
+  return acc;
+}, {} as Record<string, SignalData>);
+
+  
 
   return {
     props: {
       symbols,
       defaultPairsLimit,
-      defaultSignals,
+       defaultSignals: signalsObject,
     },
   };
     }
-
-
 
 
 
