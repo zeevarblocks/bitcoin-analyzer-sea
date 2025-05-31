@@ -397,37 +397,34 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Fetch top 30 pairs by volume once
+  // Fetch pairs once
   useEffect(() => {
-    const fetchTopPairs = async () => {
+    const fetchPairs = async () => {
       try {
-        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+        const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
         const data = await response.json();
-        const sortedPairs = data.data
-          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-          .slice(0, 30)
-          .map((item: any) => item.instId);
-
-        setAllPairs(sortedPairs);
-        setFilteredPairs(sortedPairs);
+        const fetchedPairs = data.data.map((item: any) => item.instId);
+        setAllPairs(fetchedPairs);
+        setFilteredPairs(fetchedPairs);
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
       }
     };
-    fetchTopPairs();
+    fetchPairs();
   }, []);
 
-  // Handle search input
+  // Handle search and selection
   useEffect(() => {
     if (searchQuery === '') {
       setFilteredPairs(allPairs);
-      setSelectedPair(null);
+      setSelectedPair(null); // Show all signals
     } else {
       const filtered = allPairs.filter((pair) =>
         pair.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredPairs(filtered);
 
+      // If only one match, auto-select it
       if (filtered.length === 1) {
         setSelectedPair(filtered[0]);
       } else {
@@ -436,48 +433,25 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     }
   }, [searchQuery, allPairs]);
 
-  // Handle dropdown selection
-  const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const pair = e.target.value;
-    setSearchQuery(pair); // Update search input as well
-    setSelectedPair(pair === '' ? null : pair);
-  };
-
-  // Final signals to display
+  // Final filtered signals
   const finalSignals = selectedPair ? { [selectedPair]: signals[selectedPair] } : signals;
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Dropdown selector */}
+      {/* Searchable input that acts as both search and select */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="pairDropdown" className="text-white font-semibold">🔽 Select Pair:</label>
-        <select
-          id="pairDropdown"
-          className="p-2 rounded border bg-gray-800 text-white"
-          value={selectedPair ?? ''}
-          onChange={handleDropdownChange}
-        >
-          <option value="">All Pairs</option>
-          {allPairs.map((pair) => (
-            <option key={pair} value={pair}>{pair}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Searchable input */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="pairSearch" className="text-white font-semibold">🔍 Search Pair:</label>
+        <label htmlFor="pairSearch" className="text-white font-semibold">🔍 Search or Select Pair:</label>
         <input
           id="pairSearch"
           type="text"
           className="p-2 rounded border bg-gray-800 text-white"
-          placeholder="Type to search..."
+          placeholder="Type to search or select..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* Show suggestions if search is active */}
+      {/* Show matching pairs as a list of suggestions */}
       {searchQuery && filteredPairs.length > 0 && (
         <div className="bg-gray-800 text-white rounded shadow p-2 max-h-40 overflow-y-auto">
           {filteredPairs.map((pair) => (
@@ -495,7 +469,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         </div>
       )}
 
-      {/* Signal Overview */}
+      {/* Signal overview */}
       {Object.entries(finalSignals).map(([symbol, data]) => {
         if (!data) return null;
 
@@ -560,6 +534,5 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-            }
-
+}
 
