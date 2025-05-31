@@ -314,9 +314,13 @@ export async function getServerSideProps() {
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
       const prevLowRSI = rsi14[prevLowIdx] ?? null;
 
-      const divergence =
-        (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) ||
-        (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]);
+      let divergenceType: 'bullish' | 'bearish' | null = null;
+
+if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]) {
+  divergenceType = 'bullish';
+} else if (highs.at(-1)! > prevDayHigh && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
+  divergenceType = 'bearish';
+}
 
       const nearOrAtEMA70Divergence =
         divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
