@@ -24,6 +24,7 @@ bullishContinuation: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number; 
   todaysHighestHigh: number;  
+url: string;
 }
 
 // fetchCandles, calculateEMA, etc.,.
