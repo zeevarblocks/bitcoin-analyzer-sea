@@ -514,8 +514,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 </p>
 	      </div>
             )}
-		  {signals.map(signal => (
-  <button onClick={() => window.open(signal.url, '_blank')}>
+		  {Object.entries(signals).map(([symbol, signal]) => (
+  <button key={symbol} onClick={() => window.open(signal.url, '_blank')}>
     Trade {symbol}
   </button>
 ))}
