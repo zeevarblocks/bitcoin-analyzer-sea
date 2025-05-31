@@ -392,63 +392,54 @@ export async function getServerSideProps() {
 import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [availablePairs, setAvailablePairs] = useState<string[]>([]);
+  const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch trading pairs from OKX
+  // Fetch top 300 pairs by 24h volume
   useEffect(() => {
-    const fetchPairs = async () => {
+    const fetchTopPairs = async () => {
       try {
-        const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
+        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
         const data = await response.json();
-        const pairsList = data.data.map((item: any) => item.instId);
-        setAvailablePairs(pairsList);
+        const top300 = data.data
+          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+          .slice(0, 300)
+          .map((item: any) => item.instId);
+        setPairs(top300);
       } catch (error) {
-        console.error('Error fetching trading pairs:', error);
+        console.error('Error fetching top trading pairs:', error);
       }
     };
-    fetchPairs();
+    fetchTopPairs();
   }, []);
 
-  // Filter pairs based on search query
-  const filteredPairs = searchQuery
-    ? availablePairs.filter((pair) =>
-        pair.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : availablePairs;
+  // Filtered pairs based on search term
+  const filteredPairs = searchTerm
+    ? pairs.filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()))
+    : pairs;
 
-  // Filtered signals based on selectedPair
+  // Filtered signals
   const filteredSignals = selectedPair ? { [selectedPair]: signals[selectedPair] } : signals;
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Search and Dropdown for Trading Pairs */}
+      {/* Searchable Input for Pairs */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <label htmlFor="tradingPair" className="text-white font-semibold">
-          Select Trading Pair:
-        </label>
+        <label htmlFor="searchInput" className="text-white font-semibold">Search Pair:</label>
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search trading pair..."
+          className="p-2 rounded border bg-gray-800 text-white"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-        {/* Search input with clear button */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <input
-            type="text"
-            placeholder="Search for a pair..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="p-2 rounded border bg-gray-800 text-white w-full"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="bg-red-500 hover:bg-red-600 text-white px-2 rounded"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Dropdown */}
+      {/* Dropdown for Pairs */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <label htmlFor="tradingPair" className="text-white font-semibold">Select Trading Pair:</label>
         <select
           id="tradingPair"
           className="p-2 rounded border bg-gray-800 text-white"
@@ -457,19 +448,12 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         >
           <option value="">All Pairs</option>
           {filteredPairs.map((pair) => (
-            <option key={pair} value={pair}>
-              {pair}
-            </option>
+            <option key={pair} value={pair}>{pair}</option>
           ))}
         </select>
       </div>
 
-      {/* Show count of filtered pairs */}
-      <p className="text-white text-sm italic mt-2">
-        Showing {filteredPairs.length} out of {availablePairs.length} available pairs
-      </p>
-
-      {/* Display signals */}
+      {/* Display Filtered Signals */}
       {Object.entries(filteredSignals).map(([symbol, data]) => {
         if (!data) return null;
 
@@ -481,109 +465,43 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
             <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
 
             <div className="space-y-1">
-              <p>
-                💰{' '}
-                <span className="font-medium text-white/70">Current Price:</span>{' '}
-                <span className="text-blue-400">${data.currentPrice.toFixed(2)}</span>
-              </p>
-              <p>
-                📊{' '}
-                <span className="font-medium text-white/70">
-                  {data.levelType?.toUpperCase()} Level:
-                </span>{' '}
-                <span className="text-yellow-300">
-                  {data.level ? data.level.toFixed(2) : 'N/A'}
-                </span>
-              </p>
-              <p>
-                🧭{' '}
-                <span className="font-medium text-white/70">
-                  Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:
-                </span>{' '}
-                <span className="text-purple-300">
-                  {data.inferredLevel.toFixed(2)}
-                </span>
-              </p>
-              <p>
-                📈{' '}
-                <span className="font-medium text-white/70">Trend:</span>{' '}
-                <span className="font-semibold text-cyan-300">{data.trend}</span>
-              </p>
+              <p>💰 <span className="font-medium text-white/70">Current Price:</span> <span className="text-blue-400">${data.currentPrice.toFixed(2)}</span></p>
+              <p>📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase()} Level:</span> <span className="text-yellow-300">{data.level ? data.level.toFixed(2) : 'N/A'}</span></p>
+              <p>🧭 <span className="font-medium text-white/70">Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:</span> <span className="text-purple-300">{data.inferredLevel.toFixed(2)}</span></p>
+              <p>📈 <span className="font-medium text-white/70">Trend:</span> <span className="font-semibold text-cyan-300">{data.trend}</span></p>
             </div>
 
             {(data.bullishBreakout || data.bearishBreakout) && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">📊 Breakout Signals</h3>
-                {data.bullishBreakout && (
-                  <p className="text-green-400">
-                    🟢 Bullish Breakout: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
-                {data.bearishBreakout && (
-                  <p className="text-red-400">
-                    🔴 Bearish Breakout: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
+                {data.bullishBreakout && <p className="text-green-400">🟢 Bullish Breakout: <span className="font-semibold">Yes</span></p>}
+                {data.bearishBreakout && <p className="text-red-400">🔴 Bearish Breakout: <span className="font-semibold">Yes</span></p>}
               </div>
             )}
 
             {(data.bearishContinuation || data.bullishContinuation) && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">🔄 Trend Continuation</h3>
-                {data.bearishContinuation && (
-                  <p className="text-red-400">
-                    🔻 Bearish Continuation: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
-                {data.bullishContinuation && (
-                  <p className="text-green-400">
-                    🔺 Bullish Continuation: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
+                {data.bearishContinuation && <p className="text-red-400">🔻 Bearish Continuation: <span className="font-semibold">Yes</span></p>}
+                {data.bullishContinuation && <p className="text-green-400">🔺 Bullish Continuation: <span className="font-semibold">Yes</span></p>}
               </div>
             )}
 
             {(data.ema14Bounce || data.ema70Bounce || data.touchedEMA70Today) && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">🧲 EMA Bounce & Zone Testing</h3>
-                {data.ema14Bounce && (
-                  <p className="text-green-400">
-                    🔁 EMA14 Bounce: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
-                {data.ema70Bounce && (
-                  <p className="text-yellow-300">
-                    🟡 EMA70 Bounce: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
-                {data.touchedEMA70Today && (
-                  <p className="text-blue-300">
-                    🧲 EMA70 Tested Today: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
+                {data.ema14Bounce && <p className="text-green-400">🔁 EMA14 Bounce: <span className="font-semibold">Yes</span></p>}
+                {data.ema70Bounce && <p className="text-yellow-300">🟡 EMA70 Bounce: <span className="font-semibold">Yes</span></p>}
+                {data.touchedEMA70Today && <p className="text-blue-300">🧲 EMA70 Tested Today: <span className="font-semibold">Yes</span></p>}
               </div>
             )}
 
-            {(data.divergenceFromLevel ||
-              data.divergence ||
-              data.nearOrAtEMA70Divergence) && (
+            {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-                {data.divergenceFromLevel && (
-                  <p className="text-pink-400">
-                    🔍 Divergence vs Level: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
-                {data.divergence && (
-                  <p className="text-orange-400">
-                    📉 RSI High/Low Divergence: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
-                {data.nearOrAtEMA70Divergence && (
-                  <p className="text-violet-400">
-                    🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
+                {data.divergenceFromLevel && <p className="text-pink-400">🔍 Divergence vs Level: <span className="font-semibold">Yes</span></p>}
+                {data.divergence && <p className="text-orange-400">📉 RSI High/Low Divergence: <span className="font-semibold">Yes</span></p>}
+                {data.nearOrAtEMA70Divergence && <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>}
               </div>
             )}
 
@@ -591,8 +509,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">🧭 Inferred Key Level Range</h3>
                 <p className="text-green-300 italic">
-                  🟣 In Range Today — “Price is near a key support or resistance level, which may
-                  trigger a bounce or breakout soon.”
+                  🟣 In Range Today — “Price is near a key support or resistance level, which may trigger a bounce or breakout soon.”
                 </p>
               </div>
             )}
@@ -601,5 +518,5 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-      }
+                }
 
