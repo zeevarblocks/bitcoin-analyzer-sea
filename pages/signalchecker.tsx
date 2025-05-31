@@ -325,9 +325,6 @@ if (lows.at(-1)! < prevDayLow && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prev
 
 const divergence = divergenceType !== null;
 
-data.divergence = divergence;
-data.divergenceType = divergenceType;
-
 const nearOrAtEMA70Divergence =
   divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
 data.nearOrAtEMA70Divergence = nearOrAtEMA70Divergence;
