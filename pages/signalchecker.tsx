@@ -205,9 +205,9 @@ function detectBullishContinuation(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  // --- Helper: Fetch Top 50 Pairs by Volume
+  // --- Helper: Fetch Top 30 Pairs by Volume
   async function fetchTopPairs(limit = 30): Promise<string[]> {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=FUTURES');
     const data = await response.json();
 
     // Sort by volume, then get top N
@@ -219,7 +219,7 @@ export async function getServerSideProps() {
   }
 
   // --- Get Top Pairs
-  const symbols = await fetchTopPairs(100);
+  const symbols = await fetchTopPairs(5);
 
   const results: Record<string, SignalData> = {};
 
