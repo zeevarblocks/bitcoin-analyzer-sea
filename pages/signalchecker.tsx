@@ -515,27 +515,23 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 	      </div>
             )}
 		<div style={{ display: 'flex', justifyContent: 'center' }}>
-  {Object.entries(signals).map(([symbol, signal]) => (
+  {Object.entries(signals).slice(0, 1).map(([symbol, signal]) => (
     <button
       key={symbol}
       onClick={() => window.open(signal.url, '_blank')}
-      aria-label={`Trade ${symbol} Now - Access the best trading signals for ${symbol}`}
       style={{
-        padding: '16px 28px',
-        margin: '10px',
-        backgroundColor: '#007bff', // Blue color for vibrancy
+        padding: '12px 24px',
+        margin: '10px 0',
+        backgroundColor: '#0070f3', 
         color: '#fff',
         border: 'none',
         borderRadius: '5px',
         fontSize: '16px',
         cursor: 'pointer',
-        boxShadow: '0 3px 6px rgba(0, 0, 0, 0.2)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)'
       }}
     >
+      🚀 Trade Now - Access the best trading signals here!
     </button>
   ))}
 </div>
