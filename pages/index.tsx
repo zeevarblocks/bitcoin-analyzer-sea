@@ -524,7 +524,13 @@ export async function getServerSideProps() {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect } from 'react';
 
-export default function SignalChecker({ signals, defaultSignals }: { signals: Record<string, SignalData>, defaultSignals: SignalData[] }) {
+export default function SignalChecker({
+  signals,
+  defaultSignals,
+}: {
+  signals: Record<string, SignalData>;
+  defaultSignals: SignalData[];
+}) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
@@ -552,7 +558,6 @@ export default function SignalChecker({ signals, defaultSignals }: { signals: Re
     };
 
     fetchPairs();
-
     const intervalId = setInterval(fetchPairs, 1 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, [signals]);
@@ -670,14 +675,34 @@ export default function SignalChecker({ signals, defaultSignals }: { signals: Re
           🚀 Trade Now — Access the Best Signals Here!
         </button>
       </div>
+
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
         <p>
           <strong className="text-gray-300">Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
         </p>
       </footer>
-          </div>
-        );
-      })}
     </div>
   );
-      }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-center">
+        <select
+          className="bg-black text-white p-2 rounded-lg border border-white/20"
+          value={selectedPair ?? ''}
+          onChange={(e) => setSelectedPair(e.target.value)}
+        >
+          <option value="" disabled>Select a pair</option>
+          {pairs.map((pair) => (
+            <option key={pair} value={pair}>
+              {pair}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {Object.entries(filteredSignals).map(([symbol, data]) => renderSignal(symbol, data))}
+    </div>
+  );
+          }
+      
