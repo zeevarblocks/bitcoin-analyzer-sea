@@ -676,8 +676,9 @@ export default function SignalChecker({ signals, defaultSignals }: { signals: Re
         </p>
       </footer>
           </div>
+          </div>
         );
       })}
     </div>
   );
-}
+      }
