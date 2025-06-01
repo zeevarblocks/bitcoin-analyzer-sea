@@ -1,5 +1,12 @@
 import React from 'react';
 
+interface TradeSignal {
+  entry: number;
+  stopLoss: number;
+  takeProfitRange: [number, number];
+  type: string;
+}
+
 interface SignalData {
   trend: string;
   breakout: boolean;
@@ -18,15 +25,17 @@ interface SignalData {
   inferredLevelWithinRange: boolean;
   divergenceFromLevel: boolean;
   touchedEMA70Today: boolean;
-  bearishContinuation: boolean;
-  bullishContinuation: boolean;
-  bullishReversal: boolean;        // ✅ Newly added
-  bearishReversal: boolean;        // ✅ Newly added
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
   url: string;
+
+  // ✅ Added structured signal outputs
+  bearishContinuation?: TradeSignal | null;
+  bullishContinuation?: TradeSignal | null;
+  bullishReversal?: TradeSignal | null;
+  bearishReversal?: TradeSignal | null;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -538,10 +547,10 @@ const data = {
   inferredLevelWithinRange,
   divergenceFromLevel,
   touchedEMA70Today,
-  bearishContinuation: bearishContinuationResult,
-bullishContinuation: bullishContinuationResult,
-bullishReversal: bullishReversalResult,
-bearishReversal: bearishReversalResult,
+        bearishContinuation: !!bearishContinuationResult,
+  bullishContinuation: !!bullishContinuationResult,
+bullishReversal: !!bullishReversalResult,
+bearishReversal: !!bearishReversalResult,
   intradayHigherHighBreak,
   intradayLowerLowBreak,
   todaysLowestLow,
@@ -555,15 +564,22 @@ bearishReversal: bearishReversalResult,
 
   const defaultSymbol = symbols[0];
 
-  return {
-    props: {
-      symbols,
-      signals,
-      defaultSymbol,
-    },
-  };
-        }
+  type SignalResult = {
+  entry: number;
+  stopLoss: number;
+  takeProfitRange: [number, number];
+  type: string;
+};
 
+type Props = {
+  symbols: string[];
+  signals: any; // You can type this more strictly later
+  defaultSymbol: string;
+  bearishContinuation: SignalResult | null;
+  bullishContinuation: SignalResult | null;
+  bullishReversal: SignalResult | null;
+  bearishReversal: SignalResult | null;
+};
 
 
 
