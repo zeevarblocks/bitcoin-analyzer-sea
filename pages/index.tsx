@@ -436,9 +436,9 @@ if (trend === 'bearish') {
 
       let divergenceType: 'bullish' | 'bearish' | null = null;
       if (lows.at(-1)! < prevSessionLow! && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]) {
-        divergenceType = 'bullish';
+        divergenceType = 'Bullish Divergence';
       } else if (highs.at(-1)! > prevSessionHigh! && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
-        divergenceType = 'bearish';
+        divergenceType = 'Bearish Divergence';
       }
       const divergence = divergenceType !== null;
 
@@ -468,10 +468,10 @@ if (type && level !== null) {
 
     if (type === 'resistance' && lastClose > level && currentRSI < pastRSI) {
       divergenceFromLevel = true;
-      divergenceFromLevelType = 'bearish';
+      divergenceFromLevelType = 'Bearish Divergence';
     } else if (type === 'support' && lastClose < level && currentRSI > pastRSI) {
       divergenceFromLevel = true;
-      divergenceFromLevelType = 'bullish';
+      divergenceFromLevelType = 'Bullish Divergence';
     }
   }
 }
@@ -606,7 +606,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 <span className="font-medium text-white/70">Current Price:</span>{' '}
                 <span className="text-blue-400">
                   {data.currentPrice !== undefined
-                    ? `$${data.currentPrice.toFixed(2)}`
+                    ? `$${data.currentPrice.toFixed(8)}`
                     : 'N/A'}
                 </span>
               </p>
@@ -616,7 +616,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                   {data.levelType?.toUpperCase() ?? 'N/A'} Level:
                 </span>{' '}
                 <span className="text-yellow-300">
-                  {data.level !== undefined ? data.level.toFixed(2) : 'N/A'}
+                  {data.level !== undefined ? data.level.toFixed(8) : 'N/A'}
                 </span>
               </p>
               <p>
@@ -627,7 +627,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 </span>{' '}
                 <span className="text-purple-300">
                   {data.inferredLevel !== undefined
-                    ? data.inferredLevel.toFixed(2)
+                    ? data.inferredLevel.toFixed(8)
                     : 'N/A'}
                 </span>
               </p>
