@@ -2,16 +2,10 @@ import React from 'react';
 import SignalChecker from './signalchecker';
 import { signalchecker } from './signalchecker';
 
-export async function getServerSideProps() {
-  const { symbols, signals, defaultSymbol } = await signalchecker();
-    return {
-    props: {
-      symbols,
-      signals,
-      defaultSymbol,
-    },
-  };
-}
+(async () => {
+  const { symbols, signals } = await signalchecker();
+  console.log(signals);
+})();
 
 
 export default function Home() {
@@ -25,7 +19,7 @@ export default function Home() {
 
         
       <SignalChecker />
-     <pre>{JSON.stringify(signals, null, 2)}</pre>
+     
 
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
         <p>
