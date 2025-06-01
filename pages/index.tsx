@@ -540,7 +540,7 @@ export default function SignalChecker({ signals, defaultSignals }: { signals: Re
 
         setPairs(sortedPairs);
 
-        const defaultPair = sortedPairs.f
+        const defaultPair = sortedPairs.find(
           (pair) => signals?.[pair]?.currentPrice !== undefined
         );
         if (defaultPair) {
