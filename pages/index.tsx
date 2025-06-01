@@ -1,5 +1,13 @@
 import React from 'react';
 
+type TradeSignalDetails = {
+  detected: boolean;
+  entry?: number;
+  stopLoss?: number;
+  takeProfitMin?: number;
+  takeProfitMax?: number;
+};
+
 interface SignalData {
   trend: string;
   breakout: boolean;
@@ -24,11 +32,10 @@ interface SignalData {
   todaysHighestHigh: number;
   url: string;
 
-  // ✅ Added structured signal outputs
-  bearishContinuation?: boolean;
-  bullishContinuation?: boolean;
-  bullishReversal?: boolean;
-  bearishReversal?: boolean;  
+  bearishContinuation?: TradeSignalDetails;
+  bullishContinuation?: TradeSignalDetails;
+  bullishReversal?: TradeSignalDetails;
+  bearishReversal?: TradeSignalDetails;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -194,7 +201,14 @@ function detectBearishContinuation(
   ema70: number[],
   rsi: number[],
   ema14: number[]
-): { entry: number; stopLoss: number; takeProfitRange: [number, number]; type: string } | null {
+): {
+  detected: boolean;
+  entry?: number;
+  stopLoss?: number;
+  takeProfitMin?: number;
+  takeProfitMax?: number;
+  type?: string;
+} {
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -216,25 +230,29 @@ function detectBearishContinuation(
           lastHigh = highs[j];
           entry = price;
         } else if (highs[j] > lastHigh) {
-          return null;
+          // Signal invalidated
+          return { detected: false };
         }
 
         if (j - i >= 2 && lowerHigh) {
           const stopLoss = entry * 1.01; // 1% above entry
-          const takeProfitRange: [number, number] = [entry * 0.55, entry * 0.4];
+          const takeProfitMin = entry * 0.4;
+          const takeProfitMax = entry * 0.55;
           return {
+            detected: true,
             entry,
             stopLoss,
-            takeProfitRange,
-            type: "short"
+            takeProfitMin,
+            takeProfitMax,
+            type: "short",
           };
         }
       }
       break;
     }
   }
-  return null;
-}
+  return { detected: false };
+          }
 
 // === Bullish Continuation ===
 function detectBullishContinuation(
@@ -490,33 +508,33 @@ function detectBearishReversal(
       const bearishReversalResult = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
 
       signals[symbol] = {
-        trend,
-        breakout,
-        bullishBreakout: intradayHigherHighBreak,
-        bearishBreakout: intradayLowerLowBreak,
-        divergence,
-        divergenceType,
-        ema14Bounce,
-        ema70Bounce,
-        currentPrice: lastClose,
-        level,
-        levelType: type,
-        inferredLevel,
-        inferredLevelType,
-        inferredLevelWithinRange,
-        divergenceFromLevel,
-        nearOrAtEMA70Divergence,
-        touchedEMA70Today,
-        bearishContinuation: !!bearishContinuationResult,
-        bullishContinuation: !!bullishContinuationResult,
-        bullishReversal: !!bullishReversalResult,
-        bearishReversal: !!bearishReversalResult,
-        intradayHigherHighBreak,
-        intradayLowerLowBreak,
-        todaysLowestLow,
-        todaysHighestHigh,
-        url: `https://okx.com/join/96631749`,
-      };
+  trend,
+  breakout,
+  bullishBreakout: intradayHigherHighBreak,
+  bearishBreakout: intradayLowerLowBreak,
+  divergence,
+  divergenceType,
+  ema14Bounce,
+  ema70Bounce,
+  currentPrice: lastClose,
+  level,
+  levelType: type,
+  inferredLevel,
+  inferredLevelType,
+  inferredLevelWithinRange,
+  divergenceFromLevel,
+  nearOrAtEMA70Divergence,
+  touchedEMA70Today,
+  bearishContinuation: bearishContinuationResult,
+  bullishContinuation: bullishContinuationResult,
+  bullishReversal: bullishReversalResult,
+  bearishReversal: bearishReversalResult,
+  intradayHigherHighBreak,
+  intradayLowerLowBreak,
+  todaysLowestLow,
+  todaysHighestHigh,
+  url: `https://okx.com/join/96631749`,
+};
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
