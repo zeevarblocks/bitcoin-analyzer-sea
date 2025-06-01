@@ -392,20 +392,18 @@ function detectBearishReversal(
 
 
 // logic in getServerSideProps:
-export async function getServerSideProps() {
+        export async function getServerSideProps() {
   async function fetchTopPairs(limit = 30): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
-    const sorted = data.data
+    return data.data
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .slice(0, limit);
-
-    return sorted.map((ticker: any) => ticker.instId);
+      .slice(0, limit)
+      .map((ticker: any) => ticker.instId);
   }
 
   const symbols = await fetchTopPairs(30);
-
   const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
@@ -422,7 +420,6 @@ export async function getServerSideProps() {
       const lastClose = closes.at(-1)!;
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
-
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
       const now = new Date();
@@ -433,70 +430,49 @@ export async function getServerSideProps() {
       const month = now.getUTCMonth();
       const date = now.getUTCDate();
 
-      const today8AM_UTC = getUTCMillis(year, month, date, 8, 0);
-      const tomorrow745AM_UTC = getUTCMillis(year, month, date + 1, 7, 45);
+      const today8AM = getUTCMillis(year, month, date, 8, 0);
+      const tomorrow745AM = getUTCMillis(year, month, date + 1, 7, 45);
+      const yesterday8AM = getUTCMillis(year, month, date - 1, 8, 0);
+      const today745AM = getUTCMillis(year, month, date, 7, 45);
 
-      let sessionStart: number, sessionEnd: number;
-      if (now.getTime() >= today8AM_UTC) {
-        sessionStart = today8AM_UTC;
-        sessionEnd = tomorrow745AM_UTC;
-      } else {
-        const yesterday8AM_UTC = getUTCMillis(year, month, date - 1, 8, 0);
-        const today745AM_UTC = getUTCMillis(year, month, date, 7, 45);
-        sessionStart = yesterday8AM_UTC;
-        sessionEnd = today745AM_UTC;
-      }
+      const sessionStart = now.getTime() >= today8AM ? today8AM : yesterday8AM;
+      const sessionEnd = now.getTime() >= today8AM ? tomorrow745AM : today745AM;
 
-      const prevSessionStart = getUTCMillis(year, month, date - 1, 8, 0);
-      const prevSessionEnd = getUTCMillis(year, month, date, 7, 45);
+      const prevSessionStart = yesterday8AM;
+      const prevSessionEnd = today745AM;
 
       const candlesToday = candles.filter(c => c.timestamp >= sessionStart && c.timestamp <= sessionEnd);
       const candlesPrev = candles.filter(c => c.timestamp >= prevSessionStart && c.timestamp <= prevSessionEnd);
 
-      const todaysLowestLow = candlesToday.length > 0 ? Math.min(...candlesToday.map(c => c.low)) : null;
-      const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map(c => c.high)) : null;
-      const prevSessionLow = candlesPrev.length > 0 ? Math.min(...candlesPrev.map(c => c.low)) : null;
-      const prevSessionHigh = candlesPrev.length > 0 ? Math.max(...candlesPrev.map(c => c.high)) : null;
+      const todaysLowestLow = candlesToday.length ? Math.min(...candlesToday.map(c => c.low)) : null;
+      const todaysHighestHigh = candlesToday.length ? Math.max(...candlesToday.map(c => c.high)) : null;
+      const prevSessionLow = candlesPrev.length ? Math.min(...candlesPrev.map(c => c.low)) : null;
+      const prevSessionHigh = candlesPrev.length ? Math.max(...candlesPrev.map(c => c.high)) : null;
 
-      const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
-      const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
-
-      const bullishBreakout = intradayHigherHighBreak;
-      const bearishBreakout = intradayLowerLowBreak;
-      const breakout = bullishBreakout || bearishBreakout;
+      const intradayLowerLowBreak = todaysLowestLow! < prevSessionLow!;
+      const intradayHigherHighBreak = todaysHighestHigh! > prevSessionHigh!;
+      const breakout = intradayLowerLowBreak || intradayHigherHighBreak;
 
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
-
-      const bearishContinuationResult = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
-const bullishContinuationResult = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-const bullishReversalResult = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
-const bearishReversalResult = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
-
-const data = {
-  bearishContinuation: bearishContinuationResult,
-  bullishContinuation: bullishContinuationResult,
-  bullishReversal: bullishReversalResult,
-  bearishReversal: bearishReversalResult,
-};
 
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
       const prevLowRSI = rsi14[prevLowIdx] ?? null;
 
       let divergenceType: 'bullish' | 'bearish' | null = null;
-      if (lows.at(-1)! < prevSessionLow! && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]) {
+      if (lows.at(-1)! < prevSessionLow! && prevLowIdx !== -1 && currentRSI! > prevLowRSI!) {
         divergenceType = 'bullish';
-      } else if (highs.at(-1)! > prevSessionHigh! && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
+      } else if (highs.at(-1)! > prevSessionHigh! && prevHighIdx !== -1 && currentRSI! < prevHighRSI!) {
         divergenceType = 'bearish';
       }
-      const divergence = divergenceType !== null;
 
-      const nearOrAtEMA70Divergence =
-        divergence && (Math.abs(lastClose - lastEMA70) / lastClose < 0.002);
+      const divergence = divergenceType !== null;
+      const nearOrAtEMA70Divergence = divergence && Math.abs(lastClose - lastEMA70) / lastClose < 0.002;
 
       const nearEMA14 = closes.slice(-3).some(c => Math.abs(c - lastEMA14) / c < 0.002);
       const nearEMA70 = closes.slice(-3).some(c => Math.abs(c - lastEMA70) / c < 0.002);
+
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
@@ -505,71 +481,73 @@ const data = {
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
       const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-      const inferredLevelWithinRange = inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
+      const inferredLevelWithinRange =
+        inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
 
       let divergenceFromLevel = false;
       if (type && level !== null) {
         const levelIdx = closes.findIndex(c => Math.abs(c - level) / c < 0.002);
         if (
-          (type === 'resistance' && lastClose > level && levelIdx !== -1 && rsi14.at(-1)! < rsi14[levelIdx]) ||
-          (type === 'support' && lastClose < level && levelIdx !== -1 && rsi14.at(-1)! > rsi14[levelIdx])
+          (type === 'resistance' && lastClose > level && levelIdx !== -1 && currentRSI! < rsi14[levelIdx]) ||
+          (type === 'support' && lastClose < level && levelIdx !== -1 && currentRSI! > rsi14[levelIdx])
         ) {
           divergenceFromLevel = true;
         }
       }
 
       const touchedEMA70Today =
-        prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
+        prevSessionHigh! >= lastEMA70 &&
+        prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
+      const bearishContinuationResult = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
+      const bullishContinuationResult = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
+      const bullishReversalResult = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
+      const bearishReversalResult = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
+
       signals[symbol] = {
-  trend,
-  breakout,
-  bullishBreakout,
-  bearishBreakout,
-  divergence,
-  divergenceType,
-  ema14Bounce,
-  ema70Bounce,
-  currentPrice: lastClose,
-  level,
-  levelType: type,
-  inferredLevel,
-  inferredLevelType,
-  nearOrAtEMA70Divergence,
-  inferredLevelWithinRange,
-  divergenceFromLevel,
-  touchedEMA70Today,
+        trend,
+        breakout,
+        bullishBreakout: intradayHigherHighBreak,
+        bearishBreakout: intradayLowerLowBreak,
+        divergence,
+        divergenceType,
+        ema14Bounce,
+        ema70Bounce,
+        currentPrice: lastClose,
+        level,
+        levelType: type,
+        inferredLevel,
+        inferredLevelType,
+        inferredLevelWithinRange,
+        divergenceFromLevel,
+        nearOrAtEMA70Divergence,
+        touchedEMA70Today,
         bearishContinuation: !!bearishContinuationResult,
-  bullishContinuation: !!bullishContinuationResult,
-bullishReversal: !!bullishReversalResult,
-bearishReversal: !!bearishReversalResult,
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
-  todaysLowestLow,
-  todaysHighestHigh,
-  url: `https://okx.com/join/96631749`,
-};
+        bullishContinuation: !!bullishContinuationResult,
+        bullishReversal: !!bullishReversalResult,
+        bearishReversal: !!bearishReversalResult,
+        intradayHigherHighBreak,
+        intradayLowerLowBreak,
+        todaysLowestLow,
+        todaysHighestHigh,
+        url: `https://okx.com/join/96631749`,
+      };
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
   }
 
-  const defaultSymbol = symbols[0];
-
+const defaultSymbol = symbols[0];
+          
   return {
-  props: {
-    symbols,
-    signals: {
-      ...otherSignalData,
-      bearishContinuation: bearishContinuationResult || null,
-      bullishContinuation: bullishContinuationResult || null,
-      bullishReversal: bullishReversalResult || null,
-      bearishReversal: bearishReversalResult || null,
+    props: {
+      signals,
+      symbols,
+      defaultSymbol,
     },
-    defaultSymbol,
-  },
-};
+  };
+  }
 
 
 // In the component SignalChecker, just render the two new fields like this:
