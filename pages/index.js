@@ -1,7 +1,7 @@
 import React from 'react';
 import SignalChecker from './signalchecker';
 import { fetchTopPairs } from './signalchecker';
-import { fetchCandles, calculateEMA, calculateRSI, findRelevantLevel, detectBullishContinuation, detectBearishContinuation, detectBullishReversal, detectBearishReversal } from './signalchecker';
+
 
 export async function getServerSideProps() {
   try {
