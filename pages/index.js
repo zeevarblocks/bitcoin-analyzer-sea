@@ -3,7 +3,7 @@ import SignalChecker from './signalchecker';
 import { signalchecker } from './signalchecker';
 
 (async () => {
-  const { symbols, signals } = await signalchecker();
+  const { symbols, signals } = await fetchTopPairs();
   console.log(signals);
 })();
 
