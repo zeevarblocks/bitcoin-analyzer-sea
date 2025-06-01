@@ -7,6 +7,9 @@ interface SignalData {
   bearishBreakout: boolean;
   divergence: boolean;
   divergenceType?: 'bullish' | 'bearish' | null;
+  divergenceFromLevel: boolean;
+  divergenceFromLevelType?: 'bullish' | 'bearish' | null; // ✅ Newly added
+  nearOrAtEMA70Divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
@@ -14,14 +17,12 @@ interface SignalData {
   levelType: 'support' | 'resistance' | null;
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
-  nearOrAtEMA70Divergence: boolean;
   inferredLevelWithinRange: boolean;
-  divergenceFromLevel: boolean;
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
   bullishContinuation: boolean;
-  bullishReversal: boolean;        // ✅ Newly added
-  bearishReversal: boolean;        // ✅ Newly added
+  bullishReversal: boolean;
+  bearishReversal: boolean;
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
@@ -457,15 +458,23 @@ if (trend === 'bearish') {
       const inferredLevelWithinRange = inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
 
       let divergenceFromLevel = false;
-      if (type && level !== null) {
-        const levelIdx = closes.findIndex(c => Math.abs(c - level) / c < 0.002);
-        if (
-          (type === 'resistance' && lastClose > level && levelIdx !== -1 && rsi14.at(-1)! < rsi14[levelIdx]) ||
-          (type === 'support' && lastClose < level && levelIdx !== -1 && rsi14.at(-1)! > rsi14[levelIdx])
-        ) {
-          divergenceFromLevel = true;
-        }
-      }
+let divergenceFromLevelType: 'bullish' | 'bearish' | null = null;
+
+if (type && level !== null) {
+  const levelIdx = closes.findIndex(c => Math.abs(c - level) / c < 0.002);
+  if (levelIdx !== -1) {
+    const currentRSI = rsi14.at(-1)!;
+    const pastRSI = rsi14[levelIdx];
+
+    if (type === 'resistance' && lastClose > level && currentRSI < pastRSI) {
+      divergenceFromLevel = true;
+      divergenceFromLevelType = 'bearish';
+    } else if (type === 'support' && lastClose < level && currentRSI > pastRSI) {
+      divergenceFromLevel = true;
+      divergenceFromLevelType = 'bullish';
+    }
+  }
+}
 
       const touchedEMA70Today =
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
@@ -478,6 +487,9 @@ if (trend === 'bearish') {
   bearishBreakout,
   divergence,
   divergenceType,
+  divergenceFromLevel,
+  divergenceFromLevelType,  // ✅ Newly added
+  nearOrAtEMA70Divergence,
   ema14Bounce,
   ema70Bounce,
   currentPrice: lastClose,
@@ -485,14 +497,12 @@ if (trend === 'bearish') {
   levelType: type,
   inferredLevel,
   inferredLevelType,
-  nearOrAtEMA70Divergence,
   inferredLevelWithinRange,
-  divergenceFromLevel,
   touchedEMA70Today,
   bearishContinuation,
   bullishContinuation,
-  bullishReversal,         // ✅ Added reversal detection
-  bearishReversal,         // ✅ Added reversal detection
+  bullishReversal,          // ✅ Reversal detection
+  bearishReversal,          // ✅ Reversal detection
   intradayHigherHighBreak,
   intradayLowerLowBreak,
   todaysLowestLow,
@@ -650,15 +660,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   <div className="pt-4 border-t border-white/10 space-y-2">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-    {data.bearishContinuation && (
-      <p className="text-red-400">
-        🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
-      </p>
-    )}
-    
-    {data.bullishContinuation && (
-      <p className="text-green-400">
-        🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
+    {data.bearishReversal && (
+      <p className="text-orange-400">
+        🔃 Bearish Reversal: <span className="font-semibold">Detected</span>
       </p>
     )}
 
@@ -668,9 +672,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       </p>
     )}
 
-    {data.bearishReversal && (
-      <p className="text-orange-400">
-        🔃 Bearish Reversal: <span className="font-semibold">Detected</span>
+    {!data.bearishReversal && data.bearishContinuation && (
+      <p className="text-red-400">
+        🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
+      </p>
+    )}
+    
+    {!data.bullishReversal && data.bullishContinuation && (
+      <p className="text-green-400">
+        🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
       </p>
     )}
   </div>
@@ -699,16 +709,50 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               </div>
             )}
 
-            {(data.divergenceFromLevel ||
-              data.divergence ||
-              data.nearOrAtEMA70Divergence) && (
-              <div className="pt-4 border-t border-white/10 space-y-2">
-                <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-                {data.divergenceFromLevel && (
-                  <p className="text-pink-400">
-                    🔍 Divergence vs Level: <span className="font-semibold">Yes</span>
-                  </p>
-                )}
+            {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
+  <div className="pt-4 border-t border-white/10 space-y-2">
+    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+
+    {data.divergenceFromLevel && (
+      <p className="text-pink-400">
+        🔍 Divergence vs Level:{" "}
+        <span className="font-semibold capitalize">
+          {data.divergenceFromLevelType === "bullish"
+            ? "Bullish Divergence"
+            : data.divergenceFromLevelType === "bearish"
+            ? "Bearish Divergence"
+            : "Detected"}
+        </span>
+      </p>
+    )}
+
+    {data.divergence && (
+      <p className="text-yellow-400">
+        📊 Regular RSI Divergence:{" "}
+        <span className="font-semibold capitalize">
+          {data.divergenceType === "bullish"
+            ? "Bullish Divergence"
+            : data.divergenceType === "bearish"
+            ? "Bearish Divergence"
+            : "Detected"}
+        </span>
+      </p>
+    )}
+
+    {data.nearOrAtEMA70Divergence && (
+      <p className="text-cyan-400">
+        ⚡ Divergence Near EMA-70:{" "}
+        <span className="font-semibold capitalize">
+          {data.ema70DivergenceType === "bullish"
+            ? "Bullish Divergence"
+            : data.ema70DivergenceType === "bearish"
+            ? "Bearish Divergence"
+            : "Detected"}
+        </span>
+      </p>
+    )}
+  </div>
+)}
                 {data.divergence && (
                   <p className="text-orange-400">
                     📉 RSI High/Low Divergence:{' '}
