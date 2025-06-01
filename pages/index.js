@@ -1,7 +1,7 @@
 import React from 'react';
 import SignalChecker from './signalchecker';
 import { fetchTopPairs } from './signalchecker';
-import fetchCandles from './signalchecker';
+import SignalData from './signalchecker';
 
 
 export async function getServerSideProps() {
