@@ -3,16 +3,27 @@ import SignalChecker from './signalchecker';
 import { fetchTopPairs } from './signalchecker';
 
 export async function getServerSideProps() {
-  const { symbols, signals } = await fetchTopPairs();
-  return {
-    props: {
-      symbols,
-      signals,
-    },
-  };
+  try {
+    const { symbols, signals } = await fetchTopPairs();
+    return {
+      props: {
+        symbols,
+        signals,
+      },
+    };
+  } catch (error) {
+    console.error('SSR Error:', error);
+    return {
+      props: {
+        symbols: [],
+        signals: [],
+        error: 'Failed to fetch signals.',
+      },
+    };
+  }
 }
 
-export default function Home({ symbols, signals }) {
+export default function HomePage({ symbols, signals, error }) {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Ad-Safe Placement */}
@@ -20,7 +31,11 @@ export default function Home({ symbols, signals }) {
         [ Advertisement Space ]
       </div>
 
-      <SignalChecker symbols={symbols} signals={signals} />
+      {error ? (
+        <div className="text-red-500 text-center">{error}</div>
+      ) : (
+        <SignalChecker symbols={symbols} signals={signals} />
+      )}
 
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
         <p>
@@ -29,4 +44,4 @@ export default function Home({ symbols, signals }) {
       </footer>
     </div>
   );
-}
+        }
