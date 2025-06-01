@@ -538,10 +538,10 @@ const data = {
   inferredLevelWithinRange,
   divergenceFromLevel,
   touchedEMA70Today,
-  bearishContinuation,
-  bullishContinuation,
-  bullishReversal,         // ✅ Added reversal detection
-  bearishReversal,         // ✅ Added reversal detection
+  bearishContinuation: bearishContinuationResult,
+bullishContinuation: bullishContinuationResult,
+bullishReversal: bullishReversalResult,
+bearishReversal: bearishReversalResult,
   intradayHigherHighBreak,
   intradayLowerLowBreak,
   todaysLowestLow,
