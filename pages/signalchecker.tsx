@@ -551,7 +551,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
     fetchPairs();
 
-    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
+    const intervalId = setInterval(fetchPairs, 1 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, [signals]);
 
