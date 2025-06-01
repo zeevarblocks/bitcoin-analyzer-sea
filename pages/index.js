@@ -37,6 +37,7 @@ export default function HomePage({ symbols, signals, error }) {
         <div className="text-red-500 text-center">{error}</div>
       ) : (
         <SignalChecker symbols={symbols} signals={signals} />
+        
       )}
 
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
