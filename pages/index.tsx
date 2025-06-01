@@ -207,8 +207,8 @@ function detectBearishContinuation(
   highs: number[],
   ema70: number[],
   rsi: number[],
-  ema14: number[],
-): boolean {
+  ema14: number[]
+): { entry: number; stopLoss: number; takeProfitRange: [number, number]; type: string } | null {
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -218,22 +218,36 @@ function detectBearishContinuation(
     if (prev14 > prev70 && curr14 < curr70) {
       const rsiAtCross = rsi[i];
       let lastHigh = highs[i];
+      let entry = closes[i]; // default entry
+
       for (let j = i + 1; j < closes.length; j++) {
         const price = closes[j];
         const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
         const rsiHigher = rsi[j] > rsiAtCross;
         const lowerHigh = highs[j] < lastHigh;
+
         if (nearEMA70 && rsiHigher && lowerHigh) {
           lastHigh = highs[j];
+          entry = price;
         } else if (highs[j] > lastHigh) {
-          return false; // ascending high breaks pattern
+          return null;
         }
-        if (j - i >= 2 && lowerHigh) return true;
+
+        if (j - i >= 2 && lowerHigh) {
+          const stopLoss = entry * 1.01; // 1% above entry
+          const takeProfitRange: [number, number] = [entry * 0.55, entry * 0.4];
+          return {
+            entry,
+            stopLoss,
+            takeProfitRange,
+            type: "short"
+          };
+        }
       }
       break;
     }
   }
-  return false;
+  return null;
 }
 
 // === Bullish Continuation ===
@@ -242,8 +256,8 @@ function detectBullishContinuation(
   lows: number[],
   ema70: number[],
   rsi: number[],
-  ema14: number[],
-): boolean {
+  ema14: number[]
+): { entry: number; stopLoss: number; takeProfitRange: [number, number]; type: string } | null {
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -253,22 +267,36 @@ function detectBullishContinuation(
     if (prev14 < prev70 && curr14 > curr70) {
       const rsiAtCross = rsi[i];
       let lastLow = lows[i];
+      let entry = closes[i]; // default entry
+
       for (let j = i + 1; j < closes.length; j++) {
         const price = closes[j];
         const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
         const rsiLower = rsi[j] < rsiAtCross;
         const higherLow = lows[j] > lastLow;
+
         if (nearEMA70 && rsiLower && higherLow) {
           lastLow = lows[j];
+          entry = price;
         } else if (lows[j] < lastLow) {
-          return false; // descending low breaks pattern
+          return null; // break of structure
         }
-        if (j - i >= 2 && higherLow) return true;
+
+        if (j - i >= 2 && higherLow) {
+          const stopLoss = entry * 0.99; // 1% below entry
+          const takeProfitRange: [number, number] = [entry * 1.45, entry * 1.6];
+          return {
+            entry,
+            stopLoss,
+            takeProfitRange,
+            type: "long"
+          };
+        }
       }
       break;
     }
   }
-  return false;
+  return null;
 }
 
 // === Bullish Reversal ===
@@ -279,7 +307,7 @@ function detectBullishReversal(
   ema70: number[],
   ema14: number[],
   rsi: number[]
-): boolean {
+): { entry: number; stopLoss: number; takeProfitRange: [number, number]; type: string } | null {
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const curr14 = ema14[i];
@@ -291,19 +319,29 @@ function detectBullishReversal(
         let postCrossoverHigh = Math.max(...highs.slice(i + 1, j));
         const rsiDiverging = rsi[j] < rsi[i];
         const brokePostCrossoverHigh = highs[j] > postCrossoverHigh;
+
         if (rsiDiverging && brokePostCrossoverHigh) {
           const lowestLowIndex = getLowestLowIndex(lows.slice(0, j));
           const hasAscendingTrend = hasAscendingTrendFromLowestLow(lows, lowestLowIndex);
+
           if (hasAscendingTrend) {
-            return true;
+            const entry = ema14[j];
+            const stopLoss = entry * 0.99; // 1% below entry
+            const takeProfitRange: [number, number] = [entry * 1.45, entry * 1.6];
+            return {
+              entry,
+              stopLoss,
+              takeProfitRange,
+              type: "long"
+            };
           }
         }
       }
       break;
     }
   }
-  return false;
-}
+  return null;
+          }
 
 // === Bearish Reversal ===
 function detectBearishReversal(
@@ -313,7 +351,7 @@ function detectBearishReversal(
   ema70: number[],
   ema14: number[],
   rsi: number[]
-): boolean {
+): { entry: number; stopLoss: number; takeProfitRange: [number, number]; type: string } | null {
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const curr14 = ema14[i];
@@ -325,19 +363,29 @@ function detectBearishReversal(
         let postCrossoverLow = Math.min(...lows.slice(i + 1, j));
         const rsiDiverging = rsi[j] > rsi[i];
         const brokePostCrossoverLow = lows[j] < postCrossoverLow;
+
         if (rsiDiverging && brokePostCrossoverLow) {
           const highestHighIndex = getHighestHighIndex(highs.slice(0, j));
           const hasDescendingTrend = hasDescendingTrendFromHighestHigh(highs, highestHighIndex);
+
           if (hasDescendingTrend) {
-            return true;
+            const entry = ema14[j];
+            const stopLoss = entry * 1.01; // 1% above entry
+            const takeProfitRange: [number, number] = [entry * 0.55, entry * 0.4];
+            return {
+              entry,
+              stopLoss,
+              takeProfitRange,
+              type: "short"
+            };
           }
         }
       }
       break;
     }
   }
-  return false;
-                                               }
+  return null;
+}
 
 
 
@@ -418,18 +466,17 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
-      let bearishContinuation = false;
-let bullishContinuation = false;
-let bullishReversal = false;
-let bearishReversal = false;
+      const bearishContinuationResult = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
+const bullishContinuationResult = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
+const bullishReversalResult = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
+const bearishReversalResult = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
 
-if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
-  bullishReversal = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
-} else if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-  bearishReversal = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
-  }
+const data = {
+  bearishContinuation: bearishContinuationResult,
+  bullishContinuation: bullishContinuationResult,
+  bullishReversal: bullishReversalResult,
+  bearishReversal: bearishReversalResult,
+};
 
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
@@ -648,32 +695,52 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               </div>
             )}
 
-            {(data.bearishContinuation || data.bullishContinuation || data.bullishReversal || data.bearishReversal) && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
+            {(data.bearishContinuation.detected || data.bullishContinuation.detected || data.bullishReversal.detected || data.bearishReversal.detected) && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-    {data.bearishContinuation && (
-      <p className="text-red-400">
-        🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
-      </p>
-    )}
-    
-    {data.bullishContinuation && (
-      <p className="text-green-400">
-        🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
-      </p>
-    )}
-
-    {data.bullishReversal && (
-      <p className="text-emerald-400">
-        🔄 Bullish Reversal: <span className="font-semibold">Detected</span>
-      </p>
+    {data.bearishContinuation.detected && (
+      <div className="text-red-400 space-y-1">
+        <p>🔻 <span className="font-semibold">Bearish Continuation: Confirmed</span></p>
+        <ul className="list-disc list-inside text-sm pl-2">
+          <li>🎯 Entry: {data.bearishContinuation.entry?.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bearishContinuation.stopLoss?.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bearishContinuation.takeProfitMin?.toFixed(2)} – {data.bearishContinuation.takeProfitMax?.toFixed(2)}</li>
+        </ul>
+      </div>
     )}
 
-    {data.bearishReversal && (
-      <p className="text-orange-400">
-        🔃 Bearish Reversal: <span className="font-semibold">Detected</span>
-      </p>
+    {data.bullishContinuation.detected && (
+      <div className="text-green-400 space-y-1">
+        <p>🔺 <span className="font-semibold">Bullish Continuation: Confirmed</span></p>
+        <ul className="list-disc list-inside text-sm pl-2">
+          <li>🎯 Entry: {data.bullishContinuation.entry?.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bullishContinuation.stopLoss?.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bullishContinuation.takeProfitMin?.toFixed(2)} – {data.bullishContinuation.takeProfitMax?.toFixed(2)}</li>
+        </ul>
+      </div>
+    )}
+
+    {data.bullishReversal.detected && (
+      <div className="text-emerald-400 space-y-1">
+        <p>🔄 <span className="font-semibold">Bullish Reversal: Detected</span></p>
+        <ul className="list-disc list-inside text-sm pl-2">
+          <li>🎯 Entry: {data.bullishReversal.entry?.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bullishReversal.stopLoss?.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bullishReversal.takeProfitMin?.toFixed(2)} – {data.bullishReversal.takeProfitMax?.toFixed(2)}</li>
+        </ul>
+      </div>
+    )}
+
+    {data.bearishReversal.detected && (
+      <div className="text-orange-400 space-y-1">
+        <p>🔃 <span className="font-semibold">Bearish Reversal: Detected</span></p>
+        <ul className="list-disc list-inside text-sm pl-2">
+          <li>🎯 Entry: {data.bearishReversal.entry?.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bearishReversal.stopLoss?.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bearishReversal.takeProfitMin?.toFixed(2)} – {data.bearishReversal.takeProfitMax?.toFixed(2)}</li>
+        </ul>
+      </div>
     )}
   </div>
 )}
