@@ -656,36 +656,30 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               </div>
             )}
 
-            {(data.bearishContinuation || data.bullishContinuation || data.bullishReversal || data.bearishReversal) && (
+            {(data.bearishReversal || data.bullishReversal || data.bearishContinuation || data.bullishContinuation) && (
   <div className="pt-4 border-t border-white/10 space-y-2">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-    {data.bearishReversal && (
+    {data.bearishReversal ? (
       <p className="text-orange-400">
         🔃 Bearish Reversal: <span className="font-semibold">Detected</span>
       </p>
-    )}
-
-    {data.bullishReversal && (
+    ) : data.bullishReversal ? (
       <p className="text-emerald-400">
         🔄 Bullish Reversal: <span className="font-semibold">Detected</span>
       </p>
-    )}
-
-    {!data.bearishReversal && data.bearishContinuation && (
+    ) : data.bearishContinuation ? (
       <p className="text-red-400">
         🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
       </p>
-    )}
-    
-    {!data.bullishReversal && data.bullishContinuation && (
+    ) : data.bullishContinuation ? (
       <p className="text-green-400">
         🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
       </p>
-    )}
+    ) : null}
   </div>
 )}
-
+            
             {(data.ema14Bounce || data.ema70Bounce || data.touchedEMA70Today) && (
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <h3 className="text-lg font-semibold text-white">
