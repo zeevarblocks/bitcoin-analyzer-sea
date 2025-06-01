@@ -147,7 +147,6 @@ function findRelevantLevel(
   return { level, type };
 }
 
-// === Trendline Helpers ===
 function getLowestLowIndex(lows: number[]): number {
   let min = lows[0];
   let index = 0;
@@ -288,10 +287,11 @@ function detectBullishReversal(
     const curr70 = ema70[i];
 
     if (prev14 > prev70 && curr14 < curr70) {
-      for (let j = i + 1; j < closes.length; j++) {
+      for (let j = i + 2; j < closes.length; j++) {
+        let postCrossoverHigh = Math.max(...highs.slice(i + 1, j));
         const rsiDiverging = rsi[j] < rsi[i];
-        const brokeDescendingHighs = highs[j] > highs[j - 1] && highs[j - 1] < highs[j - 2];
-        if (rsiDiverging && brokeDescendingHighs) {
+        const brokePostCrossoverHigh = highs[j] > postCrossoverHigh;
+        if (rsiDiverging && brokePostCrossoverHigh) {
           const lowestLowIndex = getLowestLowIndex(lows.slice(0, j));
           const hasAscendingTrend = hasAscendingTrendFromLowestLow(lows, lowestLowIndex);
           if (hasAscendingTrend) {
@@ -321,10 +321,11 @@ function detectBearishReversal(
     const curr70 = ema70[i];
 
     if (prev14 < prev70 && curr14 > curr70) {
-      for (let j = i + 1; j < closes.length; j++) {
+      for (let j = i + 2; j < closes.length; j++) {
+        let postCrossoverLow = Math.min(...lows.slice(i + 1, j));
         const rsiDiverging = rsi[j] > rsi[i];
-        const brokeAscendingLows = lows[j] < lows[j - 1] && lows[j - 1] > lows[j - 2];
-        if (rsiDiverging && brokeAscendingLows) {
+        const brokePostCrossoverLow = lows[j] < postCrossoverLow;
+        if (rsiDiverging && brokePostCrossoverLow) {
           const highestHighIndex = getHighestHighIndex(highs.slice(0, j));
           const hasDescendingTrend = hasDescendingTrendFromHighestHigh(highs, highestHighIndex);
           if (hasDescendingTrend) {
@@ -336,12 +337,13 @@ function detectBearishReversal(
     }
   }
   return false;
-  }
+                                               }
+
 
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 10): Promise<string[]> {
+  async function fetchTopPairs(limit = 30): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -352,7 +354,7 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(10);
+  const symbols = await fetchTopPairs(30);
 
   const signals: Record<string, SignalData> = {};
 
@@ -504,7 +506,7 @@ if (trend === 'bearish') {
     }
   }
 
-  const defaultSymbol = symbols[10];
+  const defaultSymbol = symbols[0];
 
   return {
     props: {
