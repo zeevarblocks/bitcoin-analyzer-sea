@@ -10,7 +10,6 @@ interface SignalData {
   divergenceFromLevel: boolean;
   divergenceFromLevelType?: 'bullish' | 'bearish' | null; // ✅ Newly added
   nearOrAtEMA70Divergence: boolean;
-  ema70DivergenceType?: 'bullish' | 'bearish' | null;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
@@ -491,7 +490,6 @@ if (type && level !== null) {
   divergenceFromLevel,
   divergenceFromLevelType,  // ✅ Newly added
   nearOrAtEMA70Divergence,
-  ema70DivergenceType,
   ema14Bounce,
   ema70Bounce,
   currentPrice: lastClose,
@@ -728,33 +726,17 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       </p>
     )}
 
-    {data.divergence && (
-      <p className="text-yellow-400">
-        📊 Regular RSI Divergence:{" "}
-        <span className="font-semibold capitalize">
-          {data.divergenceType === "bullish"
-            ? "Bullish Divergence"
-            : data.divergenceType === "bearish"
-            ? "Bearish Divergence"
-            : "Detected"}
-        </span>
-      </p>
-    )}
-
-    {data.nearOrAtEMA70Divergence && (
-      <p className="text-cyan-400">
-        ⚡ Divergence Near EMA-70:{" "}
-        <span className="font-semibold capitalize">
-          {data.ema70DivergenceType === "bullish"
-            ? "Bullish Divergence"
-            : data.ema70DivergenceType === "bearish"
-            ? "Bearish Divergence"
-            : "Detected"}
-        </span>
-      </p>
-    )}
-  </div>
-)}
+       {data.divergence && (
+            <p className="text-orange-400">
+              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'}</span>
+            </p>
+          )}
+          {data.nearOrAtEMA70Divergence && (
+            <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
+          )}
+        </div>
+      )}
+    
                 
 
             {data.inferredLevelWithinRange && (
