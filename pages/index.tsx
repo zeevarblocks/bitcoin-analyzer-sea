@@ -25,10 +25,10 @@ interface SignalData {
   url: string;
 
   // ✅ Added structured signal outputs
-   bearishContinuation: null,
-  bullishContinuation: null,
-  bullishReversal: null,
-  bearishReversal: null,
+  bearishContinuation?: boolean;
+  bullishContinuation?: boolean;
+  bullishReversal?: boolean;
+  bearishReversal?: boolean;  
 }
 
 // fetchCandles, calculateEMA, etc.,.
