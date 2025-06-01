@@ -504,13 +504,15 @@ if (trend === 'bearish') {
     }
   }
 
-  const defaultSymbol = symbols[10];
-
+    const defaultSymbols = symbols.slice(0, 5);
+  const defaultSignals = defaultSymbols.map(sym => signals[sym]);
+  
   return {
     props: {
       symbols,
       signals,
       defaultSymbol,
+       defaultSignals,
     },
   };
         }
@@ -521,7 +523,7 @@ if (trend === 'bearish') {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect } from 'react';
 
-export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
+export default function SignalChecker({ signals, defaultSignals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
