@@ -1,15 +1,17 @@
 import React from 'react';
-import { SignalChecker, getServerSideProps } from './signalchecker';
+import  SignalChecker  from './signalchecker';
+import fetchTopPairs  from './signalchecker';
 
 
 
 export async function getServerSideProps() {
   try {
-    const { symbols, signals } = await SignalChecker;
+    const { symbols, signals, defaultSymbol, } = await fetchTopPairs;
     return {
       props: {
         symbols,
         signals,
+        defaultSymbol,
       },
     };
   } catch (error) {
@@ -24,7 +26,7 @@ export async function getServerSideProps() {
   }
 }
 
-export default function HomePage({ symbols, signals, error }) {
+export default function HomePage({ symbols, signals, error, defaultSymbol, }) {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Ad-Safe Placement */}
@@ -35,7 +37,7 @@ export default function HomePage({ symbols, signals, error }) {
       {error ? (
         <div className="text-red-500 text-center">{error}</div>
       ) : (
-        <SignalChecker symbols={symbols} signals={signals} />
+        <SignalChecker symbols={symbols} signals={signals} defaultSymbol={defaultSymbol} />
         
       )}
 
