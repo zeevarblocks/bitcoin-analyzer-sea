@@ -251,9 +251,10 @@ async function fetchCandleData(symbol) {
 
 export default function Home({ results }) {
   return (
-    <BitcoinSignalAnalyzer />
+    
     <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '2rem', borderRadius: '16px', color: 'gray-100', maxWidth: '600px', width: '100%', textAlign: 'center' }}>
-      <h1 className="text-4xl font-bold mb-6">Reversal Detector (15m - OKX)</h1>
+      <BitcoinSignalAnalyzer />
+  <h1 className="text-4xl font-bold mb-6">Reversal Detector (15m - OKX)</h1>
       {results.map(({ symbol, result, error }) => (
         <div key={symbol} className="bg-transparent border border-gray-200 p-6 rounded-2xl shadow-lg transition hover:shadow-xl">
           <h2 className="text-2xl font-semibold mb-4 text-indigo-600">{symbol}</h2>
