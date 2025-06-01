@@ -353,7 +353,6 @@ export async function getServerSideProps() {
   }
 
   const symbols = await fetchTopPairs(10);
-
   const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
@@ -417,17 +416,17 @@ export async function getServerSideProps() {
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
       let bearishContinuation = false;
-let bullishContinuation = false;
-let bullishReversal = false;
-let bearishReversal = false;
+      let bullishContinuation = false;
+      let bullishReversal = false;
+      let bearishReversal = false;
 
-if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
-  bullishReversal = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
-} else if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-  bearishReversal = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
-  }
+      if (trend === 'bearish') {
+        bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
+        bullishReversal = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
+      } else if (trend === 'bullish') {
+        bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
+        bearishReversal = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
+      }
 
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
@@ -439,6 +438,7 @@ if (trend === 'bearish') {
       } else if (highs.at(-1)! > prevSessionHigh! && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
         divergenceType = 'bearish';
       }
+
       const divergence = divergenceType !== null;
 
       const nearOrAtEMA70Divergence =
@@ -472,50 +472,51 @@ if (trend === 'bearish') {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       signals[symbol] = {
-  trend,
-  breakout,
-  bullishBreakout,
-  bearishBreakout,
-  divergence,
-  divergenceType,
-  ema14Bounce,
-  ema70Bounce,
-  currentPrice: lastClose,
-  level,
-  levelType: type,
-  inferredLevel,
-  inferredLevelType,
-  nearOrAtEMA70Divergence,
-  inferredLevelWithinRange,
-  divergenceFromLevel,
-  touchedEMA70Today,
-  bearishContinuation,
-  bullishContinuation,
-  bullishReversal,         // ✅ Added reversal detection
-  bearishReversal,         // ✅ Added reversal detection
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
-  todaysLowestLow,
-  todaysHighestHigh,
-  url: `https://okx.com/join/96631749`,
-};
+        trend,
+        breakout,
+        bullishBreakout,
+        bearishBreakout,
+        divergence,
+        divergenceType,
+        ema14Bounce,
+        ema70Bounce,
+        currentPrice: lastClose,
+        level,
+        levelType: type,
+        inferredLevel,
+        inferredLevelType,
+        nearOrAtEMA70Divergence,
+        inferredLevelWithinRange,
+        divergenceFromLevel,
+        touchedEMA70Today,
+        bearishContinuation,
+        bullishContinuation,
+        bullishReversal,
+        bearishReversal,
+        intradayHigherHighBreak,
+        intradayLowerLowBreak,
+        todaysLowestLow,
+        todaysHighestHigh,
+        url: `https://okx.com/join/96631749`,
+      };
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
   }
 
-    const defaultSymbols = symbols.slice(0, 5);
+  // ✅ NEW: Return top 5 signals for default display
+  const defaultSymbols = symbols.slice(0, 5);
   const defaultSignals = defaultSymbols.map(sym => signals[sym]);
-  
+
   return {
     props: {
       symbols,
       signals,
-      defaultSymbol,
-       defaultSignals,
+      defaultSymbols,
+      defaultSignals,
     },
   };
-        }
+          }
 
 
 
