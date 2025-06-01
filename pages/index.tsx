@@ -341,7 +341,7 @@ function detectBearishReversal(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 10): Promise<string[]> {
+  async function fetchTopPairs(limit = 30): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -352,7 +352,7 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(10);
+  const symbols = await fetchTopPairs(30);
   const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
@@ -527,31 +527,29 @@ export async function getServerSideProps() {
 export default function SignalChecker({ signals, defaultSignals }: { signals: Record<string, SignalData>, defaultSignals: SignalData[] }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
-  
 
-useEffect(() => {
-const fetchPairs = async () => {
-try {
-const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-const data = await response.json();
+  useEffect(() => {
+    const fetchPairs = async () => {
+      try {
+        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+        const data = await response.json();
 
-const sortedPairs = data.data  
-      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))  
-      .map((item: any) => item.instId);  
+        const sortedPairs = data.data
+          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+          .map((item: any) => item.instId);
 
-    setPairs(sortedPairs);  
+        setPairs(sortedPairs);
 
-    // Find the first pair that exists in signals and has valid data  
-    const defaultPair = sortedPairs.find(  
-      (pair) => signals?.[pair]?.currentPrice !== undefined  
-    );  
-    if (defaultPair) {  
-      setSelectedPair(defaultPair);  
-    }  
-  } catch (error) {  
-    console.error('Error fetching trading pairs:', error);  
-  }  
-};  
+        const defaultPair = sortedPairs.f
+          (pair) => signals?.[pair]?.currentPrice !== undefined
+        );
+        if (defaultPair) {
+          setSelectedPair(defaultPair);
+        }
+      } catch (error) {
+        console.error('Error fetching trading pairs:', error);
+      }
+    };
 
 fetchPairs();  
 
