@@ -1,5 +1,5 @@
 import React from 'react';
-import SignalChecker from './signalchecker';
+import { SignalChecker, getServerSideProps } from './signalchecker';
 
 
 
