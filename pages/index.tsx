@@ -1,12 +1,5 @@
 import React from 'react';
 
-interface TradeSignal {
-  entry: number;
-  stopLoss: number;
-  takeProfitRange: [number, number];
-  type: string;
-}
-
 interface SignalData {
   trend: string;
   breakout: boolean;
