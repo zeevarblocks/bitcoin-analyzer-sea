@@ -3,10 +3,10 @@ import React from 'react';
 interface SignalData {
   trend: string;
   breakout: boolean;
-  bullishBreakout: boolean; 
-  bearishBreakout: boolean; 
+  bullishBreakout: boolean;
+  bearishBreakout: boolean;
   divergence: boolean;
-divergenceType?: 'bullish' | 'bearish' | null;
+  divergenceType?: 'bullish' | 'bearish' | null;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
   currentPrice: number;
@@ -19,13 +19,14 @@ divergenceType?: 'bullish' | 'bearish' | null;
   divergenceFromLevel: boolean;
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
-bullishContinuation: boolean;
+  bullishContinuation: boolean;
+  bullishReversal: boolean;        // ✅ Newly added
+  bearishReversal: boolean;        // ✅ Newly added
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
-  todaysLowestLow: number; 
+  todaysLowestLow: number;
   todaysHighestHigh: number;
-url: string;
-  
+  url: string;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -474,31 +475,33 @@ if (trend === 'bearish') {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       signals[symbol] = {
-        trend,
-        breakout,
-        bullishBreakout,
-        bearishBreakout,
-        divergence,
-        divergenceType,
-        ema14Bounce,
-        ema70Bounce,
-        currentPrice: lastClose,
-        level,
-        levelType: type,
-        inferredLevel,
-        inferredLevelType,
-        nearOrAtEMA70Divergence,
-        inferredLevelWithinRange,
-        divergenceFromLevel,
-        touchedEMA70Today,
-        bearishContinuation,
-        bullishContinuation,
-        intradayHigherHighBreak,
-        intradayLowerLowBreak,
-        todaysLowestLow,
-        todaysHighestHigh,
-        url: `https://okx.com/join/96631749`,
-      };
+  trend,
+  breakout,
+  bullishBreakout,
+  bearishBreakout,
+  divergence,
+  divergenceType,
+  ema14Bounce,
+  ema70Bounce,
+  currentPrice: lastClose,
+  level,
+  levelType: type,
+  inferredLevel,
+  inferredLevelType,
+  nearOrAtEMA70Divergence,
+  inferredLevelWithinRange,
+  divergenceFromLevel,
+  touchedEMA70Today,
+  bearishContinuation,
+  bullishContinuation,
+  bullishReversal,         // ✅ Added reversal detection
+  bearishReversal,         // ✅ Added reversal detection
+  intradayHigherHighBreak,
+  intradayLowerLowBreak,
+  todaysLowestLow,
+  todaysHighestHigh,
+  url: `https://okx.com/join/96631749`,
+};
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
