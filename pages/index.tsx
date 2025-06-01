@@ -703,9 +703,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       <div className="text-red-400 space-y-1">
         <p>🔻 <span className="font-semibold">Bearish Continuation: Confirmed</span></p>
         <ul className="list-disc list-inside text-sm pl-2">
-          <li>🎯 Entry: {data.bearishContinuation.entry?.toFixed(2)}</li>
-          <li>🛑 Stop Loss: {data.bearishContinuation.stopLoss?.toFixed(2)}</li>
-          <li>🎯 Take Profit: {data.bearishContinuation.takeProfitMin?.toFixed(2)} – {data.bearishContinuation.takeProfitMax?.toFixed(2)}</li>
+          <li>🎯 Entry: {data.bearishContinuation.entry.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bearishContinuation.stopLoss.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bearishContinuation.takeProfitMin.toFixed(2)} – {data.bearishContinuation.takeProfitMax.toFixed(2)}</li>
         </ul>
       </div>
     )}
@@ -714,9 +714,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       <div className="text-green-400 space-y-1">
         <p>🔺 <span className="font-semibold">Bullish Continuation: Confirmed</span></p>
         <ul className="list-disc list-inside text-sm pl-2">
-          <li>🎯 Entry: {data.bullishContinuation.entry?.toFixed(2)}</li>
-          <li>🛑 Stop Loss: {data.bullishContinuation.stopLoss?.toFixed(2)}</li>
-          <li>🎯 Take Profit: {data.bullishContinuation.takeProfitMin?.toFixed(2)} – {data.bullishContinuation.takeProfitMax?.toFixed(2)}</li>
+          <li>🎯 Entry: {data.bullishContinuation.entry.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bullishContinuation.stopLoss.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bullishContinuation.takeProfitMin.toFixed(2)} – {data.bullishContinuation.takeProfitMax.toFixed(2)}</li>
         </ul>
       </div>
     )}
@@ -725,9 +725,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       <div className="text-emerald-400 space-y-1">
         <p>🔄 <span className="font-semibold">Bullish Reversal: Detected</span></p>
         <ul className="list-disc list-inside text-sm pl-2">
-          <li>🎯 Entry: {data.bullishReversal.entry?.toFixed(2)}</li>
-          <li>🛑 Stop Loss: {data.bullishReversal.stopLoss?.toFixed(2)}</li>
-          <li>🎯 Take Profit: {data.bullishReversal.takeProfitMin?.toFixed(2)} – {data.bullishReversal.takeProfitMax?.toFixed(2)}</li>
+          <li>🎯 Entry: {data.bullishReversal.entry.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bullishReversal.stopLoss.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bullishReversal.takeProfitMin.toFixed(2)} – {data.bullishReversal.takeProfitMax.toFixed(2)}</li>
         </ul>
       </div>
     )}
@@ -736,9 +736,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       <div className="text-orange-400 space-y-1">
         <p>🔃 <span className="font-semibold">Bearish Reversal: Detected</span></p>
         <ul className="list-disc list-inside text-sm pl-2">
-          <li>🎯 Entry: {data.bearishReversal.entry?.toFixed(2)}</li>
-          <li>🛑 Stop Loss: {data.bearishReversal.stopLoss?.toFixed(2)}</li>
-          <li>🎯 Take Profit: {data.bearishReversal.takeProfitMin?.toFixed(2)} – {data.bearishReversal.takeProfitMax?.toFixed(2)}</li>
+          <li>🎯 Entry: {data.bearishReversal.entry.toFixed(2)}</li>
+          <li>🛑 Stop Loss: {data.bearishReversal.stopLoss.toFixed(2)}</li>
+          <li>🎯 Take Profit: {data.bearishReversal.takeProfitMin.toFixed(2)} – {data.bearishReversal.takeProfitMax.toFixed(2)}</li>
         </ul>
       </div>
     )}
