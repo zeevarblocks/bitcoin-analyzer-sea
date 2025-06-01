@@ -150,58 +150,42 @@ function findRelevantLevel(
 }
 
 function getLowestLowIndex(lows: number[]): number {
-  let min = lows[0];
-  let index = 0;
+  let minIndex = 0;
   for (let i = 1; i < lows.length; i++) {
-    if (lows[i] < min) {
-      min = lows[i];
-      index = i;
+    if (lows[i] < lows[minIndex]) {
+      minIndex = i;
     }
   }
-  return index;
+  return minIndex;
+}
+
+function hasAscendingTrendFromLowestLow(lows: number[], fromIndex: number): boolean {
+  for (let i = fromIndex + 1; i < lows.length - 1; i++) {
+    if (lows[i] < lows[i - 1]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function getHighestHighIndex(highs: number[]): number {
-  let max = highs[0];
-  let index = 0;
+  let maxIndex = 0;
   for (let i = 1; i < highs.length; i++) {
-    if (highs[i] > max) {
-      max = highs[i];
-      index = i;
+    if (highs[i] > highs[maxIndex]) {
+      maxIndex = i;
     }
   }
-  return index;
+  return maxIndex;
 }
 
-function hasAscendingTrendFromLowestLow(lows: number[], fromIndex: number, minPoints = 2): boolean {
-  const trendPoints: number[] = [];
-  for (let i = fromIndex + 1; i < lows.length - 1; i++) {
-    if (lows[i] < lows[i - 1] && lows[i] < lows[i + 1]) {
-      trendPoints.push(i);
-      if (trendPoints.length >= minPoints) break;
-    }
-  }
-  if (trendPoints.length < minPoints) return false;
-  for (let i = 1; i < trendPoints.length; i++) {
-    if (lows[trendPoints[i]] <= lows[trendPoints[i - 1]]) return false;
-  }
-  return true;
-}
-
-function hasDescendingTrendFromHighestHigh(highs: number[], fromIndex: number, minPoints = 2): boolean {
-  const trendPoints: number[] = [];
+function hasDescendingTrendFromHighestHigh(highs: number[], fromIndex: number): boolean {
   for (let i = fromIndex + 1; i < highs.length - 1; i++) {
-    if (highs[i] > highs[i - 1] && highs[i] > highs[i + 1]) {
-      trendPoints.push(i);
-      if (trendPoints.length >= minPoints) break;
+    if (highs[i] > highs[i - 1]) {
+      return false;
     }
   }
-  if (trendPoints.length < minPoints) return false;
-  for (let i = 1; i < trendPoints.length; i++) {
-    if (highs[trendPoints[i]] >= highs[trendPoints[i - 1]]) return false;
-  }
   return true;
-}
+                                           }
 
 // === Bearish Continuation ===
 function detectBearishContinuation(
@@ -539,6 +523,14 @@ function detectBearishReversal(
   }
 
 const defaultSymbol = symbols[0];
+
+          type TradeSignal = {
+  entry: number;
+  stopLoss: number;
+  takeProfitRange: [number, number];
+  type: string;
+};
+
           
   return {
     props: {
