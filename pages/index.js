@@ -2,24 +2,25 @@ import React from 'react';
 import SignalChecker from './signalchecker';
 import { fetchTopPairs } from './signalchecker';
 
-(async () => {
+export async function getServerSideProps() {
   const { symbols, signals } = await fetchTopPairs();
-  console.log(signals);
-})();
+  return {
+    props: {
+      symbols,
+      signals,
+    },
+  };
+}
 
+export default function Home({ symbols, signals }) {
+  return (
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Ad-Safe Placement */}
+      <div className="bg-neutral-800 p-4 rounded-xl shadow-md text-center text-gray-300">
+        [ Advertisement Space ]
+      </div>
 
-export default function HomePage({ symbols, signals }) {
-  return 
-
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
-        {/* Ad-Safe Placement */}
-        <div className="bg-neutral-800 p-4 rounded-xl shadow-md text-center text-gray-300">
-          [ Advertisement Space ]
-        </div>
-
-        
-<SignalChecker symbols={symbols} signals={signals} />;
-     
+      <SignalChecker symbols={symbols} signals={signals} />
 
       <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
         <p>
