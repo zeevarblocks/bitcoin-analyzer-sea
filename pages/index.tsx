@@ -509,10 +509,17 @@ function detectBearishReversal(
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       const bearishContinuationResult = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
-      const bullishContinuationResult = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-      const bullishReversalResult = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
-      const bearishReversalResult = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
+const bullishContinuationResult = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
+const bullishReversalResult = detectBullishReversal(closes, highs, lows, ema70, ema14, rsi14);
+const bearishReversalResult = detectBearishReversal(closes, highs, lows, ema70, ema14, rsi14);
 
+const data = {
+  bearishContinuation: bearishContinuationResult,
+  bullishContinuation: bullishContinuationResult,
+  bullishReversal: bullishReversalResult,
+  bearishReversal: bearishReversalResult,
+};
+      
       signals[symbol] = {
   trend,
   breakout,
