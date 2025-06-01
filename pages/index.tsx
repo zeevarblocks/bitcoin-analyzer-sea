@@ -564,23 +564,19 @@ bearishReversal: !!bearishReversalResult,
 
   const defaultSymbol = symbols[0];
 
-  type SignalResult = {
-  entry: number;
-  stopLoss: number;
-  takeProfitRange: [number, number];
-  type: string;
+  return {
+  props: {
+    symbols,
+    signals: {
+      ...otherSignalData,
+      bearishContinuation: bearishContinuationResult || null,
+      bullishContinuation: bullishContinuationResult || null,
+      bullishReversal: bullishReversalResult || null,
+      bearishReversal: bearishReversalResult || null,
+    },
+    defaultSymbol,
+  },
 };
-
-type Props = {
-  symbols: string[];
-  signals: any; // You can type this more strictly later
-  defaultSymbol: string;
-  bearishContinuation: SignalResult | null;
-  bullishContinuation: SignalResult | null;
-  bullishReversal: SignalResult | null;
-  bearishReversal: SignalResult | null;
-};
-
 
 
 // In the component SignalChecker, just render the two new fields like this:
