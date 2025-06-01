@@ -417,9 +417,6 @@ export async function getServerSideProps() {
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
       let bearishContinuation = false;
-      let bullishContinuation = false;
-
-      let bearishContinuation = false;
 let bullishContinuation = false;
 let bullishReversal = false;
 let bearishReversal = false;
