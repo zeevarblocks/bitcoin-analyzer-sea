@@ -1,6 +1,6 @@
 import React from 'react';
 import SignalChecker from './signalchecker';
-import { fetchTopPairs() } from './signalchecker';
+import { fetchTopPairs } from './signalchecker';
 
 (async () => {
   const { symbols, signals } = await fetchTopPairs();
