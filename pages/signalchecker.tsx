@@ -1,5 +1,4 @@
 import React from 'react';
-import { fetchCandles, calculateEMA, calculateRSI, findRelevantLevel, detectBullishContinuation, detectBearishContinuation, detectBullishReversal, detectBearishReversal } from './signalchecker';
 
 interface SignalData {
   trend: string;
