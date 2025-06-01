@@ -37,7 +37,7 @@ export default function HomePage({ symbols, signals, error, defaultSymbol, }) {
       {error ? (
         <div className="text-red-500 text-center">{error}</div>
       ) : (
-        <SignalChecker symbols={symbols} signals={signals} defaultSymbol={defaultSymbol} />
+        <SignalChecker />
         
       )}
 
