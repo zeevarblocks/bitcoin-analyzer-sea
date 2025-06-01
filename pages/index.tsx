@@ -240,11 +240,11 @@ function detectBearishContinuation(
           const takeProfitMax = entry * 0.55;
           return {
             detected: true,
-            entry,
-            stopLoss,
-            takeProfitMin,
-            takeProfitMax,
-            type: "short",
+    entry,
+    stopLoss,
+    takeProfitMin: takeProfitRange[0],
+    takeProfitMax: takeProfitRange[1],
+    type,
           };
         }
       }
@@ -290,10 +290,12 @@ function detectBullishContinuation(
           const stopLoss = entry * 0.99; // 1% below entry
           const takeProfitRange: [number, number] = [entry * 1.45, entry * 1.6];
           return {
-            entry,
-            stopLoss,
-            takeProfitRange,
-            type: "long"
+            detected: true,
+    entry,
+    stopLoss,
+    takeProfitMin: takeProfitRange[0],
+    takeProfitMax: takeProfitRange[1],
+    type,
           };
         }
       }
@@ -333,10 +335,12 @@ function detectBullishReversal(
             const stopLoss = entry * 0.99; // 1% below entry
             const takeProfitRange: [number, number] = [entry * 1.45, entry * 1.6];
             return {
-              entry,
-              stopLoss,
-              takeProfitRange,
-              type: "long"
+              detected: true,
+    entry,
+    stopLoss,
+    takeProfitMin: takeProfitRange[0],
+    takeProfitMax: takeProfitRange[1],
+    type,
             };
           }
         }
@@ -377,10 +381,12 @@ function detectBearishReversal(
             const stopLoss = entry * 1.01; // 1% above entry
             const takeProfitRange: [number, number] = [entry * 0.55, entry * 0.4];
             return {
-              entry,
-              stopLoss,
-              takeProfitRange,
-              type: "short"
+              detected: true,
+    entry,
+    stopLoss,
+    takeProfitMin: takeProfitRange[0],
+    takeProfitMax: takeProfitRange[1],
+    type,
             };
           }
         }
@@ -525,10 +531,11 @@ function detectBearishReversal(
   divergenceFromLevel,
   nearOrAtEMA70Divergence,
   touchedEMA70Today,
-  bearishContinuation: bearishContinuationResult,
-  bullishContinuation: bullishContinuationResult,
-  bullishReversal: bullishReversalResult,
-  bearishReversal: bearishReversalResult,
+  bearishContinuation: bearishContinuationResult.detected,
+bullishContinuation: bullishContinuationResult.detected,
+bullishReversal: bullishReversalResult.detected,
+bearishReversal: bearishReversalResult.detected,
+
   intradayHigherHighBreak,
   intradayLowerLowBreak,
   todaysLowestLow,
