@@ -514,13 +514,13 @@ if (type && level !== null) {
     }
   }
 
-  const defaulSymbols = symbols[5];
+  const defaulSymbol = symbols[5];
 
   return {
     props: {
       symbols,
       signals,
-      defaultSymbols,
+      defaultSymbol,
     },
   };
         }
