@@ -529,7 +529,7 @@ if (type && level !== null) {
 
 
 // In the component SignalChecker, just render the two new fields like this:
-    import { useState, useEffect } from 'react';
+    import { useState, useEffect, useRef } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
