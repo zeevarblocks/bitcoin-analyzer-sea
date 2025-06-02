@@ -561,9 +561,18 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
     fetchPairs();
 
-    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
-    return () => clearInterval(intervalId);
-  }, [signals]);
+     // Run once on mount and then every 60s
+  useEffect(() => {
+    fetchPairs();
+    refreshSignals();
+
+    const interval = setInterval(() => {
+      fetchPairs();
+      refreshSignals();
+    }, 60 * 1000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Filter signals based on selectedPair
   const filteredSignals =
