@@ -33,18 +33,6 @@ interface SignalData {
   todaysLowestLow: number;
   todaysHighestHigh: number;
 
-  // 🔧 Optional detection parameters
-  rsiMin?: number;
-  rsiMax?: number;
-  slopeThreshold?: number;
-  priceTouchThreshold?: number;
-  swingLookback?: number;
-  volumeSpikeFactor?: number;
-  lookaheadLimit?: number;
-  useVolume?: boolean;
-  useEMA200?: boolean;
-  debug?: boolean;
-
   // 📊 New: Confidence scores (0–100)
   confidence?: {
     bullish?: number;
@@ -60,6 +48,19 @@ interface SignalData {
   // 🔗 External reference or chart
   url: string;
   }
+
+interface DetectionOptions {
+  rsiMin?: number;
+  rsiMax?: number;
+  slopeThreshold?: number;
+  priceTouchThreshold?: number;
+  swingLookback?: number;
+  volumeSpikeFactor?: number;
+  lookaheadLimit?: number;
+  useVolume?: boolean;
+  useEMA200?: boolean;
+  debug?: boolean;
+}
 
 
 
@@ -266,7 +267,7 @@ function detectBullishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: SignalData = {}
+  options: DetectionOption = {}
 ): boolean {
   const {
     rsiMin = 40,
@@ -326,7 +327,7 @@ function detectBearishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: SignalData = {}
+  options: DetectionOption = {}
 ): boolean {
   const {
     rsiMin = 30,
