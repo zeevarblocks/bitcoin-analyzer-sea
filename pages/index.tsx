@@ -495,8 +495,8 @@ const adxResult = ADX.calculate({
        const klines = data.data;
 
   const volCloses = klines.map(k => parseFloat(k[4]));
-  const highs = klines.map(k => parseFloat(k[2]));
-  const lows = klines.map(k => parseFloat(k[3]));
+  const volhighs = klines.map(k => parseFloat(k[2]));
+  const vollows = klines.map(k => parseFloat(k[3]));
   const volume = klines.map(k => parseFloat(k[5]));
 
   return { closes, highs, lows, volume };
