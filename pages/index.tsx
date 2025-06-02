@@ -712,9 +712,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         🔍 Divergence vs Level:{" "}
         <span className="font-semibold capitalize">
           {data.divergenceFromLevelType === "bullish"
-            ? "Bullish Divergence"
+            ? "Bullish Divergence/Possible Reversal"
             : data.divergenceFromLevelType === "bearish"
-            ? "Bearish Divergence"
+            ? "Bearish Divergence/Possible Reversal"
             : "Detected"}
         </span>
       </p>
@@ -722,7 +722,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
        {data.divergence && (
             <p className="text-orange-400">
-              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'}</span>
+              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Bullish Divergence/Possible Reversal' : 'Bearish Divergence/Possible Reversal'}</span>
             </p>
           )}
           {data.nearOrAtEMA70Divergence && (
