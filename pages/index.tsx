@@ -560,7 +560,8 @@ return (
     )}
 
     {/* Dropdown for Trading Pairs */}
-    <div ref={containerRef} className="relative w-full md:w-auto flex flex-col md:flex-row gap-4">
+      {/* Searchable input */}
+  <div ref={containerRef} className="relative w-full md:w-auto flex flex-col md:flex-row gap-4">
       <div className="relative w-full md:w-64">
         <input
           type="text"
@@ -605,68 +606,62 @@ return (
           </ul>
         )}
 </div>
+
+  {/* Select All */}
+  <button
+    onClick={() =>
+      setSelectedPairs(
+        pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+      )
+    }
+    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+  >
+    Select All
+  </button>
+
+  {/* Unselect All */}
+  <button
+    onClick={() => setSelectedPairs([])}
+    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
+  >
+    Unselect All
+  </button>
+</div>
+
+      <div className="flex items-center space-x-4">
+        <label className="text-white font-medium">
+          <input
+            type="checkbox"
+            checked={showOnlyFavorites}
+            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+            className="mr-2"
+          />
+          Show only favorites
+        </label>
       </div>
 
-    {/* Select/Unselect All Buttons */}
-    <div className="flex gap-4">
-      <button
-        onClick={() =>
-          setSelectedPairs(
-            pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          )
-        }
-        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
-      >
-        Select All
-      </button>
-
-      <button
-        onClick={() => setSelectedPairs([])}
-        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
-      >
-        Unselect All
-      </button>
-    </div>
-
-    {/* Favorites Toggle */}
-    <div className="flex items-center space-x-4">
-      <label className="text-white font-medium">
-        <input
-          type="checkbox"
-          checked={showOnlyFavorites}
-          onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-          className="mr-2"
-        />
-        Show only favorites
-      </label>
-    </div>
-
-    {/* Signal Display */}
-    {filteredDisplaySignals.map(([symbol, data]) => (
-      <div
-        key={symbol}
-        className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
-      >
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold">{symbol}</h3>
-          <div className="flex items-center gap-2">
+      {filteredDisplaySignals.map(([symbol, data]) => (
+        <div
+          key={symbol}
+          className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold">{symbol}</h3>
             <button
               onClick={() => toggleFavorite(symbol)}
               className={`text-xl ${favorites.includes(symbol) ? 'text-yellow-400' : 'text-white'}`}
             >
               {favorites.includes(symbol) ? '★' : '☆'}
             </button>
-            <button
-              onClick={() =>
-                setSelectedPairs((prev) => prev.filter((p) => p !== symbol))
-              }
-              className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-            >
-              Unselect
-            </button>
+             <button
+          onClick={() => setSelectedPairs((prev) => prev.filter((p) => p !== symbol))}
+          className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+        >
+          Unselect
+        </button>
           </div>
-        </div>
-
+              
+        
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
 
         <div className="space-y-1">
