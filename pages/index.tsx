@@ -767,6 +767,4 @@ return (
     </footer>
   </div>
 );
-
-  
-       
+}
