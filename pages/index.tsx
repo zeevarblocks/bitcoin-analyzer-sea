@@ -662,11 +662,11 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
     {data.bearishReversal ? (
       <p className="text-orange-400">
-        🔃 Bearish Reversal: <span className="font-semibold">Detected</span>
+        🔃 Bearish Reversal: <span className="font-semibold">Caution: Momentum Reversal in Progress</span>
       </p>
     ) : data.bullishReversal ? (
       <p className="text-emerald-400">
-        🔄 Bullish Reversal: <span className="font-semibold">Detected</span>
+        🔄 Bullish Reversal: <span className="font-semibold">Caution: Momentum Reversal in Progress</span>
       </p>
     ) : data.bearishContinuation ? (
       <p className="text-red-400">
