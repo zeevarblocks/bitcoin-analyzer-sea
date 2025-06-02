@@ -536,50 +536,66 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
-const filteredPairs = pairs
-  .filter((pair) => signals?.[pair])
-  .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Filtered based on both search and signal availability
+  const filteredPairs = pairs
+    .filter((pair) => signals?.[pair])
+    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  
-  
+  // Fetch trading pairs (initial + interval refresh)
   useEffect(() => {
+    let isMounted = true;
+
     const fetchPairs = async () => {
-  setIsLoadingPairs(true);
-  try {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-    const data = await response.json();
-    const sortedPairs = data.data
-      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .map((item: any) => item.instId);
+      setIsLoadingPairs(true);
+      try {
+        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+        const data = await response.json();
 
-    setPairs(sortedPairs);
+        const sortedPairs = data.data
+          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+          .map((item: any) => item.instId);
 
-    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-    const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
+        if (isMounted) {
+          setPairs(sortedPairs);
 
-    if (validSaved.length > 0) {
-      setSelectedPairs(validSaved);
-    } else {
-      const topValidPairs = sortedPairs
-        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-        .slice(0, 5);
-      setSelectedPairs(topValidPairs);
-    }
-  } catch (error) {
-    console.error('Error fetching trading pairs:', error);
-  } finally {
-    setIsLoadingPairs(false);
-  }
-};
+          const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+          const validSaved = savedPairs.filter(
+            (pair: string) => signals?.[pair]?.currentPrice !== undefined
+          );
 
-    fetchPairs();
-    const intervalId = setInterval(fetchPairs, 1 * 60 * 1000);
-    return () => clearInterval(intervalId);
+          if (validSaved.length > 0) {
+            setSelectedPairs(validSaved);
+          } else {
+            const topValidPairs = sortedPairs
+              .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+              .slice(0, 5);
+            setSelectedPairs(topValidPairs);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching trading pairs:', error);
+      } finally {
+        if (isMounted) setIsLoadingPairs(false);
+      }
+    };
+
+    fetchPairs(); // Fetch once immediately
+
+    // Auto-refresh every 5 seconds
+    const intervalId = setInterval(fetchPairs, 5 * 1000);
+
+    return () => {
+      clearInterval(intervalId);
+      isMounted = false;
+    };
   }, [signals]);
+
+  // ... your component JSX continues here
+}
 
   useEffect(() => {
     if (selectedPairs.length > 0) {
