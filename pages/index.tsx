@@ -532,7 +532,7 @@ if (type && level !== null) {
 import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [pairs, setPairs] = useState<string[]>([]);
+  const [pairs, setPairs] = useState<string[]>([5]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
   useEffect(() => {
@@ -662,11 +662,11 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
     {data.bearishReversal ? (
       <p className="text-orange-400">
-        🔃 Bearish Reversal: <span className="font-semibold">Caution: Momentum Reversal in Progress</span>
+        🔃 Caution: <span className="font-semibold">Momentum Reversal in Progress</span>
       </p>
     ) : data.bullishReversal ? (
       <p className="text-emerald-400">
-        🔄 Bullish Reversal: <span className="font-semibold">Caution: Momentum Reversal in Progress</span>
+        🔄 Caution: <span className="font-semibold">Momentum Reversal in Progress</span>
       </p>
     ) : data.bearishContinuation ? (
       <p className="text-red-400">
