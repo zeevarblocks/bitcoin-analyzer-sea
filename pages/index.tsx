@@ -652,7 +652,7 @@ const filteredPairs = pairs
       ))}
     </ul>
   )}
-</div>
+
 
   {/* Select All */}
   <button
