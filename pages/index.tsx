@@ -342,7 +342,7 @@ function detectBearishReversal(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 10): Promise<string[]> {
+  async function fetchTopPairs(limit = 30): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -353,7 +353,7 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(10);
+  const symbols = await fetchTopPairs(30);
 
   const signals: Record<string, SignalData> = {};
 
@@ -514,7 +514,7 @@ if (type && level !== null) {
     }
   }
 
-  const defaultSymbol = symbols[10];
+  const defaultSymbol = symbols[0];
 
   return {
     props: {
@@ -606,7 +606,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 <span className="font-medium text-white/70">Current Price:</span>{' '}
                 <span className="text-blue-400">
                   {data.currentPrice !== undefined
-                    ? `$${data.currentPrice.toFixed(8)}`
+                    ? `$${data.currentPrice.toFixed(9)}`
                     : 'N/A'}
                 </span>
               </p>
@@ -616,7 +616,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                   {data.levelType?.toUpperCase() ?? 'N/A'} Level:
                 </span>{' '}
                 <span className="text-yellow-300">
-                  {data.level !== undefined ? data.level.toFixed(8) : 'N/A'}
+                  {data.level !== undefined ? data.level.toFixed(9) : 'N/A'}
                 </span>
               </p>
               <p>
@@ -627,7 +627,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
                 </span>{' '}
                 <span className="text-purple-300">
                   {data.inferredLevel !== undefined
-                    ? data.inferredLevel.toFixed(8)
+                    ? data.inferredLevel.toFixed(9)
                     : 'N/A'}
                 </span>
               </p>
@@ -712,21 +712,21 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         🔍 Divergence vs Level:{" "}
         <span className="font-semibold capitalize">
           {data.divergenceFromLevelType === "bullish"
-            ? "Bullish Divergence/Possible Reversal"
+            ? "Technical pullback"
             : data.divergenceFromLevelType === "bearish"
-            ? "Bearish Divergence/Possible Reversal"
-            : "Detected"}
+            ? "Technical pullback"
+            : "Technical pullback"}
         </span>
       </p>
     )}
 
        {data.divergence && (
             <p className="text-orange-400">
-              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Bullish Divergence/Possible Reversal' : 'Bearish Divergence/Possible Reversal'}</span>
+              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Technical pullback' : 'Technical pullback'}</span>
             </p>
           )}
           {data.nearOrAtEMA70Divergence && (
-            <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Yes</span></p>
+            <p className="text-violet-400">🟠 EMA70 Zone Divergence: <span className="font-semibold">Technical pullback</span></p>
           )}
         </div>
       )}
