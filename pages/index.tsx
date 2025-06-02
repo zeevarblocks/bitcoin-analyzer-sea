@@ -400,19 +400,24 @@ export async function getServerSideProps() {
   const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
-    try {
-      const candles = await fetchCandles(symbol, '15m');
-      const closes = candles.map(c => c.close);
-      const highs = candles.map(c => c.high);
-      const lows = candles.map(c => c.low);
+  for (const symbol of symbols) {
+  try {
+    const candles = await fetchCandles(symbol, '15m');
+    const closes = candles.map(c => c.close);
+    const highs = candles.map(c => c.high);
+    const lows = candles.map(c => c.low);
+    const volumes = candles.map(c => c.volume); // in case it's needed
 
-      const ema14 = calculateEMA(closes, 14);
-      const ema70 = calculateEMA(closes, 70);
-      const rsi14 = calculateRSI(closes, 14);
+    const ema14 = calculateEMA(closes, 14);
+    const ema70 = calculateEMA(closes, 70);
+    const ema200 = calculateEMA(closes, 200); // ✅ Added this line
+    const rsi14 = calculateRSI(closes, 14);
 
-      const lastClose = closes.at(-1)!;
-      const lastEMA14 = ema14.at(-1)!;
-      const lastEMA70 = ema70.at(-1)!;
+    const lastClose = closes.at(-1)!;
+    const lastEMA14 = ema14.at(-1)!;
+    const lastEMA70 = ema70.at(-1)!;
+    const lastEMA200 = ema200.at(-1)!; // Optional, if you need it later
+
 
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
