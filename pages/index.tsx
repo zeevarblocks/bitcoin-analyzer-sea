@@ -539,7 +539,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 const [dropdownVisible, setDropdownVisible] = useState(false);
-
+  const containerRef = useRef(null);
+  
 const filteredPairs = pairs
   .filter((pair) => signals?.[pair])
   .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
