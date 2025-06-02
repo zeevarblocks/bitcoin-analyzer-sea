@@ -533,7 +533,7 @@ import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
-  const [selectedPair, setSelectedPair] = useState<string | null>(symbos);
+  const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPairs = async () => {
