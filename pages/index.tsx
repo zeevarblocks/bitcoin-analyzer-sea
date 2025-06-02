@@ -514,7 +514,7 @@ if (type && level !== null) {
     }
   }
 
-  const defaulSymbol = symbols[5];
+  const defaultSymbol = symbols[5];
 
   return {
     props: {
@@ -523,7 +523,7 @@ if (type && level !== null) {
       defaultSymbol,
     },
   };
-        }
+}
 
 
 
