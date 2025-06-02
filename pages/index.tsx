@@ -532,8 +532,8 @@ if (type && level !== null) {
     import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [pairs, setPairs] = useState<string[]>([]);
 const [selectedPairs, setSelectedPairs] = useState<string[]>([]); // ✅ Must be before any useEffect using it
+const [pairs, setPairs] = useState<string[]>([]);
 const [favorites, setFavorites] = useState<string[]>([]);
 const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 const [isLoadingPairs, setIsLoadingPairs] = useState(false);
