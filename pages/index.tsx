@@ -465,6 +465,7 @@ export async function getServerSideProps() {
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
       const rsi14 = calculateRSI(closes, 14);
+      const ema200 = calculateEMA(closes, 200);
 
       const lastClose = closes.at(-1)!;
       const lastEMA14 = ema14.at(-1)!;
