@@ -545,7 +545,6 @@ const filteredPairs = pairs
   .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
   
-  
   useEffect(() => {
     const fetchPairs = async () => {
   setIsLoadingPairs(true);
@@ -566,7 +565,7 @@ const filteredPairs = pairs
     } else {
       const topValidPairs = sortedPairs
         .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-        .slice(0, 5);
+        .slice(0, 1);
       setSelectedPairs(topValidPairs);
     }
   } catch (error) {
@@ -613,6 +612,21 @@ const filteredPairs = pairs
     showOnlyFavorites ? favorites.includes(symbol) : true
   );
 
+  const containerRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setDropdownVisible(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [containerRef]);
+  
+
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
@@ -621,38 +635,50 @@ const filteredPairs = pairs
 )}
       {/* Dropdown for Trading Pairs */}
   {/* Searchable input */}
- <div className="flex flex-col md:flex-row md:items-center gap-4">
-  <input
-    type="text"
-    placeholder="Search trading pair..."
-    value={searchTerm}
-    onChange={(e) => {
-      setSearchTerm(e.target.value);
-      setDropdownVisible(true);
-    }}
-    onFocus={() => setDropdownVisible(true)}
-    className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white focus:outline-none"
-  />
-
-  {dropdownVisible && filteredPairs.length > 0 && (
-    <ul className="absolute z-10 mt-1 w-full bg-gray-900 border border-gray-700 rounded shadow-lg max-h-60 overflow-y-auto">
-      {filteredPairs.map((pair) => (
-        <li
-          key={pair}
-          onClick={() => {
-            if (!selectedPairs.includes(pair)) {
-              setSelectedPairs([...selectedPairs, pair]);
-            }
-            setSearchTerm('');
-            setDropdownVisible(false);
+  <div ref={containerRef} className="relative w-full md:w-auto flex flex-col md:flex-row gap-4">
+      <div className="relative w-full md:w-64">
+        <input
+          type="text"
+          placeholder="Search trading pair..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setDropdownVisible(true);
           }}
-          className="px-4 py-2 text-white hover:bg-gray-700 cursor-pointer"
-        >
-          {pair}
-        </li>
-      ))}
-    </ul>
-  )}
+          onFocus={() => setDropdownVisible(true)}
+          className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        {/* Clear button */}
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm('')}
+            className="absolute right-2 top-2 text-gray-400 hover:text-white text-sm"
+          >
+            ✕
+          </button>
+        )}
+
+        {/* Dropdown */}
+        {dropdownVisible && filteredPairs.length > 0 && (
+          <ul className="absolute z-50 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            {filteredPairs.map((pair) => (
+              <li
+                key={pair}
+                onClick={() => {
+                  if (!selectedPairs.includes(pair)) {
+                    setSelectedPairs([...selectedPairs, pair]);
+                  }
+                  setSearchTerm('');
+                  setDropdownVisible(false);
+                }}
+                className="px-4 py-2 text-white hover:bg-gray-700 cursor-pointer transition-colors"
+              >
+                {pair}
+              </li>
+            ))}
+          </ul>
+        )}
 
 
   {/* Select All */}
