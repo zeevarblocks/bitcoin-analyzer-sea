@@ -348,7 +348,7 @@ export async function getServerSideProps() {
 
     const sorted = data.data
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .slice(5, limit);
+      .slice(0, limit);
 
     return sorted.map((ticker: any) => ticker.instId);
   }
@@ -533,7 +533,7 @@ import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
-  const [selectedPair, setSelectedPair] = useState<string | null>(null);
+  const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchPairs = async () => {
@@ -547,12 +547,13 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
         setPairs(sortedPairs);
 
-        // Find the first pair that exists in signals and has valid data
-        const defaultPair = sortedPairs.find(
-          (pair) => signals?.[pair]?.currentPrice !== undefined
-        );
-        if (defaultPair) {
-          setSelectedPair(defaultPair);
+        // Pick top 5 valid pairs from signals
+        const defaultPairs = sortedPairs
+          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          .slice(0, 5);
+
+        if (defaultPairs.length > 0) {
+          setSelectedPairs(defaultPairs);
         }
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
@@ -565,22 +566,30 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     return () => clearInterval(intervalId);
   }, [signals]);
 
-  // Filter signals based on selectedPair
-  const filteredSignals =
-    selectedPair && signals?.[selectedPair] ? { [selectedPair]: signals[selectedPair] } : {};
+  // Filter the signals based on selectedPairs
+  const filteredSignals = selectedPairs.reduce((acc, pair) => {
+    if (signals?.[pair]) {
+      acc[pair] = signals[pair];
+    }
+    return acc;
+  }, {} as Record<string, SignalData>);
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Dropdown for Trading Pairs */}
+      {/* Dropdown for Multiple Trading Pairs */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <label htmlFor="tradingPair" className="text-white font-semibold">
-          Select Trading Pair:
+          Select up to 5 Trading Pairs:
         </label>
         <select
           id="tradingPair"
-          className="p-2 rounded border bg-gray-800 text-white"
-          value={selectedPair ?? ''}
-          onChange={(e) => setSelectedPair(e.target.value === '' ? null : e.target.value)}
+          multiple
+          className="p-2 rounded border bg-gray-800 text-white min-w-[200px] h-[150px]"
+          value={selectedPairs}
+          onChange={(e) => {
+            const selected = Array.from(e.target.selectedOptions, (opt) => opt.value).slice(0, 5);
+            setSelectedPairs(selected);
+          }}
         >
           {pairs.filter((pair) => signals?.[pair]).map((pair) => (
             <option key={pair} value={pair}>
@@ -590,6 +599,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         </select>
       </div>
 
+      {/* Render 5 Signal Cards */}
       {Object.entries(filteredSignals).map(([symbol, data]) => {
         if (!data) return null;
 
