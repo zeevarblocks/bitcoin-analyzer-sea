@@ -601,9 +601,11 @@ return ( <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black m
           className={`text-xl ${favorites.includes(symbol) ? 'text-yellow-400' : 'text-white'}`}
         >
           {favorites.includes(symbol) ? '★' : '☆'}
-        </button>
-      </div>                                               
-
+        </button> 
+        </div>
+        </div>
+    </div>
+       
         return (
           <div
             key={symbol}
