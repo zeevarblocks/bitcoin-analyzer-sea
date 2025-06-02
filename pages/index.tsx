@@ -612,16 +612,16 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
 )}
       {/* Dropdown for Trading Pairs */}
       <div className="flex flex-wrap gap-4 items-center">
+  <div className="flex flex-col md:flex-row gap-4 items-center">
   <label htmlFor="tradingPair" className="text-white font-semibold">
     Select Trading Pair:
   </label>
-
   <select
     id="tradingPair"
     className="p-2 rounded border bg-gray-800 text-white"
     onChange={(e) => {
       const value = e.target.value;
-      if (!selectedPairs.includes(value)) {
+      if (value && !selectedPairs.includes(value)) {
         setSelectedPairs([...selectedPairs, value]);
       }
     }}
@@ -636,25 +636,25 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
       ))}
   </select>
 
-  {/* ✅ Select All Button */}
+  {/* Select All Button */}
   <button
-  onClick={() => {
-    const allValid = pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined);
-    setSelectedPairs(allValid);
-  }}
-  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-  disabled={selectedPairs.length === pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined).length}
->
-  Select All
-</button>
+    onClick={() =>
+      setSelectedPairs(
+        pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+      )
+    }
+    className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded-md transition"
+  >
+    Select All
+  </button>
 
-<button
-  onClick={() => setSelectedPairs([])}
-  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-  disabled={selectedPairs.length === 0}
->
-  Unselect All
-</button>
+  {/* Unselect All Button */}
+  <button
+    onClick={() => setSelectedPairs([])}
+    className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-md transition"
+  >
+    Unselect All
+  </button>
 </div>
 
       <div className="flex items-center space-x-4">
