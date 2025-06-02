@@ -534,6 +534,8 @@ import { useState, useEffect } from 'react';
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   useEffect(() => {
     const fetchPairs = async () => {
@@ -547,13 +549,16 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
         setPairs(sortedPairs);
 
-        // Pick top 5 valid pairs from signals
-        const defaultPairs = sortedPairs
-          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 5);
+        const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+        const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
 
-        if (defaultPairs.length > 0) {
-          setSelectedPairs(defaultPairs);
+        if (validSaved.length > 0) {
+          setSelectedPairs(validSaved);
+        } else {
+          const topValidPairs = sortedPairs
+            .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+            .slice(0, 5);
+          setSelectedPairs(topValidPairs);
         }
       } catch (error) {
         console.error('Error fetching trading pairs:', error);
@@ -561,36 +566,60 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     };
 
     fetchPairs();
-
     const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, [signals]);
 
-  // Filter the signals based on selectedPairs
+  useEffect(() => {
+    if (selectedPairs.length > 0) {
+      localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
+    }
+  }, [selectedPairs]);
+
+  useEffect(() => {
+    const fav = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
+    setFavorites(fav);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('favoritePairs', JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (symbol: string) => {
+    setFavorites((prev) =>
+      prev.includes(symbol) ? prev.filter((s) => s !== symbol) : [...prev, symbol]
+    );
+  };
+
   const filteredSignals = selectedPairs.reduce((acc, pair) => {
-    if (signals?.[pair]) {
+    if (signals[pair]) {
       acc[pair] = signals[pair];
     }
     return acc;
   }, {} as Record<string, SignalData>);
 
+  const filteredDisplaySignals = Object.entries(filteredSignals).filter(([symbol]) =>
+    showOnlyFavorites ? favorites.includes(symbol) : true
+  );
+
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {/* Dropdown for Multiple Trading Pairs */}
+      {/* Dropdown for Trading Pairs */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <label htmlFor="tradingPair" className="text-white font-semibold">
-          Select up to 5 Trading Pairs:
+          Select Trading Pair:
         </label>
         <select
           id="tradingPair"
-          multiple
-          className="p-2 rounded border bg-gray-800 text-white min-w-[200px] h-[150px]"
-          value={selectedPairs}
+          className="p-2 rounded border bg-gray-800 text-white"
           onChange={(e) => {
-            const selected = Array.from(e.target.selectedOptions, (opt) => opt.value).slice(0, 5);
-            setSelectedPairs(selected);
+            const value = e.target.value;
+            if (!selectedPairs.includes(value)) {
+              setSelectedPairs([...selectedPairs, value]);
+            }
           }}
         >
+          <option value="">-- Select --</option>
           {pairs.filter((pair) => signals?.[pair]).map((pair) => (
             <option key={pair} value={pair}>
               {pair}
@@ -599,15 +628,32 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         </select>
       </div>
 
-      {/* Render 5 Signal Cards */}
-      {Object.entries(filteredSignals).map(([symbol, data]) => {
-        if (!data) return null;
+      <div className="flex items-center space-x-4">
+        <label className="text-white font-medium">
+          <input
+            type="checkbox"
+            checked={showOnlyFavorites}
+            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+            className="mr-2"
+          />
+          Show only favorites
+        </label>
+      </div>
 
-        return (
-          <div
-            key={symbol}
-            className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
-          >
+      {filteredDisplaySignals.map(([symbol, data]) => (
+        <div
+          key={symbol}
+          className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold">{symbol}</h3>
+            <button
+              onClick={() => toggleFavorite(symbol)}
+              className={`text-xl ${favorites.includes(symbol) ? 'text-yellow-400' : 'text-white'}`}
+            >
+              {favorites.includes(symbol) ? '★' : '☆'}
+            </button>
+          </div>
             <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
 
             <div className="space-y-1">
