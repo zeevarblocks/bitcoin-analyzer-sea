@@ -532,15 +532,39 @@ if (type && level !== null) {
     import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-const [pairs, setPairs] = useState<string[]>([]);
-const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
-const [favorites, setFavorites] = useState<string[]>([]);
-const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-const [isLoadingPairs, setIsLoadingPairs] = useState(false);
-const [searchTerm, setSearchTerm] = useState('');
-const [dropdownVisible, setDropdownVisible] = useState(false);
-const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [pairs, setPairs] = useState<string[]>([]);
+  const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  // Save selectedPairs to localStorage when they change
+  useEffect(() => {
+    if (selectedPairs.length > 0) {
+      localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
+    }
+  }, [selectedPairs]);
+
+  // Load favoritePairs from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+  // safe localStorage access
+    const fav = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
+    setFavorites(fav);
+    }
+    },
+    []);
+
+  // Save favoritePairs to localStorage on change
+  useEffect(() => {
+    localStorage.setItem('favoritePairs', JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Rest of your code...
+}
   // Filtered based on both search and signal availability
   const filteredPairs = pairs
     .filter((pair) => signals?.[pair])
@@ -595,22 +619,6 @@ const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     };
   }, [signals]);
 }
-
-const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
-  useEffect(() => {
-    if (selectedPairs.length > 0) {
-      localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
-    }
-  }, [selectedPairs]);
-
-  useEffect(() => {
-    const fav = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
-    setFavorites(fav);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('favoritePairs', JSON.stringify(favorites));
-  }, [favorites]);
 
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
