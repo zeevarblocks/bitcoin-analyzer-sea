@@ -514,7 +514,7 @@ if (type && level !== null) {
     }
   }
 
-  const defaultSymbol = symbols[5];
+  const defaultSymbol = symbols[0];
 
   return {
     props: {
@@ -523,7 +523,7 @@ if (type && level !== null) {
       defaultSymbol,
     },
   };
-}
+        }
 
 
 
@@ -662,11 +662,11 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
     {data.bearishReversal ? (
       <p className="text-orange-400">
-        🔃 Caution: <span className="font-semibold">Momentum Reversal in Progress</span>
+        🔃 Bearish Reversal: <span className="font-semibold">Detected</span>
       </p>
     ) : data.bullishReversal ? (
       <p className="text-emerald-400">
-        🔄 Caution: <span className="font-semibold">Momentum Reversal in Progress</span>
+        🔄 Bullish Reversal: <span className="font-semibold">Detected</span>
       </p>
     ) : data.bearishContinuation ? (
       <p className="text-red-400">
@@ -712,10 +712,10 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
         🔍 Divergence vs Level:{" "}
         <span className="font-semibold capitalize">
           {data.divergenceFromLevelType === "bullish"
-            ? "Technical pullback"
+            ? "Overbought"
             : data.divergenceFromLevelType === "bearish"
-            ? "Technical pullback"
-            : "Technical pullback"}
+            ? "Oversold"
+            : "Momentum Exhaustion"}
         </span>
       </p>
     )}
@@ -763,4 +763,4 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       })}
     </div>
   );
-    }
+  }
