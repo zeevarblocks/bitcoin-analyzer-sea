@@ -514,13 +514,13 @@ if (type && level !== null) {
     }
   }
 
-  const defaulPairs = symbols[5];
+  const defaulSymbols = symbols[5];
 
   return {
     props: {
       symbols,
       signals,
-      defaultPairs,
+      defaultSymbols,
     },
   };
         }
@@ -532,7 +532,7 @@ if (type && level !== null) {
 import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [pairs, setPairs] = useState<string[]>([defaultPairs]);
+  const [pairs, setPairs] = useState<string[]>([symbols);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
   useEffect(() => {
