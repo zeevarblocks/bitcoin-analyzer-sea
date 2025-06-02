@@ -604,8 +604,7 @@ return (
             ))}
           </ul>
         )}
-      </div>
-    </div>
+</div>
 
     {/* Select/Unselect All Buttons */}
     <div className="flex gap-4">
