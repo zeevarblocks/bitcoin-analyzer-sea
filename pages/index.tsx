@@ -612,8 +612,6 @@ const filteredPairs = pairs
     showOnlyFavorites ? favorites.includes(symbol) : true
   );
 
-  const containerRef = useRef(null);
-
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
