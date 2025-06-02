@@ -654,6 +654,11 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
               {favorites.includes(symbol) ? '★' : '☆'}
             </button>
           </div>
+          return (
+          <div
+            key={symbol}
+            className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
+          >
             <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
 
             <div className="space-y-1">
