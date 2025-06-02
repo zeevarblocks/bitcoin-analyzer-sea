@@ -536,34 +536,37 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-
+const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+  
   useEffect(() => {
     const fetchPairs = async () => {
-      try {
-        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-        const data = await response.json();
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const data = await response.json();
+    const sortedPairs = data.data
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .map((item: any) => item.instId);
 
-        const sortedPairs = data.data
-          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-          .map((item: any) => item.instId);
+    setPairs(sortedPairs);
 
-        setPairs(sortedPairs);
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
 
-        const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-        const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
-
-        if (validSaved.length > 0) {
-          setSelectedPairs(validSaved);
-        } else {
-          const topValidPairs = sortedPairs
-            .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-            .slice(0, 5);
-          setSelectedPairs(topValidPairs);
-        }
-      } catch (error) {
-        console.error('Error fetching trading pairs:', error);
-      }
-    };
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 5);
+      setSelectedPairs(topValidPairs);
+    }
+  } catch (error) {
+    console.error('Error fetching trading pairs:', error);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+};
 
     fetchPairs();
     const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
@@ -604,6 +607,9 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
+      {isLoadingPairs && (
+  <div className="text-white font-medium animate-pulse">Loading trading pairs...</div>
+)}
       {/* Dropdown for Trading Pairs */}
       <div className="flex flex-wrap gap-4 items-center">
   <label htmlFor="tradingPair" className="text-white font-semibold">
@@ -632,22 +638,23 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
   {/* ✅ Select All Button */}
   <button
-    onClick={() => {
-      const allValid = pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined);
-      setSelectedPairs(allValid);
-    }}
-    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-  >
-    Select All
-  </button>
+  onClick={() => {
+    const allValid = pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined);
+    setSelectedPairs(allValid);
+  }}
+  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+  disabled={selectedPairs.length === pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined).length}
+>
+  Select All
+</button>
 
-  {/* ❌ Unselect All Button */}
-  <button
-    onClick={() => setSelectedPairs([])}
-    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-  >
-    Unselect All
-  </button>
+<button
+  onClick={() => setSelectedPairs([])}
+  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+  disabled={selectedPairs.length === 0}
+>
+  Unselect All
+</button>
 </div>
 
       <div className="flex items-center space-x-4">
