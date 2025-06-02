@@ -131,6 +131,132 @@ function calculateRSI(closes: number[], period = 14): number[] {
   return rsi;
 }
 
+function calculateMACD(closes: number[], fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+  // MACD calculation logic
+  function calculateEMA(values: number[], period: number): number[] {
+  const k = 2 / (period + 1);
+  const emaArray: number[] = [];
+  let ema = values[0]; // Start with the first value
+
+  emaArray.push(ema);
+
+  for (let i = 1; i < values.length; i++) {
+    ema = values[i] * k + ema * (1 - k);
+    emaArray.push(ema);
+  }
+
+  return emaArray;
+}
+
+function calculateMACD(
+  closes: number[],
+  fastPeriod = 12,
+  slowPeriod = 26,
+  signalPeriod = 9
+) {
+  const emaFast = calculateEMA(closes, fastPeriod);
+  const emaSlow = calculateEMA(closes, slowPeriod);
+
+  // MACD line = Fast EMA - Slow EMA
+  const macdLine = emaFast.map((val, idx) => val - emaSlow[idx]);
+
+  // Signal line = EMA of MACD line
+  const signalLine = calculateEMA(macdLine.slice(slowPeriod - 1), signalPeriod);
+
+  // Histogram = MACD line - Signal line (align indexes)
+  const histogram = macdLine
+    .slice(slowPeriod - 1 + signalPeriod - 1)
+    .map((val, idx) => val - signalLine[idx]);
+
+  return {
+    macdLine,
+    signalLine,
+    histogram,
+  };
+}
+}
+
+function calculateADX(highs: number[], lows: number[], closes: number[], period = 14) {
+  // ADX calculation logic
+  function calculateADX(
+  highs: number[],
+  lows: number[],
+  closes: number[],
+  period = 14
+) {
+  const plusDM: number[] = [];
+  const minusDM: number[] = [];
+  const tr: number[] = [];
+
+  for (let i = 1; i < highs.length; i++) {
+    const upMove = highs[i] - highs[i - 1];
+    const downMove = lows[i - 1] - lows[i];
+
+    plusDM.push(upMove > downMove && upMove > 0 ? upMove : 0);
+    minusDM.push(downMove > upMove && downMove > 0 ? downMove : 0);
+
+    const highLow = highs[i] - lows[i];
+    const highClose = Math.abs(highs[i] - closes[i - 1]);
+    const lowClose = Math.abs(lows[i] - closes[i - 1]);
+
+    tr.push(Math.max(highLow, highClose, lowClose));
+  }
+
+  function smooth(values: number[]) {
+    const smoothed: number[] = [];
+    let sum = values.slice(0, period).reduce((a, b) => a + b, 0);
+    smoothed[period - 1] = sum;
+
+    for (let i = period; i < values.length; i++) {
+      sum = smoothed[i - 1] - smoothed[i - 1] / period + values[i];
+      smoothed[i] = sum;
+    }
+
+    return smoothed;
+  }
+
+  const smoothedTR = smooth(tr);
+  const smoothedPlusDM = smooth(plusDM);
+  const smoothedMinusDM = smooth(minusDM);
+
+  const plusDI: number[] = [];
+  const minusDI: number[] = [];
+  const dx: number[] = [];
+
+  for (let i = period - 1; i < smoothedTR.length; i++) {
+    plusDI[i] = (smoothedPlusDM[i] / smoothedTR[i]) * 100;
+    minusDI[i] = (smoothedMinusDM[i] / smoothedTR[i]) * 100;
+
+    dx[i] = (Math.abs(plusDI[i] - minusDI[i]) / (plusDI[i] + minusDI[i])) * 100;
+  }
+
+  // Smooth DX to get ADX
+  const adx: number[] = [];
+  let adxSum = 0;
+
+  for (let i = period * 2 - 2; i < dx.length; i++) {
+    if (i === period * 2 - 2) {
+      adxSum = dx.slice(period - 1, i + 1).reduce((a, b) => a + b, 0);
+      adx[i] = adxSum / period;
+    } else {
+      adx[i] = (adx[i - 1] * (period - 1) + dx[i]) / period;
+    }
+  }
+
+  return {
+    plusDI,
+    minusDI,
+    adx,
+  };
+      }
+}
+
+// Using them in the same file:
+const macdResult = calculateMACD(closes);
+const adxResult = calculateADX(highs, lows, closes);
+
+
+
 function calculateMACD(
   closes: number[],
   fastPeriod = 12,
