@@ -604,7 +604,7 @@ return ( <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black m
         </button> 
         </div>
         </div>
-    </div>
+    
        
         return (
           <div
