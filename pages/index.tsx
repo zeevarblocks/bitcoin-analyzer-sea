@@ -342,7 +342,7 @@ function detectBearishReversal(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 50): Promise<string[]> {
+  async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -353,7 +353,7 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(50);
+  const symbols = await fetchTopPairs(100);
 
   const signals: Record<string, SignalData> = {};
 
@@ -577,7 +577,7 @@ const filteredPairs = pairs
 };
 
     fetchPairs();
-    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
+    const intervalId = setInterval(fetchPairs, 1 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, [signals]);
 
@@ -620,7 +620,7 @@ const filteredPairs = pairs
 )}
       {/* Dropdown for Trading Pairs */}
   {/* Searchable input */}
-<div className="relative w-full md:w-80">
+ <div className="flex flex-col md:flex-row md:items-center gap-4">
   <input
     type="text"
     placeholder="Search trading pair..."
