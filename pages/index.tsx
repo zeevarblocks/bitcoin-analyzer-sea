@@ -510,28 +510,14 @@ export async function getServerSideProps() {
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
 
-      // Calculate MACD results
-const macdResult = MACD.calculate({
-  values: closes,
-  fastPeriod: 12,
-  slowPeriod: 26,
-  signalPeriod: 9,
-  SimpleMAOscillator: false,
-  SimpleMASignal: false
-});
+ 
 
 const macd = macdResult.map(x => x.MACD);
 const macdSignal = macdResult.map(x => x.signal);
 
-// Calculate ADX results
-const adxResult = ADX.calculate({
-  close: closes,
-  high: highs,
-  low: lows,
-  period: 14
-});
-
-       const klines = data.data;
+  const adx = adxResult.map(x => x.adx);
+      
+  const klines = data.data;
 
   const volCloses = klines.map(k => parseFloat(k[4]));
   const volhighs = klines.map(k => parseFloat(k[2]));
@@ -541,7 +527,7 @@ const adxResult = ADX.calculate({
   return { closes, highs, lows, volume };
     }
 
-const adx = adxResult.map(x => x.adx);
+
 
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
