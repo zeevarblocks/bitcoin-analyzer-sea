@@ -436,9 +436,9 @@ if (trend === 'bearish') {
 
       let divergenceType: 'bullish' | 'bearish' | null = null;
       if (lows.at(-1)! < prevSessionLow! && prevLowIdx !== -1 && rsi14.at(-1)! > rsi14[prevLowIdx]) {
-        divergenceType = 'Bullish Divergence';
+        divergenceType = 'bullish';
       } else if (highs.at(-1)! > prevSessionHigh! && prevHighIdx !== -1 && rsi14.at(-1)! < rsi14[prevHighIdx]) {
-        divergenceType = 'Bearish Divergence';
+        divergenceType = 'bearish';
       }
       const divergence = divergenceType !== null;
 
@@ -468,10 +468,10 @@ if (type && level !== null) {
 
     if (type === 'resistance' && lastClose > level && currentRSI < pastRSI) {
       divergenceFromLevel = true;
-      divergenceFromLevelType = 'Bearish Divergence';
+      divergenceFromLevelType = 'bearish';
     } else if (type === 'support' && lastClose < level && currentRSI > pastRSI) {
       divergenceFromLevel = true;
-      divergenceFromLevelType = 'Bullish Divergence';
+      divergenceFromLevelType = 'bullish';
     }
   }
 }
