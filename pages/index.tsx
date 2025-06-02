@@ -536,98 +536,65 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+const [dropdownVisible, setDropdownVisible] = useState(false);
 
+const filteredPairs = pairs
+  .filter((pair) => signals?.[pair])
+  .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // Filtered based on both search and signal availability
-  const filteredPairs = pairs
-    .filter((pair) => signals?.[pair])
-    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  // Save selectedPairs to localStorage when they change
+  
+  
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-  // safe localStorage access
+    const fetchPairs = async () => {
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const data = await response.json();
+    const sortedPairs = data.data
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .map((item: any) => item.instId);
+
+    setPairs(sortedPairs);
+
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
+
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 5);
+      setSelectedPairs(topValidPairs);
+    }
+  } catch (error) {
+    console.error('Error fetching trading pairs:', error);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+};
+
+    fetchPairs();
+    const intervalId = setInterval(fetchPairs, 5 * 1000);
+    return () => clearInterval(intervalId);
+  }, [signals]);
+
+  useEffect(() => {
     if (selectedPairs.length > 0) {
       localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
     }
-    }  
   }, [selectedPairs]);
 
-  // Load favoritePairs from localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-  // safe localStorage access
     const fav = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
     setFavorites(fav);
-    }
-    },
-    []);
+  }, []);
 
-  // Save favoritePairs to localStorage on change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-  // safe localStorage access
-    
     localStorage.setItem('favoritePairs', JSON.stringify(favorites));
-    }
-    }, [favorites]);
-
-  // Rest of your code...
-}
-
-  // Fetch trading pairs (initial + interval refresh)
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchPairs = async () => {
-      setIsLoadingPairs(true);
-      try {
-        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-        const data = await response.json();
-
-        const sortedPairs = data.data
-          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-          .map((item: any) => item.instId);
-
-        if (isMounted) {
-          setPairs(sortedPairs);
-
-          const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-          const validSaved = savedPairs.filter(
-            (pair: string) => signals?.[pair]?.currentPrice !== undefined
-          );
-
-          if (validSaved.length > 0) {
-            setSelectedPairs(validSaved);
-          } else {
-            const topValidPairs = sortedPairs
-              .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-              .slice(0, 5);
-            setSelectedPairs(topValidPairs);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching trading pairs:', error);
-      } finally {
-        if (isMounted) setIsLoadingPairs(false);
-      }
-    };
-
-    fetchPairs(); // Fetch once immediately
-
-    // Auto-refresh every 5 seconds
-    const intervalId = setInterval(fetchPairs, 5 * 1000);
-
-    return () => {
-      clearInterval(intervalId);
-      isMounted = false;
-    };
-  }, [signals]);
-}
+  }, [favorites]);
 
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
@@ -645,6 +612,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const filteredDisplaySignals = Object.entries(filteredSignals).filter(([symbol]) =>
     showOnlyFavorites ? favorites.includes(symbol) : true
   );
+
 
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
