@@ -1,12 +1,12 @@
 {
-  "name": "bitcoin-analyzer-sea",
+  "name": "bitcoin-signal-analyzer",
   "version": "1.0.0",
-  "description": "Bitcoin signal analyzer for SEA traders using ATH, ATL, and EMA70 logic",
-  "main": "index.js",
+  "description": "Bitcoin signal analyzer for traders using ATH, ATL, and EMA logic",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "author": "zeevarblocks",
   "license": "MIT",
@@ -28,11 +28,11 @@
     "react-financial-charts": "^2.0.1"
   },
   "devDependencies": {
-    "@types/node": "^22.15.23",
-    "@types/react": "^19.1.6",
+    "@types/node": "^20.5.9",
+    "@types/react": "^18.2.14",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.4.5"
   }
 }
