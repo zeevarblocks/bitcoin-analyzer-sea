@@ -541,11 +541,20 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+
+    // Filtered based on both search and signal availability
+  const filteredPairs = pairs
+    .filter((pair) => signals?.[pair])
+    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
+
   // Save selectedPairs to localStorage when they change
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+  // safe localStorage access
     if (selectedPairs.length > 0) {
       localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
     }
+    }  
   }, [selectedPairs]);
 
   // Load favoritePairs from localStorage
@@ -560,15 +569,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
   // Save favoritePairs to localStorage on change
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+  // safe localStorage access
+    
     localStorage.setItem('favoritePairs', JSON.stringify(favorites));
-  }, [favorites]);
+    }
+    }, [favorites]);
 
   // Rest of your code...
 }
-  // Filtered based on both search and signal availability
-  const filteredPairs = pairs
-    .filter((pair) => signals?.[pair])
-    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
   // Fetch trading pairs (initial + interval refresh)
   useEffect(() => {
