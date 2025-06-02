@@ -418,7 +418,7 @@ if (type && level !== null) {
   divergence,
   divergenceType,
   divergenceFromLevel,
-  divergenceFromLevelType,  // ✅ Newly added
+  divergenceFromLevelType,  
   nearOrAtEMA70Divergence,
   ema14Bounce,
   ema70Bounce,
@@ -605,6 +605,7 @@ const filteredPairs = pairs
           </ul>
         )}
 </div>
+    </div>
 
   {/* Select All */}
   <button
