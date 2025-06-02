@@ -533,12 +533,13 @@ if (type && level !== null) {
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
-  const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+const [selectedPairs, setSelectedPairs] = useState<string[]>([]); // ✅ Must be before any useEffect using it
+const [favorites, setFavorites] = useState<string[]>([]);
+const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+const [searchTerm, setSearchTerm] = useState('');
+const [dropdownVisible, setDropdownVisible] = useState(false);
+const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Filtered based on both search and signal availability
   const filteredPairs = pairs
