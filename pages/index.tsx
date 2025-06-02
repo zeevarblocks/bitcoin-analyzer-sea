@@ -61,6 +61,9 @@ interface SignalData {
   url: string;
   }
 
+
+
+
 // fetchCandles, calculateEMA, etc.,.
 interface Candle {
   timestamp: number;
@@ -263,7 +266,7 @@ function detectBullishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: DetectionOptions = {}
+  options: SignalData = {}
 ): boolean {
   const {
     rsiMin = 40,
@@ -323,7 +326,7 @@ function detectBearishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: DetectionOptions = {}
+  options: SignalData = {}
 ): boolean {
   const {
     rsiMin = 30,
@@ -465,7 +468,7 @@ let bullishContinuationConfidence = 0;
 let bearishDebugInfo = '';
 let bullishDebugInfo = '';
 
-const detectionOptions = {
+const detectionOption = {
   rsiMin: 45,
   rsiMax: 65,
   slopeThreshold: 0.15,
