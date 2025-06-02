@@ -342,7 +342,7 @@ function detectBearishReversal(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 150): Promise<string[]> {
+  async function fetchTopPairs(limit = 50): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -353,7 +353,7 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(150);
+  const symbols = await fetchTopPairs(50);
 
   const signals: Record<string, SignalData> = {};
 
@@ -538,6 +538,13 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+const [dropdownVisible, setDropdownVisible] = useState(false);
+
+const filteredPairs = pairs
+  .filter((pair) => signals?.[pair])
+  .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  
   
   useEffect(() => {
     const fetchPairs = async () => {
@@ -612,41 +619,40 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   <div className="text-white font-medium animate-pulse">Loading trading pairs...</div>
 )}
       {/* Dropdown for Trading Pairs */}
-  <div className="flex flex-col md:flex-row md:items-center gap-4">
-  <label htmlFor="tradingPair" className="text-white font-semibold">
-    Select Trading Pair:
-  </label>
-
-  {/* 🔍 Search Input */}
+  {/* Searchable input */}
+<div className="relative w-full md:w-80">
   <input
     type="text"
-    placeholder="Search pairs..."
+    placeholder="Search trading pair..."
     value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="p-2 rounded border bg-gray-800 text-white"
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setDropdownVisible(true);
+    }}
+    onFocus={() => setDropdownVisible(true)}
+    className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white focus:outline-none"
   />
 
-  {/* Dropdown */}
-  <select
-    id="tradingPair"
-    className="p-2 rounded border bg-gray-800 text-white"
-    onChange={(e) => {
-      const value = e.target.value;
-      if (value && !selectedPairs.includes(value)) {
-        setSelectedPairs([...selectedPairs, value]);
-      }
-    }}
-  >
-    <option value="">-- Select --</option>
-    {pairs
-      .filter((pair) => signals?.[pair])
-      .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()))
-      .map((pair) => (
-        <option key={pair} value={pair}>
+  {dropdownVisible && filteredPairs.length > 0 && (
+    <ul className="absolute z-10 mt-1 w-full bg-gray-900 border border-gray-700 rounded shadow-lg max-h-60 overflow-y-auto">
+      {filteredPairs.map((pair) => (
+        <li
+          key={pair}
+          onClick={() => {
+            if (!selectedPairs.includes(pair)) {
+              setSelectedPairs([...selectedPairs, pair]);
+            }
+            setSearchTerm('');
+            setDropdownVisible(false);
+          }}
+          className="px-4 py-2 text-white hover:bg-gray-700 cursor-pointer"
+        >
           {pair}
-        </option>
+        </li>
       ))}
-  </select>
+    </ul>
+  )}
+</div>
 
   {/* Select All */}
   <button
