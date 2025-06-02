@@ -494,14 +494,14 @@ const result = detectBearishContinuation(closes, highs, lows, ema70, ema14, rsi1
 
 if (trend === 'bearish') {
   const result = detectBearishContinuation(
-    closes, highs, lows, ema70, ema14, rsi14, ema200, volumes, detectionOptions
+    closes, highs, lows, ema70, ema14, rsi14, ema200, volumes, detectionOption
   );
   bearishContinuation = result.match;
   bearishContinuationConfidence = result.confidence;
   bearishDebugInfo = result.debugInfo;
 } else if (trend === 'bullish') {
   const result = detectBullishContinuation(
-    closes, lows, highs, ema70, ema14, rsi14, ema200, volumes, detectionOptions
+    closes, lows, highs, ema70, ema14, rsi14, ema200, volumes, detectionOption
   );
   bullishContinuation = result.match;
   bullishContinuationConfidence = result.confidence;
