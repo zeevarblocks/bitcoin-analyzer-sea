@@ -131,114 +131,6 @@ function calculateRSI(closes: number[], period = 14): number[] {
   return rsi;
 }
 
-function calculateMACD(closes: number[], fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
-  // MACD calculation logic
-function calculateMACD(
-  closes: number[],
-  fastPeriod = 12,
-  slowPeriod = 26,
-  signalPeriod = 9
-) {
-  const emaFast = calculateEMA(closes, fastPeriod);
-  const emaSlow = calculateEMA(closes, slowPeriod);
-
-  // MACD line = Fast EMA - Slow EMA
-  const macdLine = emaFast.map((val, idx) => val - emaSlow[idx]);
-
-  // Signal line = EMA of MACD line
-  const signalLine = calculateEMA(macdLine.slice(slowPeriod - 1), signalPeriod);
-
-  // Histogram = MACD line - Signal line (align indexes)
-  const histogram = macdLine
-    .slice(slowPeriod - 1 + signalPeriod - 1)
-    .map((val, idx) => val - signalLine[idx]);
-
-  return {
-    macdLine,
-    signalLine,
-    histogram,
-  };
-}
-}
-
-function calculateADX(highs: number[], lows: number[], closes: number[], period = 14) {
-  // ADX calculation logic
-  function calculateADX(
-  highs: number[],
-  lows: number[],
-  closes: number[],
-  period = 14
-) {
-  const plusDM: number[] = [];
-  const minusDM: number[] = [];
-  const tr: number[] = [];
-
-  for (let i = 1; i < highs.length; i++) {
-    const upMove = highs[i] - highs[i - 1];
-    const downMove = lows[i - 1] - lows[i];
-
-    plusDM.push(upMove > downMove && upMove > 0 ? upMove : 0);
-    minusDM.push(downMove > upMove && downMove > 0 ? downMove : 0);
-
-    const highLow = highs[i] - lows[i];
-    const highClose = Math.abs(highs[i] - closes[i - 1]);
-    const lowClose = Math.abs(lows[i] - closes[i - 1]);
-
-    tr.push(Math.max(highLow, highClose, lowClose));
-  }
-
-  function smooth(values: number[]) {
-    const smoothed: number[] = [];
-    let sum = values.slice(0, period).reduce((a, b) => a + b, 0);
-    smoothed[period - 1] = sum;
-
-    for (let i = period; i < values.length; i++) {
-      sum = smoothed[i - 1] - smoothed[i - 1] / period + values[i];
-      smoothed[i] = sum;
-    }
-
-    return smoothed;
-  }
-
-  const smoothedTR = smooth(tr);
-  const smoothedPlusDM = smooth(plusDM);
-  const smoothedMinusDM = smooth(minusDM);
-
-  const plusDI: number[] = [];
-  const minusDI: number[] = [];
-  const dx: number[] = [];
-
-  for (let i = period - 1; i < smoothedTR.length; i++) {
-    plusDI[i] = (smoothedPlusDM[i] / smoothedTR[i]) * 100;
-    minusDI[i] = (smoothedMinusDM[i] / smoothedTR[i]) * 100;
-
-    dx[i] = (Math.abs(plusDI[i] - minusDI[i]) / (plusDI[i] + minusDI[i])) * 100;
-  }
-
-  // Smooth DX to get ADX
-  const adx: number[] = [];
-  let adxSum = 0;
-
-  for (let i = period * 2 - 2; i < dx.length; i++) {
-    if (i === period * 2 - 2) {
-      adxSum = dx.slice(period - 1, i + 1).reduce((a, b) => a + b, 0);
-      adx[i] = adxSum / period;
-    } else {
-      adx[i] = (adx[i - 1] * (period - 1) + dx[i]) / period;
-    }
-  }
-
-  return {
-    plusDI,
-    minusDI,
-    adx,
-  };
-      }
-}
-// Using them in the same file:
-const macdResult = calculateMACD(closes);
-const adxResult = calculateADX(highs, lows, closes);
-
 function calculateMACD(
   closes: number[],
   fastPeriod = 12,
@@ -276,6 +168,8 @@ function calculateADX(
     period,
   });
 }
+
+  
 
 
 function findRelevantLevel(
@@ -603,41 +497,28 @@ export async function getServerSideProps() {
   const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
-    try {
-      const candles = await fetchCandles(symbol, '15m');
-      const closes = candles.map(c => c.close);
-      const highs = candles.map(c => c.high);
-      const lows = candles.map(c => c.low);
+  try {
+    const candles = await fetchCandles(symbol, '15m');
+    const closes = candles.map(c => parseFloat(c.close));
+    const highs = candles.map(c => parseFloat(c.high));
+    const lows = candles.map(c => parseFloat(c.low));
+    const volume = candles.map(c => parseFloat(c.volume));
 
-      const ema14 = calculateEMA(closes, 14);
-      const ema70 = calculateEMA(closes, 70);
-      const rsi14 = calculateRSI(closes, 14);
-      const ema200 = calculateEMA(closes, 200);
+    const ema14 = calculateEMA(closes, 14);
+    const ema70 = calculateEMA(closes, 70);
+    const ema200 = calculateEMA(closes, 200);
+    const rsi14 = calculateRSI(closes, 14);
 
-      const lastClose = closes.at(-1)!;
-      const lastEMA14 = ema14.at(-1)!;
-      const lastEMA70 = ema70.at(-1)!;
+    const macdResult = calculateMACD(closes);
+    const macd = macdResult.map(x => x.MACD);
+    const macdSignal = macdResult.map(x => x.signal);
 
- 
+    const adxResult = calculateADX(highs, lows, closes);
+    const adx = adxResult.map(x => x.adx);
 
-const macd = macdResult.map(x => x.MACD);
-const macdSignal = macdResult.map(x => x.signal);
-
-  const adx = adxResult.map(x => x.adx);
-      
-  const klines = data.data;
-
-  const volCloses = klines.map(k => parseFloat(k[4]));
-  const volhighs = klines.map(k => parseFloat(k[2]));
-  const vollows = klines.map(k => parseFloat(k[3]));
-  const volume = klines.map(k => parseFloat(k[5]));
-
-  return { closes, highs, lows, volume };
-    }
-
-
-
-      const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
+    const lastClose = closes.at(-1)!;
+    const lastEMA14 = ema14.at(-1)!;
+    const lastEMA70 = ema70.at(-1)!;
 
       const now = new Date();
       const getUTCMillis = (y: number, m: number, d: number, hPH: number, min: number) =>
@@ -683,26 +564,18 @@ const macdSignal = macdResult.map(x => x.signal);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
       let bearishContinuation = false;
-let bullishContinuation = false;
-let bullishReversal = false;
-let bearishReversal = false;
+    let bullishContinuation = false;
 
-if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(
-    closes, highs, ema70, rsi14, ema14, ema200, volume, macd, macdSignal, adx
-  );
-  bullishReversal = detectBullishReversal(
-    closes, highs, lows, ema70, ema14, rsi14, ema200, volume, macd, macdSignal, adx
-  );
-} else if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(
-    closes, lows, ema70, rsi14, ema14, ema200, volume, macd, macdSignal, adx
-  );
-  bearishReversal = detectBearishReversal(
-    closes, highs, lows, ema70, ema14, rsi14, ema200, volume, macd, macdSignal, adx
-  );
+    if (trend === 'bearish') {
+      bearishContinuation = detectBearishContinuation(
+        closes, highs, ema70, rsi14, ema14, ema200, volume, macd, macdSignal, adx
+      );
+    } else if (trend === 'bullish') {
+      bullishContinuation = detectBullishContinuation(
+        closes, lows, ema70, rsi14, ema14, ema200, volume, macd, macdSignal, adx
+      );
     }
-
+  
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
       const prevLowRSI = rsi14[prevLowIdx] ?? null;
