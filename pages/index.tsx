@@ -602,12 +602,7 @@ return ( <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black m
         >
           {favorites.includes(symbol) ? '★' : '☆'}
         </button>
-      </div>
-    </div>
-  ))}
-</div>
-
-); }                                                  
+      </div>                                               
 
         return (
           <div
