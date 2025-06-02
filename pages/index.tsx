@@ -485,7 +485,12 @@ const detectionOption = {
   useVolume: true,
   useEMA200: true,
   debug: true,
+  threshold: 0.7,
+  minVolume: 1000,
 };
+
+const result = detectBearishContinuation(closes, highs, lows, ema70, ema14, rsi14, ema200, volumes, detectionOptions); 
+    
 
 if (trend === 'bearish') {
   const result = detectBearishContinuation(
