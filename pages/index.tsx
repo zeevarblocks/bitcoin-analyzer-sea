@@ -682,6 +682,12 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
             >
               {favorites.includes(symbol) ? '★' : '☆'}
             </button>
+             <button
+          onClick={() => setSelectedPairs((prev) => prev.filter((p) => p !== symbol))}
+          className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+        >
+          Unselect
+        </button>
           </div>
 
           <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
