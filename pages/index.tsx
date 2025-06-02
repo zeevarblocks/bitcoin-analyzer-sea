@@ -551,16 +551,16 @@ const filteredPairs = pairs
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [containerRef]);
   
+return (
+  <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
+    {isLoadingPairs && (
+      <div className="text-white font-medium animate-pulse">
+        Loading trading pairs...
+      </div>
+    )}
 
-
-  return (
-    <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
-      {isLoadingPairs && (
-  <div className="text-white font-medium animate-pulse">Loading trading pairs...</div>
-)}
-      {/* Dropdown for Trading Pairs */}
-  {/* Searchable input */}
-  <div ref={containerRef} className="relative w-full md:w-auto flex flex-col md:flex-row gap-4">
+    {/* Dropdown for Trading Pairs */}
+    <div ref={containerRef} className="relative w-full md:w-auto flex flex-col md:flex-row gap-4">
       <div className="relative w-full md:w-64">
         <input
           type="text"
@@ -604,160 +604,169 @@ const filteredPairs = pairs
             ))}
           </ul>
         )}
-</div>
+      </div>
     </div>
 
-  {/* Select All */}
-  <button
-    onClick={() =>
-      setSelectedPairs(
-        pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-      )
-    }
-    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
-  >
-    Select All
-  </button>
+    {/* Select/Unselect All Buttons */}
+    <div className="flex gap-4">
+      <button
+        onClick={() =>
+          setSelectedPairs(
+            pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          )
+        }
+        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+      >
+        Select All
+      </button>
 
-  {/* Unselect All */}
-  <button
-    onClick={() => setSelectedPairs([])}
-    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
-  >
-    Unselect All
-  </button>
-</div>
+      <button
+        onClick={() => setSelectedPairs([])}
+        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
+      >
+        Unselect All
+      </button>
+    </div>
 
-      <div className="flex items-center space-x-4">
-        <label className="text-white font-medium">
-          <input
-            type="checkbox"
-            checked={showOnlyFavorites}
-            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-            className="mr-2"
-          />
-          Show only favorites
-        </label>
-      </div>
+    {/* Favorites Toggle */}
+    <div className="flex items-center space-x-4">
+      <label className="text-white font-medium">
+        <input
+          type="checkbox"
+          checked={showOnlyFavorites}
+          onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+          className="mr-2"
+        />
+        Show only favorites
+      </label>
+    </div>
 
-      {filteredDisplaySignals.map(([symbol, data]) => (
-        <div
-          key={symbol}
-          className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
-        >
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold">{symbol}</h3>
+    {/* Signal Display */}
+    {filteredDisplaySignals.map(([symbol, data]) => (
+      <div
+        key={symbol}
+        className="bg-black/60 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/10 text-white space-y-4"
+      >
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-bold">{symbol}</h3>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => toggleFavorite(symbol)}
               className={`text-xl ${favorites.includes(symbol) ? 'text-yellow-400' : 'text-white'}`}
             >
               {favorites.includes(symbol) ? '★' : '☆'}
             </button>
-             <button
-          onClick={() => setSelectedPairs((prev) => prev.filter((p) => p !== symbol))}
-          className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-        >
-          Unselect
-        </button>
-          </div>
-
-          <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
-
-          <div className="space-y-1">
-            <p>
-              💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
-              <span className="text-blue-400">
-                {data.currentPrice !== undefined ? `$${data.currentPrice.toFixed(9)}` : 'N/A'}
-              </span>
-            </p>
-            <p>
-              📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase() ?? 'N/A'} Level:</span>{' '}
-              <span className="text-yellow-300">
-                {data.level !== undefined ? data.level.toFixed(9) : 'N/A'}
-              </span>
-            </p>
-            <p>
-              🧭 <span className="font-medium text-white/70">
-                Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:
-              </span>{' '}
-              <span className="text-purple-300">
-                {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
-              </span>
-            </p>
-            <p>
-              📈 <span className="font-medium text-white/70">Trend:</span>{' '}
-              <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
-            </p>
-          </div>
-
-          {(data.bullishBreakout || data.bearishBreakout) && (
-            <div className="pt-4 border-t border-white/10 space-y-2">
-              <h3 className="text-lg font-semibold text-white">📊 Breakout Signals</h3>
-              {data.bullishBreakout && (
-                <p className="text-green-400">🟢 Bullish Breakout: <span className="font-semibold">Yes</span></p>
-              )}
-              {data.bearishBreakout && (
-                <p className="text-red-400">🔴 Bearish Breakout: <span className="font-semibold">Yes</span></p>
-              )}
-            </div>
-          )}
-
-{(data.bearishContinuation || data.bullishContinuation) && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
-
-    {data.bearishContinuation && (
-      <p className="text-red-400">
-        🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
-      </p>
-    )}
-
-    {data.bullishContinuation && (
-      <p className="text-green-400">
-        🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
-      </p>
-    )}
-  </div>
-)}
-
-          {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
-            <div className="pt-4 border-t border-white/10 space-y-2">
-              <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-              {data.divergenceFromLevel && (
-                <p className="text-pink-400">
-                  🔍 Divergence vs Level: <span className="font-semibold capitalize">
-                    {data.divergenceFromLevelType === "bullish"
-                      ? "Overbought"
-                      : data.divergenceFromLevelType === "bearish"
-                      ? "Oversold"
-                      : "Momentum Exhaustion"}
-                  </span>
-                </p>
-              )}
-              {data.divergence && (
-                <p className="text-orange-400">
-                  📉 RSI High/Low Divergence: <span className="font-semibold">Pressure Zone</span>
-                </p>
-              )}
-              
-
-          <div className="flex justify-center pt-4">
             <button
-              onClick={() => window.open(data.url ?? '#', '_blank')}
-              className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
-              title={`Access the best ${symbol} trading signals`}
+              onClick={() =>
+                setSelectedPairs((prev) => prev.filter((p) => p !== symbol))
+              }
+              className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
             >
-              🚀 Trade Now — Access the Best Signals Here!
+              Unselect
             </button>
           </div>
         </div>
-      ))}
 
-      <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
-        <p>
-          <strong className="text-gray-300">Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
-        </p>
-      </footer>
-    </div>
-  );
-                        
+        <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
+
+        <div className="space-y-1">
+          <p>
+            💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
+            <span className="text-blue-400">
+              {data.currentPrice !== undefined ? `$${data.currentPrice.toFixed(9)}` : 'N/A'}
+            </span>
+          </p>
+          <p>
+            📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase() ?? 'N/A'} Level:</span>{' '}
+            <span className="text-yellow-300">
+              {data.level !== undefined ? data.level.toFixed(9) : 'N/A'}
+            </span>
+          </p>
+          <p>
+            🧭 <span className="font-medium text-white/70">
+              Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:
+            </span>{' '}
+            <span className="text-purple-300">
+              {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
+            </span>
+          </p>
+          <p>
+            📈 <span className="font-medium text-white/70">Trend:</span>{' '}
+            <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
+          </p>
+        </div>
+
+        {(data.bullishBreakout || data.bearishBreakout) && (
+          <div className="pt-4 border-t border-white/10 space-y-2">
+            <h3 className="text-lg font-semibold text-white">📊 Breakout Signals</h3>
+            {data.bullishBreakout && (
+              <p className="text-green-400">🟢 Bullish Breakout: <span className="font-semibold">Yes</span></p>
+            )}
+            {data.bearishBreakout && (
+              <p className="text-red-400">🔴 Bearish Breakout: <span className="font-semibold">Yes</span></p>
+            )}
+          </div>
+        )}
+
+        {(data.bearishContinuation || data.bullishContinuation) && (
+          <div className="pt-4 border-t border-white/10 space-y-2">
+            <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
+            {data.bearishContinuation && (
+              <p className="text-red-400">
+                🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
+              </p>
+            )}
+            {data.bullishContinuation && (
+              <p className="text-green-400">
+                🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
+          <div className="pt-4 border-t border-white/10 space-y-2">
+            <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+            {data.divergenceFromLevel && (
+              <p className="text-pink-400">
+                🔍 Divergence vs Level: <span className="font-semibold capitalize">
+                  {data.divergenceFromLevelType === "bullish"
+                    ? "Overbought"
+                    : data.divergenceFromLevelType === "bearish"
+                      ? "Oversold"
+                      : "Momentum Exhaustion"}
+                </span>
+              </p>
+            )}
+            {data.divergence && (
+              <p className="text-orange-400">
+                📉 RSI High/Low Divergence: <span className="font-semibold">Pressure Zone</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Trade Link */}
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => window.open(data.url ?? '#', '_blank')}
+            className="transition-transform transform hover:-translate-y-1 hover:shadow-lg bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md"
+            title={`Access the best ${symbol} trading signals`}
+          >
+            🚀 Trade Now — Access the Best Signals Here!
+          </button>
+        </div>
+      </div>
+    ))}
+
+    {/* Footer */}
+    <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
+      <p>
+        <strong className="text-gray-300">Disclaimer:</strong> This app is for educational and informational purposes only. It does not constitute financial advice. Always conduct your own research before making trading decisions.
+      </p>
+    </footer>
+  </div>
+);
+
+  
+       
