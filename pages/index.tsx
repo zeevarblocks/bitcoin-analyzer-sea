@@ -722,7 +722,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
 
        {data.divergence && (
             <p className="text-orange-400">
-              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Technical pullback' : 'Technical pullback'}</span>
+              📉 RSI High/Low Divergence: <span className="font-semibold">{data.divergenceType === 'bullish' ? 'Pressure Zone' : 'Pressure Zone'}</span>
             </p>
           )}
           {data.nearOrAtEMA70Divergence && (
