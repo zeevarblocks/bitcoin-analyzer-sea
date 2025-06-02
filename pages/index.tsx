@@ -49,7 +49,7 @@ interface SignalData {
   url: string;
   }
 
-interface DetectionOptions {
+interface DetectionOption {
   rsiMin?: number;
   rsiMax?: number;
   slopeThreshold?: number;
@@ -267,7 +267,7 @@ function detectBullishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: DetectionOptions = {}
+  options: DetectionOption = {}
 ): boolean {
   const {
     rsiMin = 40,
@@ -327,7 +327,7 @@ function detectBearishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: DetectionOptions = {}
+  options: DetectionOption = {}
 ): boolean {
   const {
     rsiMin = 30,
