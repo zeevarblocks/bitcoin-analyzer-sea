@@ -1,4 +1,5 @@
 import React from 'react';
+import { MACD, ADX } from 'technicalindicators';
 
 interface SignalData {
   trend: string;
