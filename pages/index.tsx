@@ -131,6 +131,45 @@ function calculateRSI(closes: number[], period = 14): number[] {
   return rsi;
 }
 
+function calculateMACD(
+  closes: number[],
+  fastPeriod = 12,
+  slowPeriod = 26,
+  signalPeriod = 9
+) {
+  if (closes.length < slowPeriod + signalPeriod) {
+    throw new Error('Not enough data to calculate MACD');
+  }
+
+  return MACD.calculate({
+    values: closes,
+    fastPeriod,
+    slowPeriod,
+    signalPeriod,
+    SimpleMAOscillator: false,
+    SimpleMASignal: false,
+  });
+}
+
+function calculateADX(
+  highs: number[],
+  lows: number[],
+  closes: number[],
+  period = 14
+) {
+  if (highs.length < period || lows.length < period || closes.length < period) {
+    throw new Error('Not enough data to calculate ADX');
+  }
+
+  return ADX.calculate({
+    high: highs,
+    low: lows,
+    close: closes,
+    period,
+  });
+}
+
+
 function findRelevantLevel(
   ema14: number[],
   ema70: number[],
