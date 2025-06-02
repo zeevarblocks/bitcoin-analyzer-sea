@@ -5,30 +5,61 @@ interface SignalData {
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
+
   divergence: boolean;
   divergenceType?: 'bullish' | 'bearish' | null;
   divergenceFromLevel: boolean;
-  divergenceFromLevelType?: 'bullish' | 'bearish' | null; // ✅ Newly added
+  divergenceFromLevelType?: 'bullish' | 'bearish' | null;
   nearOrAtEMA70Divergence: boolean;
+
   ema14Bounce: boolean;
   ema70Bounce: boolean;
+  touchedEMA70Today: boolean;
+
   currentPrice: number;
   level: number | null;
   levelType: 'support' | 'resistance' | null;
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
   inferredLevelWithinRange: boolean;
-  touchedEMA70Today: boolean;
+
   bearishContinuation: boolean;
   bullishContinuation: boolean;
-  bullishReversal: boolean;
   bearishReversal: boolean;
+  bullishReversal: boolean;
+
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
+
+  // 🔧 Optional detection parameters
+  rsiMin?: number;
+  rsiMax?: number;
+  slopeThreshold?: number;
+  priceTouchThreshold?: number;
+  swingLookback?: number;
+  volumeSpikeFactor?: number;
+  lookaheadLimit?: number;
+  useVolume?: boolean;
+  useEMA200?: boolean;
+  debug?: boolean;
+
+  // 📊 New: Confidence scores (0–100)
+  confidence?: {
+    bullish?: number;
+    bearish?: number;
+  };
+
+  // 🧠 New: Optional debug info
+  debugInfo?: {
+    bullish?: string;
+    bearish?: string;
+  };
+
+  // 🔗 External reference or chart
   url: string;
-}
+  }
 
 // fetchCandles, calculateEMA, etc.,.
 interface Candle {
@@ -203,46 +234,51 @@ function hasDescendingTrendFromHighestHigh(highs: number[], fromIndex: number, m
   return true;
 }
 
-// === Bearish Continuation ===
-function detectBearishContinuation(
-  closes: number[],
-  highs: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-): boolean {
-  for (let i = ema14.length - 2; i >= 1; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
 
-    if (prev14 > prev70 && curr14 < curr70) {
-      const rsiAtCross = rsi[i];
-      for (let j = i + 1; j < closes.length; j++) {
-        const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
-        const rsiHigher = rsi[j] > rsiAtCross;
-        if (nearEMA70 && rsiHigher) {
-          return true;
-        }
-      }
-      break;
-    }
-  }
-  return false;
-        }
+function calculateSlope(ema: number[], index: number): number {
+  if (index < 1) return 0;
+  return ema[index] - ema[index - 1];
+}
 
+function isSwingLowBroken(closes: number[], index: number, lookback: number): boolean {
+  const pastLows = closes.slice(index - lookback, index);
+  return closes[index] < Math.min(...pastLows);
+}
 
-// === Bullish Continuation ===
+function isSwingHighBroken(highs: number[], index: number, lookback: number): boolean {
+  const pastHighs = highs.slice(index - lookback, index);
+  return highs[index] > Math.max(...pastHighs);
+}
+
+function average(arr: number[]): number {
+  return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+}
+
 function detectBullishContinuation(
   closes: number[],
   lows: number[],
+  highs: number[],
   ema70: number[],
-  rsi: number[],
   ema14: number[],
+  rsi: number[],
+  ema200: number[],
+  volumes: number[],
+  options: DetectionOptions = {}
 ): boolean {
-  for (let i = ema14.length - 2; i >= 1; i--) {
+  const {
+    rsiMin = 40,
+    rsiMax = 70,
+    slopeThreshold = 0.1,
+    priceTouchThreshold = 0.002,
+    swingLookback = 5,
+    volumeSpikeFactor = 1.5,
+    lookaheadLimit = 10,
+    useVolume = true,
+    useEMA200 = true,
+    debug = false,
+  } = options;
+
+  for (let i = ema14.length - 2; i >= swingLookback; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
     const curr14 = ema14[i];
@@ -250,19 +286,96 @@ function detectBullishContinuation(
 
     if (prev14 < prev70 && curr14 > curr70) {
       const rsiAtCross = rsi[i];
-      for (let j = i + 1; j < closes.length; j++) {
-        const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
-        const rsiHigher = rsi[j] < rsiAtCross; // for bullish, RSI at latest is lower than cross
-        if (nearEMA70 && rsiHigher) {
+      if (rsiAtCross < rsiMin || rsiAtCross > rsiMax) continue;
+
+      const emaSlope = calculateSlope(ema70, i);
+      if (emaSlope < slopeThreshold) continue;
+
+      if (useEMA200 && closes[i] < ema200[i]) continue;
+
+      if (isSwingLowBroken(closes, i, swingLookback)) continue;
+
+      if (useVolume) {
+        const avgVol = average(volumes.slice(i - 5, i));
+        if (volumes[i] < avgVol * volumeSpikeFactor) continue;
+      }
+
+      for (let j = i + 1; j <= i + lookaheadLimit && j < closes.length; j++) {
+        const priceNearEMA = Math.abs(closes[j] - ema70[j]) / closes[j] < priceTouchThreshold;
+        const rsiLower = rsi[j] < rsiAtCross;
+
+        if (priceNearEMA && rsiLower) {
+          if (debug) console.log(`Bullish continuation confirmed at index ${j}`);
           return true;
         }
       }
-      break;
     }
   }
   return false;
 }
+
+function detectBearishContinuation(
+  closes: number[],
+  highs: number[],
+  lows: number[],
+  ema70: number[],
+  ema14: number[],
+  rsi: number[],
+  ema200: number[],
+  volumes: number[],
+  options: DetectionOptions = {}
+): boolean {
+  const {
+    rsiMin = 30,
+    rsiMax = 60,
+    slopeThreshold = 0.1,
+    priceTouchThreshold = 0.002,
+    swingLookback = 5,
+    volumeSpikeFactor = 1.5,
+    lookaheadLimit = 10,
+    useVolume = true,
+    useEMA200 = true,
+    debug = false,
+  } = options;
+
+  for (let i = ema14.length - 2; i >= swingLookback; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    if (prev14 > prev70 && curr14 < curr70) {
+      const rsiAtCross = rsi[i];
+      if (rsiAtCross < rsiMin || rsiAtCross > rsiMax) continue;
+
+      const emaSlope = calculateSlope(ema70, i);
+      if (emaSlope > -slopeThreshold) continue;
+
+      if (useEMA200 && closes[i] > ema200[i]) continue;
+
+      if (isSwingHighBroken(highs, i, swingLookback)) continue;
+
+      if (useVolume) {
+        const avgVol = average(volumes.slice(i - 5, i));
+        if (volumes[i] < avgVol * volumeSpikeFactor) continue;
+      }
+
+      for (let j = i + 1; j <= i + lookaheadLimit && j < closes.length; j++) {
+        const priceNearEMA = Math.abs(closes[j] - ema70[j]) / closes[j] < priceTouchThreshold;
+        const rsiHigher = rsi[j] > rsiAtCross;
+
+        if (priceNearEMA && rsiHigher) {
+          if (debug) console.log(`Bearish continuation confirmed at index ${j}`);
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+  }
+
+
+
 
 
 // logic in getServerSideProps:
@@ -343,13 +456,43 @@ export async function getServerSideProps() {
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
      let bearishContinuation = false;
+let bearishContinuation = false;
 let bullishContinuation = false;
 
+let bearishContinuationConfidence = 0;
+let bullishContinuationConfidence = 0;
+
+let bearishDebugInfo = '';
+let bullishDebugInfo = '';
+
+const detectionOptions = {
+  rsiMin: 45,
+  rsiMax: 65,
+  slopeThreshold: 0.15,
+  priceTouchThreshold: 0.002,
+  swingLookback: 5,
+  volumeSpikeFactor: 1.5,
+  lookaheadLimit: 10,
+  useVolume: true,
+  useEMA200: true,
+  debug: true,
+};
+
 if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
+  const result = detectBearishContinuation(
+    closes, highs, lows, ema70, ema14, rsi14, ema200, volumes, detectionOptions
+  );
+  bearishContinuation = result.match;
+  bearishContinuationConfidence = result.confidence;
+  bearishDebugInfo = result.debugInfo;
 } else if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-      }
+  const result = detectBullishContinuation(
+    closes, lows, highs, ema70, ema14, rsi14, ema200, volumes, detectionOptions
+  );
+  bullishContinuation = result.match;
+  bullishContinuationConfidence = result.confidence;
+  bullishDebugInfo = result.debugInfo;
+    }
 
 
       const currentRSI = rsi14.at(-1);
@@ -407,28 +550,57 @@ if (type && level !== null) {
   breakout,
   bullishBreakout,
   bearishBreakout,
+
   divergence,
   divergenceType,
   divergenceFromLevel,
-  divergenceFromLevelType,  // ✅ Newly added
+  divergenceFromLevelType, // ✅ Newly added
   nearOrAtEMA70Divergence,
+
   ema14Bounce,
   ema70Bounce,
+  touchedEMA70Today,
+
   currentPrice: lastClose,
   level,
   levelType: type,
   inferredLevel,
   inferredLevelType,
   inferredLevelWithinRange,
-  touchedEMA70Today,
+
   bearishContinuation,
   bullishContinuation,
-  bullishReversal,          // ✅ Reversal detection
-  bearishReversal,          // ✅ Reversal detection
+
   intradayHigherHighBreak,
   intradayLowerLowBreak,
   todaysLowestLow,
   todaysHighestHigh,
+
+  // 📊 Detection parameters
+  rsiMin,
+  rsiMax,
+  slopeThreshold,
+  priceTouchThreshold,
+  swingLookback,
+  volumeSpikeFactor,
+  lookaheadLimit,
+  useVolume,
+  useEMA200,
+  debug,
+
+  // ✅ Confidence scores
+  confidence: {
+    bearish: bearishContinuationConfidence,
+    bullish: bullishContinuationConfidence,
+  },
+
+  // 🧠 Optional debug info
+  debugInfo: {
+    bearish: bearishDebugInfo,
+    bullish: bullishDebugInfo,
+  },
+
+  // 🔗 External chart URL
   url: `https://okx.com/join/96631749`,
 };
     } catch (err) {
@@ -698,12 +870,48 @@ const filteredPairs = pairs
           )}
 
    {(data.bearishContinuation || data.bullishContinuation) && (
-              <div className="pt-4 border-t border-white/10 space-y-2">
-                <h3 className="text-lg font-semibold text-white">🔄 Trend Continuation</h3>
-                {data.bearishContinuation && <p className="text-red-400">🔻 Bearish Continuation: <span className="font-semibold">Yes</span></p>}
-                {data.bullishContinuation && <p className="text-green-400">🔺 Bullish Continuation: <span className="font-semibold">Yes</span></p>}
-              </div>
-            )}
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">🔄 Trend Continuation</h3>
+
+    {data.bearishContinuation && (
+      <div>
+        <p className="text-red-400">
+          🔻 <span className="font-semibold">Bearish Continuation:</span> <span className="text-white">Yes</span>
+        </p>
+        {data.confidence?.bearish !== undefined && (
+          <div className="mt-1">
+            <div className="w-full bg-red-900/30 rounded-full h-2">
+              <div
+                className="bg-red-500 h-2 rounded-full"
+                style={{ width: `${data.confidence.bearish}%` }}
+              ></div>
+            </div>
+            <p className="text-xs text-red-300 mt-1">Confidence: {data.confidence.bearish}%</p>
+          </div>
+        )}
+      </div>
+    )}
+
+    {data.bullishContinuation && (
+      <div>
+        <p className="text-green-400">
+          🔺 <span className="font-semibold">Bullish Continuation:</span> <span className="text-white">Yes</span>
+        </p>
+        {data.confidence?.bullish !== undefined && (
+          <div className="mt-1">
+            <div className="w-full bg-green-900/30 rounded-full h-2">
+              <div
+                className="bg-green-500 h-2 rounded-full"
+                style={{ width: `${data.confidence.bullish}%` }}
+              ></div>
+            </div>
+            <p className="text-xs text-green-300 mt-1">Confidence: {data.confidence.bullish}%</p>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+)}
 
           {(data.ema14Bounce || data.ema70Bounce || data.touchedEMA70Today) && (
             <div className="pt-4 border-t border-white/10 space-y-2">
