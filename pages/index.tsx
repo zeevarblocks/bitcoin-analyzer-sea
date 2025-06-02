@@ -531,65 +531,44 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect } from 'react';
 
-export default function SignalChecker({ initialSignals }: { initialSignals: Record<string, SignalData> }) {
+export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
-  const [signals, setSignals] = useState<Record<string, SignalData>>(initialSignals);
 
-  // Fetch top trading pairs from OKX
-  const fetchPairs = async () => {
-    try {
-      const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-      const data = await response.json();
-
-      const sortedPairs = data.data
-        .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-        .map((item: any) => item.instId);
-
-      setPairs(sortedPairs);
-
-      const defaultPair = sortedPairs.find(pair => signals?.[pair]?.currentPrice !== undefined);
-      if (defaultPair && !selectedPair) {
-        setSelectedPair(defaultPair);
-      }
-    } catch (error) {
-      console.error('Error fetching trading pairs:', error);
-    }
-  };
-
-  // Fetch updated signals from your own backend (re-triggers getServerSideProps)
-  const refreshSignals = async () => {
-    try {
-      const response = await fetch(window.location.href); // re-fetch current page
-      const html = await response.text();
-
-      const matches = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>/);
-      if (matches && matches[1]) {
-        const json = JSON.parse(matches[1]);
-        const updatedSignals = json.props.pageProps.signals;
-        setSignals(updatedSignals);
-      }
-    } catch (error) {
-      console.error('Error refreshing signals:', error);
-    }
-  };
-
-  // Run once on mount and then every 60s
   useEffect(() => {
+    const fetchPairs = async () => {
+      try {
+        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+        const data = await response.json();
+
+        const sortedPairs = data.data
+          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+          .map((item: any) => item.instId);
+
+        setPairs(sortedPairs);
+
+        // Find the first pair that exists in signals and has valid data
+        const defaultPair = sortedPairs.find(
+          (pair) => signals?.[pair]?.currentPrice !== undefined
+        );
+        if (defaultPair) {
+          setSelectedPair(defaultPair);
+        }
+      } catch (error) {
+        console.error('Error fetching trading pairs:', error);
+      }
+    };
+
     fetchPairs();
-    refreshSignals();
 
-    const interval = setInterval(() => {
-      fetchPairs();
-      refreshSignals();
-    }, 60 * 1000); // 60 seconds
+    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
+    return () => clearInterval(intervalId);
+  }, [signals]);
 
-    return () => clearInterval(interval);
-  }, []);
-
+  // Filter signals based on selectedPair
   const filteredSignals =
     selectedPair && signals?.[selectedPair] ? { [selectedPair]: signals[selectedPair] } : {};
-    
+
   return (
     <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
       {/* Dropdown for Trading Pairs */}
