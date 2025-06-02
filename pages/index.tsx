@@ -348,7 +348,7 @@ export async function getServerSideProps() {
 
     const sorted = data.data
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .slice(0, 5);
+      .slice(5, limit);
 
     return sorted.map((ticker: any) => ticker.instId);
   }
