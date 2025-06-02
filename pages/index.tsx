@@ -577,9 +577,9 @@ const filteredPairs = pairs
 };
 
     fetchPairs();
-    const intervalId = setInterval(fetchPairs, 5 * 1000);
+    const intervalId = setInterval(fetchPairs, 15 * 60 * 1000);
     return () => clearInterval(intervalId);
-  }, [signals]);
+  }, []);
 
   useEffect(() => {
     if (selectedPairs.length > 0) {
