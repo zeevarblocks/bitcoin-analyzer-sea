@@ -566,7 +566,7 @@ const filteredPairs = pairs
     } else {
       const topValidPairs = sortedPairs
         .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-        .slice(0, 1);
+        .slice(0, 5);
       setSelectedPairs(topValidPairs);
     }
   } catch (error) {
@@ -577,9 +577,9 @@ const filteredPairs = pairs
 };
 
     fetchPairs();
-    const intervalId = setInterval(fetchPairs, 15 * 60 * 1000);
+    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [signals]);
 
   useEffect(() => {
     if (selectedPairs.length > 0) {
