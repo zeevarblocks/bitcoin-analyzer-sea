@@ -532,8 +532,8 @@ if (type && level !== null) {
 import { useState, useEffect } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
-  const [pairs, setPairs] = useState<string[]>([symbols);
-  const [selectedPair, setSelectedPair] = useState<string | null>(null);
+  const [pairs, setPairs] = useState<string[]>([]);
+  const [selectedPair, setSelectedPair] = useState<string | null>(symbos);
 
   useEffect(() => {
     const fetchPairs = async () => {
