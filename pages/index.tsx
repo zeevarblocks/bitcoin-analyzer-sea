@@ -133,21 +133,6 @@ function calculateRSI(closes: number[], period = 14): number[] {
 
 function calculateMACD(closes: number[], fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
   // MACD calculation logic
-  function calculateEMA(values: number[], period: number): number[] {
-  const k = 2 / (period + 1);
-  const emaArray: number[] = [];
-  let ema = values[0]; // Start with the first value
-
-  emaArray.push(ema);
-
-  for (let i = 1; i < values.length; i++) {
-    ema = values[i] * k + ema * (1 - k);
-    emaArray.push(ema);
-  }
-
-  return emaArray;
-}
-
 function calculateMACD(
   closes: number[],
   fastPeriod = 12,
@@ -250,12 +235,9 @@ function calculateADX(highs: number[], lows: number[], closes: number[], period 
   };
       }
 }
-
 // Using them in the same file:
 const macdResult = calculateMACD(closes);
 const adxResult = calculateADX(highs, lows, closes);
-
-
 
 function calculateMACD(
   closes: number[],
