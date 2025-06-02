@@ -537,6 +537,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   
   useEffect(() => {
     const fetchPairs = async () => {
@@ -611,10 +612,21 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   <div className="text-white font-medium animate-pulse">Loading trading pairs...</div>
 )}
       {/* Dropdown for Trading Pairs */}
-  <div className="flex flex-col md:flex-row gap-4 items-center">
+  <div className="flex flex-col md:flex-row md:items-center gap-4">
   <label htmlFor="tradingPair" className="text-white font-semibold">
     Select Trading Pair:
   </label>
+
+  {/* 🔍 Search Input */}
+  <input
+    type="text"
+    placeholder="Search pairs..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="p-2 rounded border bg-gray-800 text-white"
+  />
+
+  {/* Dropdown */}
   <select
     id="tradingPair"
     className="p-2 rounded border bg-gray-800 text-white"
@@ -628,6 +640,7 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
     <option value="">-- Select --</option>
     {pairs
       .filter((pair) => signals?.[pair])
+      .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()))
       .map((pair) => (
         <option key={pair} value={pair}>
           {pair}
@@ -635,22 +648,22 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
       ))}
   </select>
 
-  {/* Select All Button */}
+  {/* Select All */}
   <button
     onClick={() =>
       setSelectedPairs(
         pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
       )
     }
-    className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded-md transition"
+    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Select All
   </button>
 
-  {/* Unselect All Button */}
+  {/* Unselect All */}
   <button
     onClick={() => setSelectedPairs([])}
-    className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-md transition"
+    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Unselect All
   </button>
