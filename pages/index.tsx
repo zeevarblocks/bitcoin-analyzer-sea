@@ -596,9 +596,8 @@ const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   }, [signals]);
 }
 
-
+const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   useEffect(() => {
-    const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
     if (selectedPairs.length > 0) {
       localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
     }
