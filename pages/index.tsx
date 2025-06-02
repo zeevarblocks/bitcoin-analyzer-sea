@@ -267,7 +267,7 @@ function detectBullishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: DetectionOption = {}
+  options: DetectionOptions = {}
 ): boolean {
   const {
     rsiMin = 40,
@@ -327,7 +327,7 @@ function detectBearishContinuation(
   rsi: number[],
   ema200: number[],
   volumes: number[],
-  options: DetectionOption = {}
+  options: DetectionOptions = {}
 ): boolean {
   const {
     rsiMin = 30,
