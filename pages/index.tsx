@@ -342,7 +342,7 @@ function detectBearishReversal(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 30): Promise<string[]> {
+  async function fetchTopPairs(limit = 150): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
@@ -353,7 +353,7 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(30);
+  const symbols = await fetchTopPairs(150);
 
   const signals: Record<string, SignalData> = {};
 
@@ -611,7 +611,6 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   <div className="text-white font-medium animate-pulse">Loading trading pairs...</div>
 )}
       {/* Dropdown for Trading Pairs */}
-      <div className="flex flex-wrap gap-4 items-center">
   <div className="flex flex-col md:flex-row gap-4 items-center">
   <label htmlFor="tradingPair" className="text-white font-semibold">
     Select Trading Pair:
