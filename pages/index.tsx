@@ -23,6 +23,7 @@ interface SignalData {
   bullishContinuation: boolean;
   cleanTrendContinuation: boolean; // ✅ Confirmed continuation with clean trend
   continuationEnded: boolean; // ✅ NEW: true if clean continuation broke
+  continuationReason?: string; // 👈 add this line
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
@@ -626,6 +627,7 @@ if (type && level !== null) {
     (trend === 'bearish' && bearishContinuation) ||
     (trend === 'bullish' && bullishContinuation),
   continuationEnded, // NEW: tells you if trend continuation has ended
+  continuationReason,
 
   // Metadata
   url: `https://okx.com/join/96631749`,
