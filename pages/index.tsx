@@ -756,26 +756,28 @@ return (
           </div>
         )}
 
-        {(data.bearishContinuation || data.bullishContinuation) && (
+{((data.bearishContinuation && data.ema70Bounce) || (data.bullishContinuation && data.ema70Bounce)) && (
   <div className="pt-4 border-t border-white/10 space-y-3">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-    {data.bearishContinuation && (
+    {data.bearishContinuation && data.ema70Bounce && (
       <div className="text-red-400">
         🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
         <p className="text-sm text-white/70 ml-4">
           • EMA70 is sloping downward<br />
-          • Lower highs near EMA70
+          • Lower highs near EMA70<br />
+          • Bounce off EMA70 occurred
         </p>
       </div>
     )}
 
-    {data.bullishContinuation && (
+    {data.bullishContinuation && data.ema70Bounce && (
       <div className="text-green-400">
         🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
         <p className="text-sm text-white/70 ml-4">
           • EMA70 is sloping upward<br />
-          • Higher lows near EMA70
+          • Higher lows near EMA70<br />
+          • Bounce off EMA70 occurred
         </p>
       </div>
     )}
