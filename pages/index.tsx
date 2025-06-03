@@ -848,8 +848,6 @@ return (
         </p>
       </div>
     )}
-  </>
-)}
 
         {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
           <div className="pt-4 border-t border-white/10 space-y-2">
