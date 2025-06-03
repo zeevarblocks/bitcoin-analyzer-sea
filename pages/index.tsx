@@ -722,14 +722,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     localStorage.setItem('favoritePairs', JSON.stringify(favorites));
   }, [favorites]);
 
-  const filteredDisplaySignals = Object.entries(signals || {})
-    .filter(([symbol]) => selectedPairs.includes(symbol))
-    .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
-    .filter(([_, data]) => {
-      if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
-      if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
-      return true;
-    });
+  
 
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
@@ -744,9 +737,14 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     return acc;
   }, {} as Record<string, SignalData>);
 
-  const filteredDisplaySignals = Object.entries(filteredSignals).filter(([symbol]) =>
-    showOnlyFavorites ? favorites.includes(symbol) : true
-  );
+  const filteredDisplaySignals = Object.entries(signals || {})
+    .filter(([symbol]) => selectedPairs.includes(symbol))
+    .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
+    .filter(([_, data]) => {
+      if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
+      if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
+      return true;
+    });
 
   // Close dropdown when clicking outside
   useEffect(() => {
