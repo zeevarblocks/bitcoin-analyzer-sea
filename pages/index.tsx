@@ -746,6 +746,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       if (activeFilter === 'continuationEnded') return data.continuationEnded;
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
+      if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       return true;
     });
 
@@ -903,12 +904,21 @@ return (
   </button>
           
           <button
-    onClick={() => setActiveFilter('nearOrAtEMA70Divergence')}
-    className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>🍞</span>
-    <span>nearOrAtEMA70Divergence</span>
-  </button>
+  onClick={() => setActiveFilter('nearOrAtEMA70Divergence')}
+  className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📐</span> {/* EMA proximity + divergence */}
+  <span>nearOrAtEMA70Divergence</span>
+</button>
+
+<button
+  onClick={() => setActiveFilter('divergenceFromLevel')}
+  className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📉</span> {/* Level-based divergence — potential trap signal */}
+  <span>divergenceFromLevel</span>
+</button>
+               
 </div>
 
       {filteredDisplaySignals.map(([symbol, data]) => (
@@ -1018,50 +1028,56 @@ return (
     </div>
   ) : null}
 </div>
-          
-          
-          
-        {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
+
+          {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
 
     {data.divergenceFromLevel && (
-      <div className="text-pink-400">
-        🔍 <span className="font-semibold">Divergence vs Level</span>: 
+      <div className="text-pink-400 space-y-2">
+        🔍 <span className="font-semibold">Divergence vs Level</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
           • Type:{" "}
           <span className="capitalize text-white">
             {data.divergenceFromLevelType === "bullish"
-              ? "Overbought"
+              ? "Bullish Continuation"
               : data.divergenceFromLevelType === "bearish"
-              ? "Oversold"
-              : "Momentum Exhaustion"}
-          </span>
+              ? "Bearish Continuation"
+              : "Confirmed"}
+          </span><br />
+          • RSI divergence confirmed against a key{" "}
+          {data.levelType || "support/resistance"} level<br />
+          • Signals potential trend continuation or trap setup
         </p>
       </div>
     )}
 
     {data.divergence && (
-      <div className="text-purple-400">
-        ⚠️ <span className="font-semibold">Classic RSI Divergence</span>: Pressure Zone 
+      <div className="text-purple-400 space-y-2">
+        ⚠️ <span className="font-semibold">Classic RSI Divergence</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
           • Price is moving opposite to RSI<br />
-          • Possible trend reversal or correction
+          • Indicates potential reversal, correction, or exhaustion<br />
+          • Watch closely for fakeouts or trend shifts
         </p>
       </div>
     )}
 
     {data.nearOrAtEMA70Divergence && (
-      <div className="text-indigo-400">
-        🧭 <span className="font-semibold">EMA70 RSI Divergence</span>: Near or At EMA70
+      <div className="text-indigo-400 space-y-2">
+        🧭 <span className="font-semibold">EMA70 RSI Divergence</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • RSI divergence forming near EMA70<br />
-          • Strengthens the reliability of the signal
+          • RSI divergence detected near EMA70<br />
+          • Reinforces signal strength at dynamic support/resistance<br />
+          • Often aligns with continuation or bounce zones
         </p>
       </div>
     )}
   </div>
 )}
+          
+          
+        
 
         {/* Trade Link */}
         <div className="flex justify-center pt-4">
