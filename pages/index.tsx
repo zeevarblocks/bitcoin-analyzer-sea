@@ -658,16 +658,18 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+  const [isLoadingPairs, setIsLoadingPairs] = useState(true);
+  const [activeFilter, setActiveFilter] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredPairs = pairs
-    .filter((pair) => signals?.[pair])
-    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  const filteredPairs = pairs.filter((pair) =>
+    pair.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   // Move fetchPairs outside useEffect and wrap with useCallback for stable reference
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
@@ -719,6 +721,15 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   useEffect(() => {
     localStorage.setItem('favoritePairs', JSON.stringify(favorites));
   }, [favorites]);
+
+  const filteredDisplaySignals = Object.entries(signals || {})
+    .filter(([symbol]) => selectedPairs.includes(symbol))
+    .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
+    .filter(([_, data]) => {
+      if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
+      if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
+      return true;
+    });
 
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
@@ -834,6 +845,19 @@ return (
     Unselect All
   </button>
 </div>
+    <button
+          onClick={() => setActiveFilter('bullishBreakout')}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-sm rounded transition"
+        >
+          🟢 Bullish Breakout
+        </button>
+
+        <button
+          onClick={() => setActiveFilter('bearishContinuation')}
+          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
+        >
+          🔻 Bearish Continuation
+        </button>
 
       <div className="flex items-center space-x-4">
         <label className="text-white font-medium">
