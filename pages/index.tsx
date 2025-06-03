@@ -669,18 +669,18 @@ export default function SignalChecker() {
   const filteredPairs = pairs
     .filter((pair) => signals?.[pair])
     .sort((a, b) => {
-      const aData = signals[a] || {};
-      const bData = signals[b] || {};
+      const adata = signals[a] || {};
+      const bdata = signals[b] || {};
 
       const aIsPriority =
-        !aData.continuationEnded &&
-        aData.ema70Bounce &&
-        (aData.bullishContinuation || aData.bearishContinuation);
+        !adata.continuationEnded &&
+        adata.ema70Bounce &&
+        (adata.bullishContinuation || aData.bearishContinuation);
 
       const bIsPriority =
-        !bData.continuationEnded &&
-        bData.ema70Bounce &&
-        (bData.bullishContinuation || bData.bearishContinuation);
+        !bdata.continuationEnded &&
+        bdata.ema70Bounce &&
+        (bdata.bullishContinuation || bData.bearishContinuation);
 
       if (aIsPriority && !bIsPriority) return -1;
       if (!aIsPriority && bIsPriority) return 1;
