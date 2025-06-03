@@ -260,7 +260,8 @@ function detectBullishContinuationWithEnd(
    highs: number[],
   ema70: number[],
   rsi: number[],
-  ema14: number[]
+  ema14: number[],
+   someOtherParam:
 ): { continuation: boolean; ended: boolean; reason?: string } {
   let pointAIndex = -1;
   let pointBIndex = -1;
@@ -354,7 +355,8 @@ function detectBearishContinuationWithEnd(
   highs: number[],
   ema70: number[],
   rsi: number[],
-  ema14: number[]
+  ema14: number[],
+   someOtherParam:
 ): { continuation: boolean; ended: boolean; reason?: string } {
   let pointAIndex = -1;
   let pointBIndex = -1;
