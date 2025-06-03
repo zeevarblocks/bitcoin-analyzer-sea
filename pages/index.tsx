@@ -300,7 +300,6 @@ function detectBearishContinuationWithEnd(
           }
 
 // === Bullish Continuation with Solid Structure End Detection === 
-  function detectBullishContinuationWithEnd( closes: number[], lows: number[], ema70: number[], rsi: number[], ema14: number[], ): { continuation: boolean; ended: boolean; reason?: string } { for (let i = ema14.length - 5; i >= 1; i--) { const prev14 = ema14[i - 1]; const prev70 = ema70[i - 1]; const curr14 = ema14[i]; const curr70 = ema70[i];
 function detectBullishContinuationWithEnd(
   closes: number[],
   lows: number[],
