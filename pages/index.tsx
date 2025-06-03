@@ -750,9 +750,12 @@ const filteredPairs = pairs
 return (
   <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
     {isLoadingPairs && (
-      <div className="text-white font-medium animate-pulse">
-        Loading trading pairs...
-      </div>
+      <button
+  disabled
+  className="text-white font-medium text-sm px-3 py-1 rounded bg-gray-600 animate-pulse cursor-not-allowed"
+>
+  Loading trading pairs...
+</button>
     )}
 
     {/* Dropdown for Trading Pairs */}
