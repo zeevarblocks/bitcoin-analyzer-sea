@@ -437,13 +437,19 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
-  async function fetchSignals(): Promise<Record<string, SignalData>> {
-    const res = await fetch('https://your-signal-endpoint.com/api/signals'); // 👈 Replace with your real endpoint
-    return await res.json();
+  async function fetchSignalData(): Promise<Record<string, any>> {
+    // Replace this URL or logic with your actual signal API or local logic
+    const res = await fetch('https://your-api.com/api/signals');
+    const json = await res.json();
+    return json.signals || {};
   }
 
-  const [pairs, signals] = await Promise.all([fetchTopPairs(), fetchSignals()]);
-
+  try {
+    const [pairs, fetchedSignals] = await Promise.all([
+      fetchTopPairs(),
+      fetchSignalData()
+    ]);
+    
   const sortedPairs = pairs.sort((a, b) => {
     const aData = signals[a];
     const bData = signals[b];
@@ -673,8 +679,11 @@ if (type && level !== null) {
       symbols,
       signals,
       defaultSymbol,
+      pairs,
         initialPairs: sortedPairs,
       initialSignals: signals,
+      signals: fetchedSignals
+    }
     },
   };
         }
