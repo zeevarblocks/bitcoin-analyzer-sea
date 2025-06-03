@@ -799,7 +799,7 @@ return (
           </p>
         </div>
 
-        {(data.bullishBreakout || data.bearishBreakout) && (
+          {(data.bullishBreakout || data.bearishBreakout) && (
           <div className="pt-4 border-t border-white/10 space-y-2">
             <h3 className="text-lg font-semibold text-white">📊 Breakout Signals</h3>
             {data.bullishBreakout && (
@@ -812,7 +812,7 @@ return (
         )}
 
 
-    {data.ema70Bounce && !data.continuationEnded && (data.bearishContinuation || data.bullishContinuation) && (
+          {{data.ema70Bounce && !data.continuationEnded && (data.bearishContinuation || data.bullishContinuation) && (
   <div className="pt-4 border-t border-white/10 space-y-3">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
