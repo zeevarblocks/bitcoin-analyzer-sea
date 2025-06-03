@@ -500,6 +500,11 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
+let bearishContinuation = false;
+let bullishContinuation = false;
+let continuationEnded = false;
+let continuationReason = '';
+
 if (trend === 'bearish') {
   const { continuation, ended, reason } = detectBearishContinuationWithEnd(
     closes,
@@ -508,10 +513,11 @@ if (trend === 'bearish') {
     ema70,
     rsi14,
     ema14,
-    undefined // or null
+    undefined // or provide actual PointA if available
   );
 
   bearishContinuation = continuation;
+
   if (continuation && ended) {
     continuationEnded = true;
     continuationReason = reason;
@@ -526,15 +532,16 @@ if (trend === 'bullish') {
     ema70,
     rsi14,
     ema14,
-    undefined // or null
+    undefined // or provide actual PointA if available
   );
 
   bullishContinuation = continuation;
+
   if (continuation && ended) {
     continuationEnded = true;
     continuationReason = reason;
   }
-}
+    }
       
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
