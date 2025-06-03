@@ -21,7 +21,8 @@ interface SignalData {
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
   bullishContinuation: boolean;
-  cleanTrendContinuation: boolean; // NEW: captures aligned continuation
+  cleanTrendContinuation: boolean; // ✅ Confirmed continuation with clean trend
+  continuationEnded: boolean; // ✅ NEW: true if clean continuation broke
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
@@ -202,28 +203,66 @@ function hasDescendingTrendFromHighestHigh(highs: number[], fromIndex: number, m
   return true;
 }
 
-function isDescending(arr: number[], from: number, length = 3): boolean {
+function isDescending(arr: number[], from: number, length: number): boolean {
   for (let i = from; i < from + length - 1; i++) {
     if (arr[i] <= arr[i + 1]) return false;
   }
   return true;
 }
 
-function isAscending(arr: number[], from: number, length = 3): boolean {
+function isAscending(arr: number[], from: number, length: number): boolean {
   for (let i = from; i < from + length - 1; i++) {
     if (arr[i] >= arr[i + 1]) return false;
   }
   return true;
 }
 
+
+function hasBearishContinuationEnded(closes: number[], highs: number[], ema70: number[]): boolean {
+  const len = closes.length;
+  const lastClose = closes[len - 1];
+
+  // EMA70 has flattened or turned upward
+  const emaSlope = ema70[len - 1] - ema70[len - 3];
+  const isFlatOrUp = emaSlope >= 0;
+
+  // Price making higher highs
+  const recentHighs = highs.slice(-3);
+  const makingHigherHighs = recentHighs[2] > recentHighs[1] && recentHighs[1] > recentHighs[0];
+
+  // Price closed above EMA70
+  const closeAboveEMA70 = lastClose > ema70[len - 1];
+
+  return isFlatOrUp || makingHigherHighs || closeAboveEMA70;
+}
+
+function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: number[]): boolean {
+  const len = closes.length;
+  const lastClose = closes[len - 1];
+
+  // EMA70 has flattened or turned downward
+  const emaSlope = ema70[len - 1] - ema70[len - 3];
+  const isFlatOrDown = emaSlope <= 0;
+
+  // Price making lower lows
+  const recentLows = lows.slice(-3);
+  const makingLowerLows = recentLows[2] < recentLows[1] && recentLows[1] < recentLows[0];
+
+  // Price closed below EMA70
+  const closeBelowEMA70 = lastClose < ema70[len - 1];
+
+  return isFlatOrDown || makingLowerLows || closeBelowEMA70;
+}
+
+
 // === Bearish Continuation with Clean Trend Alignment ===
-function detectBearishContinuation(
+function detectBearishContinuationWithEnd(
   closes: number[],
   highs: number[],
   ema70: number[],
   rsi: number[],
   ema14: number[],
-): boolean {
+): { continuation: boolean; ended: boolean } {
   for (let i = ema14.length - 5; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -233,38 +272,40 @@ function detectBearishContinuation(
     const ema70IsDescending = isDescending(ema70, i - 2, 3);
     if (prev14 > prev70 && curr14 < curr70 && ema70IsDescending) {
       const rsiAtCross = rsi[i];
-      let lastHigh = highs[i];
+      let pointA = { high: highs[i], index: i };
+      let pointB: null | { high: number; index: number } = null;
+      let pointC: null | { high: number; index: number } = null;
 
       for (let j = i + 1; j < closes.length; j++) {
         const price = closes[j];
         const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
         const rsiHigher = rsi[j] > rsiAtCross;
-        const lowerHigh = highs[j] < lastHigh;
 
-        if (nearEMA70 && rsiHigher && lowerHigh) {
-          if (!isDescending(highs, j - 2, 3)) return false; // confirm lower highs
-          lastHigh = highs[j];
-        } else if (highs[j] > lastHigh) {
-          return false;
+        if (highs[j] < pointA.high && nearEMA70 && rsiHigher && ema70[j] < ema70[pointA.index]) {
+          if (!pointB) {
+            pointB = { high: highs[j], index: j };
+          } else if (highs[j] < pointB.high && ema70[j] < ema70[pointB.index]) {
+            pointC = { high: highs[j], index: j };
+            return { continuation: true, ended: false };
+          }
+        } else if (highs[j] > pointA.high) {
+          return { continuation: false, ended: true };
         }
-
-        if (j - i >= 2 && lowerHigh) return true;
       }
-
       break;
     }
   }
-  return false;
-}
+  return { continuation: false, ended: false };
+      }
 
 // === Bullish Continuation with Clean Trend Alignment ===
-function detectBullishContinuation(
+function detectBullishContinuationWithEnd(
   closes: number[],
   lows: number[],
   ema70: number[],
   rsi: number[],
   ema14: number[],
-): boolean {
+): { continuation: boolean; ended: boolean } {
   for (let i = ema14.length - 5; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -274,29 +315,31 @@ function detectBullishContinuation(
     const ema70IsAscending = isAscending(ema70, i - 2, 3);
     if (prev14 < prev70 && curr14 > curr70 && ema70IsAscending) {
       const rsiAtCross = rsi[i];
-      let lastLow = lows[i];
+      let pointA = { low: lows[i], index: i };
+      let pointB: null | { low: number; index: number } = null;
+      let pointC: null | { low: number; index: number } = null;
 
       for (let j = i + 1; j < closes.length; j++) {
         const price = closes[j];
         const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
         const rsiLower = rsi[j] < rsiAtCross;
-        const higherLow = lows[j] > lastLow;
 
-        if (nearEMA70 && rsiLower && higherLow) {
-          if (!isAscending(lows, j - 2, 3)) return false; // confirm higher lows
-          lastLow = lows[j];
-        } else if (lows[j] < lastLow) {
-          return false;
+        if (lows[j] > pointA.low && nearEMA70 && rsiLower && ema70[j] > ema70[pointA.index]) {
+          if (!pointB) {
+            pointB = { low: lows[j], index: j };
+          } else if (lows[j] > pointB.low && ema70[j] > ema70[pointB.index]) {
+            pointC = { low: lows[j], index: j };
+            return { continuation: true, ended: false };
+          }
+        } else if (lows[j] < pointA.low) {
+          return { continuation: false, ended: true };
         }
-
-        if (j - i >= 2 && higherLow) return true;
       }
-
       break;
     }
   }
-  return false;
-          }
+  return { continuation: false, ended: false };
+}
 
 
 // logic in getServerSideProps:
@@ -378,28 +421,33 @@ export async function getServerSideProps() {
 
 let bearishContinuation = false;
 let bullishContinuation = false;
+let continuationEnded = false;
 
 if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(
+  const result = detectBearishContinuationWithEnd(
     closes,
     highs,
     ema70,
     rsi14,
     ema14
   );
+  bearishContinuation = result.continuation;
+  continuationEnded = result.ended;
 }
 
 if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(
+  const result = detectBullishContinuationWithEnd(
     closes,
     lows,
     ema70,
     rsi14,
     ema14
   );
+  bullishContinuation = result.continuation;
+  continuationEnded = result.ended;
 }
 
-// Optional: unified signal object for easier debugging or UI use
+// Unified signal object for UI or debugging
 const continuationSignal = {
   trend,
   bearishContinuation,
@@ -407,6 +455,7 @@ const continuationSignal = {
   continuationDetected:
     (trend === 'bearish' && bearishContinuation) ||
     (trend === 'bullish' && bullishContinuation),
+  continuationEnded,
 };
       
       const currentRSI = rsi14.at(-1);
@@ -460,7 +509,7 @@ if (type && level !== null) {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       signals[symbol] = {
-    trend,
+  trend,
   breakout,
   bullishBreakout,
   bearishBreakout,
@@ -471,22 +520,29 @@ if (type && level !== null) {
   nearOrAtEMA70Divergence,
   ema14Bounce,
   ema70Bounce,
+  touchedEMA70Today,
+
+  // Core price data
   currentPrice: lastClose,
   level,
   levelType: type,
   inferredLevel,
   inferredLevelType,
   inferredLevelWithinRange,
-  touchedEMA70Today,
+  todaysLowestLow,
+  todaysHighestHigh,
+  intradayHigherHighBreak,
+  intradayLowerLowBreak,
+
+  // Trend continuation logic
   bearishContinuation,
   bullishContinuation,
   cleanTrendContinuation:
     (trend === 'bearish' && bearishContinuation) ||
     (trend === 'bullish' && bullishContinuation),
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
-  todaysLowestLow,
-  todaysHighestHigh,
+  continuationEnded, // NEW: tells you if trend continuation has ended
+
+  // Metadata
   url: `https://okx.com/join/96631749`,
 };
 
@@ -781,6 +837,16 @@ return (
         </p>
       </div>
     )}
+  </div>
+)}
+
+{data.continuationEnded && (
+  <div className="pt-4 border-t border-white/10 text-yellow-400">
+    ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
+    <p className="text-sm text-white/70 ml-4">
+      • Price action failed to maintain structure<br />
+      • Trend continuation conditions no longer valid
+    </p>
   </div>
 )}
 
