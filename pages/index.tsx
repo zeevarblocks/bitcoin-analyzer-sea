@@ -254,92 +254,70 @@ function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: nu
   return isFlatOrDown || makingLowerLows || closeBelowEMA70;
 }
 
+// === Bearish Continuation with Solid Structure End Detection === 
+function detectBearishContinuationWithEnd( closes: number[], highs: number[], ema70: number[], rsi: number[], ema14: number[], ): { continuation: boolean; ended: boolean; reason?: string } { for (let i = ema14.length - 5; i >= 1; i--) { const prev14 = ema14[i - 1]; const prev70 = ema70[i - 1]; const curr14 = ema14[i]; const curr70 = ema70[i];
 
-// === Bearish Continuation with Clean Trend Alignment ===
-function detectBearishContinuationWithEnd(
-  closes: number[],
-  highs: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-): { continuation: boolean; ended: boolean } {
-  for (let i = ema14.length - 5; i >= 1; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
+const ema70IsDescending = isDescending(ema70, i - 2, 3);
+if (prev14 > prev70 && curr14 < curr70 && ema70IsDescending) {
+  const rsiAtCross = rsi[i];
+  let pointA = { high: highs[i], index: i };
+  let pointB: null | { high: number; index: number } = null;
+  let pointC: null | { high: number; index: number } = null;
 
-    const ema70IsDescending = isDescending(ema70, i - 2, 3);
-    if (prev14 > prev70 && curr14 < curr70 && ema70IsDescending) {
-      const rsiAtCross = rsi[i];
-      let pointA = { high: highs[i], index: i };
-      let pointB: null | { high: number; index: number } = null;
-      let pointC: null | { high: number; index: number } = null;
+  for (let j = i + 1; j < closes.length; j++) {
+    const price = closes[j];
+    const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
+    const rsiHigher = rsi[j] > rsiAtCross;
 
-      for (let j = i + 1; j < closes.length; j++) {
-        const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
-        const rsiHigher = rsi[j] > rsiAtCross;
-
-        if (highs[j] < pointA.high && nearEMA70 && rsiHigher && ema70[j] < ema70[pointA.index]) {
-          if (!pointB) {
-            pointB = { high: highs[j], index: j };
-          } else if (highs[j] < pointB.high && ema70[j] < ema70[pointB.index]) {
-            pointC = { high: highs[j], index: j };
-            return { continuation: true, ended: false };
-          }
-        } else if (highs[j] > pointA.high) {
-          return { continuation: false, ended: true };
-        }
+    if (highs[j] < pointA.high && nearEMA70 && rsiHigher && ema70[j] < ema70[pointA.index]) {
+      if (!pointB) {
+        pointB = { high: highs[j], index: j };
+      } else if (highs[j] < pointB.high && ema70[j] < ema70[pointB.index]) {
+        pointC = { high: highs[j], index: j };
+        return { continuation: true, ended: false };
       }
-      break;
+    } else if (highs[j] > pointA.high) {
+      return { continuation: false, ended: true, reason: "Point A broken" };
     }
   }
-  return { continuation: false, ended: false };
-      }
-
-// === Bullish Continuation with Clean Trend Alignment ===
-function detectBullishContinuationWithEnd(
-  closes: number[],
-  lows: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-): { continuation: boolean; ended: boolean } {
-  for (let i = ema14.length - 5; i >= 1; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
-
-    const ema70IsAscending = isAscending(ema70, i - 2, 3);
-    if (prev14 < prev70 && curr14 > curr70 && ema70IsAscending) {
-      const rsiAtCross = rsi[i];
-      let pointA = { low: lows[i], index: i };
-      let pointB: null | { low: number; index: number } = null;
-      let pointC: null | { low: number; index: number } = null;
-
-      for (let j = i + 1; j < closes.length; j++) {
-        const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
-        const rsiLower = rsi[j] < rsiAtCross;
-
-        if (lows[j] > pointA.low && nearEMA70 && rsiLower && ema70[j] > ema70[pointA.index]) {
-          if (!pointB) {
-            pointB = { low: lows[j], index: j };
-          } else if (lows[j] > pointB.low && ema70[j] > ema70[pointB.index]) {
-            pointC = { low: lows[j], index: j };
-            return { continuation: true, ended: false };
-          }
-        } else if (lows[j] < pointA.low) {
-          return { continuation: false, ended: true };
-        }
-      }
-      break;
-    }
-  }
-  return { continuation: false, ended: false };
+  break;
 }
+
+} return { continuation: false, ended: false }; }
+
+// === Bullish Continuation with Solid Structure End Detection === 
+  function detectBullishContinuationWithEnd( closes: number[], lows: number[], ema70: number[], rsi: number[], ema14: number[], ): { continuation: boolean; ended: boolean; reason?: string } { for (let i = ema14.length - 5; i >= 1; i--) { const prev14 = ema14[i - 1]; const prev70 = ema70[i - 1]; const curr14 = ema14[i]; const curr70 = ema70[i];
+
+const ema70IsAscending = isAscending(ema70, i - 2, 3);
+if (prev14 < prev70 && curr14 > curr70 && ema70IsAscending) {
+  const rsiAtCross = rsi[i];
+  let pointA = { low: lows[i], index: i };
+  let pointB: null | { low: number; index: number } = null;
+  let pointC: null | { low: number; index: number } = null;
+
+  for (let j = i + 1; j < closes.length; j++) {
+    const price = closes[j];
+    const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
+    const rsiLower = rsi[j] < rsiAtCross;
+
+    if (lows[j] > pointA.low && nearEMA70 && rsiLower && ema70[j] > ema70[pointA.index]) {
+      if (!pointB) {
+        pointB = { low: lows[j], index: j };
+      } else if (lows[j] > pointB.low && ema70[j] > ema70[pointB.index]) {
+        pointC = { low: lows[j], index: j };
+        return { continuation: true, ended: false };
+      }
+    } else if (lows[j] < pointA.low) {
+      return { continuation: false, ended: true, reason: "Point A broken" };
+    }
+  }
+  break;
+}
+
+} return { continuation: false, ended: false }; }
+
+
+
 
 
 // logic in getServerSideProps:
@@ -424,30 +402,29 @@ let bullishContinuation = false;
 let continuationEnded = false;
 
 if (trend === 'bearish') {
-  const result = detectBearishContinuationWithEnd(
+  const { continuation, ended } = detectBearishContinuationWithEnd(
     closes,
     highs,
     ema70,
     rsi14,
     ema14
   );
-  bearishContinuation = result.continuation;
-  continuationEnded = result.ended;
+  bearishContinuation = continuation;
+  continuationEnded = ended;
 }
 
 if (trend === 'bullish') {
-  const result = detectBullishContinuationWithEnd(
+  const { continuation, ended } = detectBullishContinuationWithEnd(
     closes,
     lows,
     ema70,
     rsi14,
     ema14
   );
-  bullishContinuation = result.continuation;
-  continuationEnded = result.ended;
+  bullishContinuation = continuation;
+  continuationEnded = ended;
 }
 
-// Unified signal object for UI or debugging
 const continuationSignal = {
   trend,
   bearishContinuation,
@@ -812,11 +789,12 @@ return (
           </div>
         )}
 
-{((data.bearishContinuation && data.ema70Bounce) || (data.bullishContinuation && data.ema70Bounce)) && (
+{((data.bearishContinuation && data.ema70Bounce && !data.continuationEnded) ||
+  (data.bullishContinuation && data.ema70Bounce && !data.continuationEnded)) && (
   <div className="pt-4 border-t border-white/10 space-y-3">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-    {data.bearishContinuation && data.ema70Bounce && (
+    {data.bearishContinuation && data.ema70Bounce && !data.continuationEnded && (
       <div className="text-red-400">
         🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
         <p className="text-sm text-white/70 ml-4">
@@ -827,7 +805,7 @@ return (
       </div>
     )}
 
-    {data.bullishContinuation && data.ema70Bounce && (
+    {data.bullishContinuation && data.ema70Bounce && !data.continuationEnded && (
       <div className="text-green-400">
         🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
         <p className="text-sm text-white/70 ml-4">
