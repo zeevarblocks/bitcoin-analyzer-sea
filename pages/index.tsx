@@ -310,19 +310,42 @@ function detectBullishContinuationWithEnd(
         ended: true,
         reason: 'Broke lowest low from structure',
       };
-    } else {
+    }
+
+    // 🆕 Check if highest high during trend failed to close above EMA14
+    let highestHigh = -Infinity;
+    let highestHighIndex = -1;
+
+    for (let i = pointCIndex; i < highs.length; i++) {
+      if (highs[i] > highestHigh) {
+        highestHigh = highs[i];
+        highestHighIndex = i;
+      }
+    }
+
+    if (
+      highestHighIndex !== -1 &&
+      closes[highestHighIndex] <= ema14[highestHighIndex]
+    ) {
       return {
-        continuation: true,
-        ended: false,
+        continuation: false,
+        ended: true,
+        reason:
+          'No candle closed above EMA14 at the highest high of the trend',
       };
     }
+
+    return {
+      continuation: true,
+      ended: false,
+    };
   }
 
   return {
     continuation: false,
     ended: false,
   };
-      }
+}
 
 function detectBearishContinuationWithEnd(
   closes: number[],
@@ -380,19 +403,41 @@ function detectBearishContinuationWithEnd(
         ended: true,
         reason: 'Broke highest high from structure',
       };
-    } else {
+    }
+
+    // 🆕 Check if lowest low failed to close below EMA14
+    let lowestLow = Infinity;
+    let lowestLowIndex = -1;
+
+    for (let i = pointCIndex; i < lows.length; i++) {
+      if (lows[i] < lowestLow) {
+        lowestLow = lows[i];
+        lowestLowIndex = i;
+      }
+    }
+
+    if (
+      lowestLowIndex !== -1 &&
+      closes[lowestLowIndex] >= ema14[lowestLowIndex]
+    ) {
       return {
-        continuation: true,
-        ended: false,
+        continuation: false,
+        ended: true,
+        reason: 'No candle closed below EMA14 at the lowest low of the trend',
       };
     }
+
+    return {
+      continuation: true,
+      ended: false,
+    };
   }
 
   return {
     continuation: false,
     ended: false,
   };
-    }
+               }
 
         
 
@@ -490,8 +535,10 @@ if (trend === 'bearish') {
   );
 
   bearishContinuation = continuation;
-  continuationEnded = continuation ? ended : false;
-  if (ended) continuationReason = reason;
+  if (continuation && ended) {
+    continuationEnded = true;
+    continuationReason = reason;
+  }
 }
 
 if (trend === 'bullish') {
@@ -504,8 +551,10 @@ if (trend === 'bullish') {
   );
 
   bullishContinuation = continuation;
-  continuationEnded = continuation ? ended : false;
-  if (ended) continuationReason = reason;
+  if (continuation && ended) {
+    continuationEnded = true;
+    continuationReason = reason;
+  }
 }
 
 const continuationSignal = {
@@ -516,7 +565,7 @@ const continuationSignal = {
     (trend === 'bearish' && bearishContinuation) ||
     (trend === 'bullish' && bullishContinuation),
   continuationEnded,
-  continuationReason, // optional: include reason for structure break
+  continuationReason,
 };
       
       const currentRSI = rsi14.at(-1);
@@ -907,6 +956,11 @@ return (
     <p className="text-sm text-white/70 ml-4">
       • Price action failed to maintain structure<br />
       • Trend continuation conditions no longer valid
+      {data.continuationReason && (
+        <>
+          <br />• <span className="italic">Reason:</span> {data.continuationReason}
+        </>
+      )}
     </p>
   </div>
 )}
