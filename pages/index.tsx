@@ -811,8 +811,7 @@ return (
           </div>
         )}
 
-{data.ema70Bounce && (
-  <>
+
     {!data.continuationEnded && (data.bearishContinuation || data.bullishContinuation) && (
       <div className="pt-4 border-t border-white/10 space-y-3">
         <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
@@ -838,8 +837,7 @@ return (
             </p>
           </div>
         )}
-      </div>
-    )}
+  
 
     {data.continuationEnded && (
       <div className="pt-4 border-t border-white/10 text-yellow-400">
