@@ -651,75 +651,59 @@ if (type && level !== null) {
 
 
 // In the component SignalChecker, just render the two new fields like this:
- import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
-const searchInputRef = useRef<HTMLInputElement>(null);
-  
-const filteredPairs = pairs
-  .filter((pair) => signals?.[pair])
-  .sort((a, b) => {
-    const aData = signals[a];
-    const bData = signals[b];
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-    const aIsPriority =
-      !aData.continuationEnded && aData.ema70Bounce &&
-      (aData.bullishContinuation || aData.bearishContinuation);
+  const filteredPairs = pairs
+    .filter((pair) => signals?.[pair])
+    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const bIsPriority =
-      !bData.continuationEnded && bData.ema70Bounce &&
-      (bData.bullishContinuation || bData.bearishContinuation);
+  // Move fetchPairs outside useEffect and wrap with useCallback for stable reference
+  const fetchPairs = useCallback(async () => {
+    setIsLoadingPairs(true);
+    try {
+      const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+      const data = await response.json();
+      const sortedPairs = data.data
+        .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+        .map((item: any) => item.instId);
 
-    if (aIsPriority && !bIsPriority) return -1;
-    if (!aIsPriority && bIsPriority) return 1;
-    return 0;
-  })
-  .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
-  
+      setPairs(sortedPairs);
 
-  
-  useEffect(() => {
-    const fetchPairs = async () => {
-  setIsLoadingPairs(true);
-  try {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-    const data = await response.json();
-    const sortedPairs = data.data
-      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .map((item: any) => item.instId);
+      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+      const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
 
-    setPairs(sortedPairs);
-
-    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-    const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
-
-    if (validSaved.length > 0) {
-      setSelectedPairs(validSaved);
-    } else {
-      const topValidPairs = sortedPairs
-        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-        .slice(0, 5);
-      setSelectedPairs(topValidPairs);
+      if (validSaved.length > 0) {
+        setSelectedPairs(validSaved);
+      } else {
+        const topValidPairs = sortedPairs
+          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          .slice(0, 5);
+        setSelectedPairs(topValidPairs);
+      }
+    } catch (error) {
+      console.error('Error fetching trading pairs:', error);
+    } finally {
+      setIsLoadingPairs(false);
     }
-  } catch (error) {
-    console.error('Error fetching trading pairs:', error);
-  } finally {
-    setIsLoadingPairs(false);
-  }
-};
+  }, [signals]);
 
+  // Fetch pairs on mount and every 5 minutes
+  useEffect(() => {
     fetchPairs();
     const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
-  }, [signals]);
+  }, [fetchPairs]);
 
   useEffect(() => {
     if (selectedPairs.length > 0) {
@@ -767,6 +751,11 @@ const filteredPairs = pairs
   
 return (
   <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
+     {isLoadingPairs && (
+      <div className="text-white font-medium animate-pulse">
+        Loading trading pairs...
+      </div>
+    )}
     {/* Dropdown for Trading Pairs */}
       {/* Searchable input */}
   <div
@@ -878,15 +867,17 @@ return (
           Unselect
         </button>
           </div>
-          {isLoadingPairs && (
-  <button
-    disabled
-    className="flex items-center gap-2 text-xs px-3 py-1 rounded bg-white/10 text-white animate-pulse cursor-not-allowed"
-  >
-    {/* spinner here */}
-    Loading...
-  </button>
-)}
+           <button
+        onClick={fetchPairs}
+        disabled={isLoadingPairs}
+        className={`refresh-button ${
+          isLoadingPairs
+            ? 'bg-gray-400 cursor-not-allowed animate-pulse'
+            : 'bg-blue-600 hover:bg-blue-700 text-white'
+        } px-4 py-2 rounded`}
+      >
+        {isLoadingPairs ? 'Refreshing...' : 'Refresh'}
+      </button>
               <div className="space-y-1">
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
           <p>
