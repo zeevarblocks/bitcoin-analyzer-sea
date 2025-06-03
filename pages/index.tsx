@@ -254,96 +254,89 @@ function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: nu
   return isFlatOrDown || makingLowerLows || closeBelowEMA70;
 }
 
-// === Bearish Continuation with Solid Structure End Detection === 
-function detectBearishContinuationWithEnd(
-  closes: number[],
-  highs: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-): { continuation: boolean; ended: boolean } {
-  for (let i = ema14.length - 5; i >= 1; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
-
-    const ema70IsDescending = isDescending(ema70, i - 2, 3);
-    if (prev14 > prev70 && curr14 < curr70 && ema70IsDescending) {
-      const rsiAtCross = rsi[i];
-      const pointA = { high: highs[i], index: i };
-      let pointB: null | { high: number; index: number } = null;
-      let pointC: null | { high: number; index: number } = null;
-
-      for (let j = i + 1; j < closes.length; j++) {
-        const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
-        const rsiHigher = rsi[j] > rsiAtCross;
-
-        if (highs[j] < pointA.high && nearEMA70 && rsiHigher && ema70[j] < ema70[pointA.index]) {
-          if (!pointB) {
-            pointB = { high: highs[j], index: j };
-          } else if (highs[j] < pointB.high && ema70[j] < ema70[pointB.index]) {
-            pointC = { high: highs[j], index: j };
-            return { continuation: true, ended: false };
-          }
-        }
-
-        // 🔴 End only if price breaks ABOVE point A's high
-        if (highs[j] > pointA.high) {
-          return { continuation: false, ended: true };
-        }
-      }
-    }
-  }
-  return { continuation: false, ended: false };
-          }
-
 // === Bullish Continuation with Solid Structure End Detection === 
-function detectBullishContinuationWithEnd(
-  closes: number[],
-  lows: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-): { continuation: boolean; ended: boolean } {
-  for (let i = ema14.length - 5; i >= 1; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
+function detectBullishContinuationWithEnd( closes: number[], lows: number[], ema70: number[], rsi: number[], ema14: number[] ): { continuation: boolean; ended: boolean; reason?: string } { let pointAIndex = -1; let pointBIndex = -1; let pointCIndex = -1; let lowestLow = Infinity; let foundStructure = false;
 
-    const ema70IsAscending = isAscending(ema70, i - 2, 3);
-    if (prev14 < prev70 && curr14 > curr70 && ema70IsAscending) {
-      const rsiAtCross = rsi[i];
-      const pointA = { low: lows[i], index: i };
-      let pointB: null | { low: number; index: number } = null;
-      let pointC: null | { low: number; index: number } = null;
+for (let i = ema14.length - 5; i >= 3; i--) { const emaSlope = ema70[i] > ema70[i - 1];
 
-      for (let j = i + 1; j < closes.length; j++) {
-        const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
-        const rsiLower = rsi[j] < rsiAtCross;
+if (!emaSlope) continue;
 
-        if (lows[j] > pointA.low && nearEMA70 && rsiLower && ema70[j] > ema70[pointA.index]) {
-          if (!pointB) {
-            pointB = { low: lows[j], index: j };
-          } else if (lows[j] > pointB.low && ema70[j] > ema70[pointB.index]) {
-            pointC = { low: lows[j], index: j };
-            return { continuation: true, ended: false };
-          }
-        }
+// Look for Point A (highest low near EMA70)
+const nearEma70 = Math.abs(lows[i] - ema70[i]) / ema70[i] < 0.01;
+if (nearEma70) {
+  pointAIndex = i;
+  lowestLow = lows[i];
 
-        // 🔴 End only if price breaks BELOW point A's low
-        if (lows[j] < pointA.low) {
-          return { continuation: false, ended: true };
+  // Point B (higher low)
+  for (let j = i - 1; j >= 2; j--) {
+    if (lows[j] > lows[pointAIndex] && Math.abs(lows[j] - ema70[j]) / ema70[j] < 0.015) {
+      pointBIndex = j;
+      lowestLow = Math.min(lowestLow, lows[j]);
+
+      // Point C (higher low again)
+      for (let k = j - 1; k >= 1; k--) {
+        if (lows[k] > lows[pointBIndex] && Math.abs(lows[k] - ema70[k]) / ema70[k] < 0.015) {
+          pointCIndex = k;
+          lowestLow = Math.min(lowestLow, lows[k]);
+          foundStructure = true;
+          break;
         }
       }
+      break;
     }
   }
-  return { continuation: false, ended: false };
-          }
+  break;
+}
 
+}
+
+if (foundStructure) { // If latest candle breaks below the lowest low in the structure, end continuation const lastLow = lows[lows.length - 1]; if (lastLow < lowestLow) { return { continuation: false, ended: true, reason: 'Broke lowest low from structure', }; } else { return { continuation: true, ended: false, }; } }
+
+return { continuation: false, ended: false, }; }
+
+// === Bearish Continuation with Solid Structure End Detection === 
+function detectBearishContinuationWithEnd( closes: number[], highs: number[], ema70: number[], rsi: number[], ema14: number[] ): { continuation: boolean; ended: boolean; reason?: string } { let pointAIndex = -1; let pointBIndex = -1; let pointCIndex = -1; let highestHigh = -Infinity; let foundStructure = false;
+
+for (let i = ema14.length - 5; i >= 3; i--) { const emaSlope = ema70[i] < ema70[i - 1];
+
+if (!emaSlope) continue;
+
+// Look for Point A (lowest high near EMA70)
+const nearEma70 = Math.abs(highs[i] - ema70[i]) / ema70[i] < 0.01;
+if (nearEma70) {
+  pointAIndex = i;
+  highestHigh = highs[i];
+
+  // Point B (lower high)
+  for (let j = i - 1; j >= 2; j--) {
+    if (highs[j] < highs[pointAIndex] && Math.abs(highs[j] - ema70[j]) / ema70[j] < 0.015) {
+      pointBIndex = j;
+      highestHigh = Math.max(highestHigh, highs[j]);
+
+      // Point C (lower high again)
+      for (let k = j - 1; k >= 1; k--) {
+        if (highs[k] < highs[pointBIndex] && Math.abs(highs[k] - ema70[k]) / ema70[k] < 0.015) {
+          pointCIndex = k;
+          highestHigh = Math.max(highestHigh, highs[k]);
+          foundStructure = true;
+          break;
+        }
+      }
+      break;
+    }
+  }
+  break;
+}
+
+}
+
+if (foundStructure) { // If latest candle breaks above the highest high in the structure, end continuation const lastHigh = highs[highs.length - 1]; if (lastHigh > highestHigh) { return { continuation: false, ended: true, reason: 'Broke highest high from structure', }; } else { return { continuation: true, ended: false, }; } }
+
+return { continuation: false, ended: false, }; }
+
+
+
+        
 
 
 
@@ -429,28 +422,29 @@ let bullishContinuation = false;
 let continuationEnded = false;
 
 if (trend === 'bearish') {
-  const { continuation, ended } = detectBearishContinuationWithEnd(
+  const result = detectBearishContinuationWithEnd(
     closes,
     highs,
     ema70,
     rsi14,
     ema14
   );
-  bearishContinuation = continuation;
-  // Ended only makes sense if it had been a continuation
-  continuationEnded = continuation ? ended : false;
+
+  bearishContinuation = result.continuation;
+  continuationEnded = result.continuation ? result.ended : false;
 }
 
 if (trend === 'bullish') {
-  const { continuation, ended } = detectBullishContinuationWithEnd(
+  const result = detectBullishContinuationWithEnd(
     closes,
     lows,
     ema70,
     rsi14,
     ema14
   );
-  bullishContinuation = continuation;
-  continuationEnded = continuation ? ended : false;
+
+  bullishContinuation = result.continuation;
+  continuationEnded = result.continuation ? result.ended : false;
 }
 
 const continuationSignal = {
@@ -817,37 +811,32 @@ return (
           </div>
         )}
 
-{!data.continuationEnded && (
-  <>
-    {(data.bearishContinuation && data.ema70Bounce) ||
-    (data.bullishContinuation && data.ema70Bounce) ? (
-      <div className="pt-4 border-t border-white/10 space-y-3">
-        <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
+{!data.continuationEnded && (data.bearishContinuation || data.bullishContinuation) && data.ema70Bounce && (
+  <div className="pt-4 border-t border-white/10 space-y-3">
+    <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-        {data.bearishContinuation && data.ema70Bounce && (
-          <div className="text-red-400">
-            🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
-            <p className="text-sm text-white/70 ml-4">
-              • EMA70 is sloping downward<br />
-              • Lower highs near EMA70<br />
-              • Bounce off EMA70 occurred
-            </p>
-          </div>
-        )}
-
-        {data.bullishContinuation && data.ema70Bounce && (
-          <div className="text-green-400">
-            🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
-            <p className="text-sm text-white/70 ml-4">
-              • EMA70 is sloping upward<br />
-              • Higher lows near EMA70<br />
-              • Bounce off EMA70 occurred
-            </p>
-          </div>
-        )}
+    {data.bearishContinuation && (
+      <div className="text-red-400">
+        🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
+        <p className="text-sm text-white/70 ml-4">
+          • EMA70 is sloping downward<br />
+          • Lower highs near EMA70<br />
+          • Bounce off EMA70 occurred
+        </p>
       </div>
-    ) : null}
-  </>
+    )}
+
+    {data.bullishContinuation && (
+      <div className="text-green-400">
+        🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
+        <p className="text-sm text-white/70 ml-4">
+          • EMA70 is sloping upward<br />
+          • Higher lows near EMA70<br />
+          • Bounce off EMA70 occurred
+        </p>
+      </div>
+    )}
+  </div>
 )}
 
 {data.continuationEnded && (
