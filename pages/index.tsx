@@ -257,6 +257,7 @@ function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: nu
 function detectBullishContinuationWithEnd(
   closes: number[],
   lows: number[],
+   highs: number[],
   ema70: number[],
   rsi: number[],
   ema14: number[]
@@ -349,6 +350,7 @@ function detectBullishContinuationWithEnd(
 
 function detectBearishContinuationWithEnd(
   closes: number[],
+  lows: number[],
   highs: number[],
   ema70: number[],
   rsi: number[],
