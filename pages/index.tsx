@@ -653,6 +653,15 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
     import { useState, useEffect, useRef } from 'react';
 
+interface SignalData {
+  continuationEnded: boolean;
+  ema70Bounce: boolean;
+  bearishContinuation: boolean;
+  bullishContinuation: boolean;
+  continuationReason?: string;
+  // …add any other fields you actually use
+}
+
 export default function SignalChecker() {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
