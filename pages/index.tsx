@@ -858,7 +858,7 @@ return (
       </div>
         <div className="flex gap-2 flex-wrap">
   <button
-    onClick={() => setActiveFilter('bullishBreakout')}
+    onClick={() => setActiveFilter('bullishContinuation')}
     className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📈</span>
@@ -874,7 +874,7 @@ return (
   </button>
 
   <button
-    onClick={() => setActiveFilter('pressureZone')}
+    onClick={() => setActiveFilter('divergence')}
     className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>🧱</span>
@@ -882,7 +882,7 @@ return (
   </button>
 
   <button
-    onClick={() => setActiveFilter('trendEnd')}
+    onClick={() => setActiveFilter('continuationEnded')}
     className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>⚠️</span>
