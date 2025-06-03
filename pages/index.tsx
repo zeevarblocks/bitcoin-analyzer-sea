@@ -745,6 +745,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
       if (activeFilter === 'continuationEnded') return data.continuationEnded;
       if (activeFilter === 'divergence') return data.divergence;
+      if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       return true;
     });
 
