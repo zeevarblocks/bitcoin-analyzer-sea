@@ -894,7 +894,7 @@ return (
   </button>
 
   <button
-    onClick={() => setActiveFilter('continuationEnded')}
+    onClick={() => setActiveFilter('ema70Bounce')}
     className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>⚠️</span>
@@ -1000,7 +1000,7 @@ return (
     </div>
   ) : data.ema70Bounce ? (
     <div className="text-white/70">
-      ⚠️ <span className="font-semibold">Pressure Zone</span>: No clear trend continuation.
+      ⚠️ <span className="font-semibold">Continuation Ended</span>: No clear trend continuation.
       <p className="text-sm ml-4 mt-1">
         • EMA70 bounce detected<br />
         • But no valid bullish or bearish continuation<br />
@@ -1013,27 +1013,46 @@ return (
           
           
         {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
-          <div className="pt-4 border-t border-white/10 space-y-2">
-            <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
-            {data.divergenceFromLevel && (
-              <p className="text-pink-400">
-                🔍 Divergence vs Level: <span className="font-semibold capitalize">
-                  {data.divergenceFromLevelType === "bullish"
-                    ? "Overbought"
-                    : data.divergenceFromLevelType === "bearish"
-                      ? "Oversold"
-                      : "Momentum Exhaustion"}
-                </span>
-              </p>
-            )}
-            
-            {data.divergence && (
-              <p className="text-orange-400">
-                📉 RSI High/Low Divergence: <span className="font-semibold">Pressure Zone</span>
-              </p>
-            )}
-          </div>
-        )}
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+
+    {data.divergenceFromLevel && (
+      <div className="text-pink-400">
+        🔍 <span className="font-semibold">Divergence vs Level</span>: 
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Type:{" "}
+          <span className="capitalize text-white">
+            {data.divergenceFromLevelType === "bullish"
+              ? "Overbought"
+              : data.divergenceFromLevelType === "bearish"
+              ? "Oversold"
+              : "Momentum Exhaustion"}
+          </span>
+        </p>
+      </div>
+    )}
+
+    {data.divergence && (
+      <div className="text-purple-400">
+        ⚠️ <span className="font-semibold">Classic RSI Divergence</span>: Pressure Zone 
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Price is moving opposite to RSI<br />
+          • Possible trend reversal or correction
+        </p>
+      </div>
+    )}
+
+    {data.nearOrAtEMA70Divergence && (
+      <div className="text-indigo-400">
+        🧭 <span className="font-semibold">EMA70 RSI Divergence</span>: Near or At EMA70
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • RSI divergence forming near EMA70<br />
+          • Strengthens the reliability of the signal
+        </p>
+      </div>
+    )}
+  </div>
+)}
 
         {/* Trade Link */}
         <div className="flex justify-center pt-4">
