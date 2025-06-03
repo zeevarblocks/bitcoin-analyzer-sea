@@ -651,94 +651,74 @@ if (type && level !== null) {
 
 
 // In the component SignalChecker, just render the two new fields like this:
-    import { useState, useEffect, useRef } from 'react';
+ import { useState, useEffect, useRef } from 'react';
 
-const data: SignalData = getServerSideProps(); // or from props, context, etc.
-interface SignalData {
-  continuationEnded: boolean;
-  ema70Bounce: boolean;
-  bearishContinuation: boolean;
-  bullishContinuation: boolean;
-  continuationReason?: string;
-  // …add any other fields you actually use
-}
-
-export default function SignalChecker() {
+export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [signals, setSignals] = useState<Record<string, SignalData>>({});
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  
+const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+const searchInputRef = useRef<HTMLInputElement>(null);
+  
+const filteredPairs = pairs
+  .filter((pair) => signals?.[pair])
+  .sort((a, b) => {
+    const aData = signals[a];
+    const bData = signals[b];
 
-  const filteredPairs = pairs
-    .filter((pair) => signals?.[pair])
-    .sort((a, b) => {
-      const adata = signals[a] || {};
-      const bdata = signals[b] || {};
+    const aIsPriority =
+      !aData.continuationEnded && aData.ema70Bounce &&
+      (aData.bullishContinuation || aData.bearishContinuation);
 
-      const aIsPriority =
-        !adata.continuationEnded &&
-        adata.ema70Bounce &&
-        (adata.bullishContinuation || aData.bearishContinuation);
+    const bIsPriority =
+      !bData.continuationEnded && bData.ema70Bounce &&
+      (bData.bullishContinuation || bData.bearishContinuation);
 
-      const bIsPriority =
-        !bdata.continuationEnded &&
-        bdata.ema70Bounce &&
-        (bdata.bullishContinuation || bData.bearishContinuation);
+    if (aIsPriority && !bIsPriority) return -1;
+    if (!aIsPriority && bIsPriority) return 1;
+    return 0;
+  })
+  .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      if (aIsPriority && !bIsPriority) return -1;
-      if (!aIsPriority && bIsPriority) return 1;
-      return 0;
-    })
-    .filter((pair) =>
-      pair.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+  
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoadingPairs(true);
-      try {
-        const [pairData, signalData] = await Promise.all([
-          fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT')
-            .then(res => res.json()),
-          fetch('/api/signals').then(res => res.json()), // update with your actual signal endpoint
-        ]);
+    const fetchPairs = async () => {
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const data = await response.json();
+    const sortedPairs = data.data
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .map((item: any) => item.instId);
 
-        const sortedPairs = pairData.data
-          .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-          .map((item: any) => item.instId);
+    setPairs(sortedPairs);
 
-        setPairs(sortedPairs);
-        setSignals(signalData);
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
 
-        const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-        const validSaved = savedPairs.filter((pair: string) => signalData?.[pair]?.currentPrice !== undefined);
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 5);
+      setSelectedPairs(topValidPairs);
+    }
+  } catch (error) {
+    console.error('Error fetching trading pairs:', error);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+};
 
-        if (validSaved.length > 0) {
-          setSelectedPairs(validSaved);
-        } else {
-          const topValidPairs = sortedPairs
-            .filter((pair) => signalData?.[pair]?.currentPrice !== undefined)
-            .slice(0, 5);
-          setSelectedPairs(topValidPairs);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoadingPairs(false);
-      }
-    };
-
-    fetchData();
-    const intervalId = setInterval(fetchData, 30 * 1000);
+    fetchPairs();
+    const intervalId = setInterval(fetchPairs, 30 * 1000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [signals]);
 
   useEffect(() => {
     if (selectedPairs.length > 0) {
@@ -771,6 +751,18 @@ export default function SignalChecker() {
   const filteredDisplaySignals = Object.entries(filteredSignals).filter(([symbol]) =>
     showOnlyFavorites ? favorites.includes(symbol) : true
   );
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setDropdownVisible(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [containerRef]);
   
 return (
   <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
