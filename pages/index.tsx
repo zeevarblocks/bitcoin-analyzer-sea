@@ -257,11 +257,11 @@ function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: nu
 function detectBullishContinuationWithEnd(
   closes: number[],
   lows: number[],
-   highs: number[],
+  highs: number[],
   ema70: number[],
   rsi: number[],
   ema14: number[],
-   someOtherParam:
+  someOtherParam: number[] // <-- Add the correct type here
 ): { continuation: boolean; ended: boolean; reason?: string } {
   let pointAIndex = -1;
   let pointBIndex = -1;
@@ -312,42 +312,20 @@ function detectBullishContinuationWithEnd(
         ended: true,
         reason: 'Broke lowest low from structure',
       };
-    }
-
-    // 🆕 Check if highest high during trend failed to close above EMA14
-    let highestHigh = -Infinity;
-    let highestHighIndex = -1;
-
-    for (let i = pointCIndex; i < highs.length; i++) {
-      if (highs[i] > highestHigh) {
-        highestHigh = highs[i];
-        highestHighIndex = i;
-      }
-    }
-
-    if (
-      highestHighIndex !== -1 &&
-      closes[highestHighIndex] <= ema14[highestHighIndex]
-    ) {
+    } else {
       return {
-        continuation: false,
-        ended: true,
-        reason:
-          'No candle closed above EMA14 at the highest high of the trend',
+        continuation: true,
+        ended: false,
       };
     }
-
-    return {
-      continuation: true,
-      ended: false,
-    };
   }
 
   return {
     continuation: false,
     ended: false,
+    reason: 'Structure not found',
   };
-}
+            }
 
 function detectBearishContinuationWithEnd(
   closes: number[],
@@ -356,7 +334,7 @@ function detectBearishContinuationWithEnd(
   ema70: number[],
   rsi: number[],
   ema14: number[],
-   someOtherParam:
+  someOtherParam: any, // replace or remove if unused
 ): { continuation: boolean; ended: boolean; reason?: string } {
   let pointAIndex = -1;
   let pointBIndex = -1;
@@ -371,21 +349,19 @@ function detectBearishContinuationWithEnd(
     const nearEma70 = Math.abs(highs[i] - ema70[i]) / ema70[i] < 0.01;
     if (nearEma70) {
       pointAIndex = i;
-      highestHigh = highs[i];
+      highestHigh = highs[i]; // only set once
 
       // Point B
       for (let j = i - 1; j >= 2; j--) {
         const nearEmaB = Math.abs(highs[j] - ema70[j]) / ema70[j] < 0.015;
         if (highs[j] < highs[pointAIndex] && nearEmaB) {
           pointBIndex = j;
-          highestHigh = Math.max(highestHigh, highs[j]);
 
           // Point C
           for (let k = j - 1; k >= 1; k--) {
             const nearEmaC = Math.abs(highs[k] - ema70[k]) / ema70[k] < 0.015;
             if (highs[k] < highs[pointBIndex] && nearEmaC) {
               pointCIndex = k;
-              highestHigh = Math.max(highestHigh, highs[k]);
               foundStructure = true;
               break;
             }
@@ -409,7 +385,7 @@ function detectBearishContinuationWithEnd(
       };
     }
 
-    // 🆕 Check if lowest low failed to close below EMA14
+    // Check if lowest low failed to close below EMA14
     let lowestLow = Infinity;
     let lowestLowIndex = -1;
 
@@ -441,7 +417,7 @@ function detectBearishContinuationWithEnd(
     continuation: false,
     ended: false,
   };
-               }
+      }
 
         
 
@@ -524,14 +500,10 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
-let bearishContinuation = false;
-let bullishContinuation = false;
-let continuationEnded = false;
-let continuationReason: string | undefined = undefined;
-
 if (trend === 'bearish') {
   const { continuation, ended, reason } = detectBearishContinuationWithEnd(
     closes,
+    lows,
     highs,
     ema70,
     rsi14,
@@ -539,7 +511,7 @@ if (trend === 'bearish') {
   );
 
   bearishContinuation = continuation;
-  if (continuation && ended) {
+  if (ended) {  // ended implies continuation ended
     continuationEnded = true;
     continuationReason = reason;
   }
@@ -549,28 +521,18 @@ if (trend === 'bullish') {
   const { continuation, ended, reason } = detectBullishContinuationWithEnd(
     closes,
     lows,
+    highs,
     ema70,
     rsi14,
     ema14
   );
 
   bullishContinuation = continuation;
-  if (continuation && ended) {
+  if (ended) {
     continuationEnded = true;
     continuationReason = reason;
   }
 }
-
-const continuationSignal = {
-  trend,
-  bearishContinuation,
-  bullishContinuation,
-  continuationDetected:
-    (trend === 'bearish' && bearishContinuation) ||
-    (trend === 'bullish' && bullishContinuation),
-  continuationEnded,
-  continuationReason,
-};
       
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
@@ -933,7 +895,7 @@ return (
     {data.bearishContinuation && (
       <div className="text-red-400">
         🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
-        <p className="text-sm text-white/70 ml-4">
+        <p className="text-sm text-white/70 ml-4 mt-1">
           • EMA70 is sloping downward<br />
           • Lower highs near EMA70<br />
           • Bounce off EMA70 occurred
@@ -944,10 +906,20 @@ return (
     {data.bullishContinuation && (
       <div className="text-green-400">
         🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
-        <p className="text-sm text-white/70 ml-4">
+        <p className="text-sm text-white/70 ml-4 mt-1">
           • EMA70 is sloping upward<br />
           • Higher lows near EMA70<br />
           • Bounce off EMA70 occurred
+        </p>
+      </div>
+    )}
+
+    {!data.bullishContinuation && !data.bearishContinuation && (
+      <div className="text-white/70 ml-1">
+        ⚠️ No clear continuation structure found despite the EMA70 bounce.
+        <p className="text-sm ml-4 mt-1">
+          • The trend may be weakening or transitioning<br />
+          • Watch for breakout or reversal signals
         </p>
       </div>
     )}
@@ -957,7 +929,7 @@ return (
 {data.continuationEnded && (
   <div className="pt-4 border-t border-white/10 text-yellow-400">
     ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
-    <p className="text-sm text-white/70 ml-4">
+    <p className="text-sm text-white/70 ml-4 mt-1">
       • Price action failed to maintain structure<br />
       • Trend continuation conditions no longer valid
       {data.continuationReason && (
