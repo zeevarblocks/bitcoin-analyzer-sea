@@ -833,7 +833,6 @@ return (
       </ul>
     )}
   </div>
-</div>
 
   {/* Select All */}
   <button
