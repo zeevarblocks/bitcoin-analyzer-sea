@@ -437,6 +437,34 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.instId);
   }
 
+  async function fetchSignals(): Promise<Record<string, SignalData>> {
+    const res = await fetch('https://your-signal-endpoint.com/api/signals'); // 👈 Replace with your real endpoint
+    return await res.json();
+  }
+
+  const [pairs, signals] = await Promise.all([fetchTopPairs(), fetchSignals()]);
+
+  const sortedPairs = pairs.sort((a, b) => {
+    const aData = signals[a];
+    const bData = signals[b];
+
+    const aIsPriority =
+      aData &&
+      !aData.continuationEnded &&
+      aData.ema70Bounce &&
+      (aData.bullishContinuation || aData.bearishContinuation);
+
+    const bIsPriority =
+      bData &&
+      !bData.continuationEnded &&
+      bData.ema70Bounce &&
+      (bData.bullishContinuation || bData.bearishContinuation);
+
+    if (aIsPriority && !bIsPriority) return -1;
+    if (!aIsPriority && bIsPriority) return 1;
+    return 0;
+  });
+
   const symbols = await fetchTopPairs(100);
 
   const signals: Record<string, SignalData> = {};
@@ -645,6 +673,8 @@ if (type && level !== null) {
       symbols,
       signals,
       defaultSymbol,
+        initialPairs: sortedPairs,
+      initialSignals: signals,
     },
   };
         }
@@ -665,24 +695,28 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
 const searchInputRef = useRef<HTMLInputElement>(null);
   
 const filteredPairs = pairs
-  .filter((pair) => signals?.[pair])
+  .filter((pair) => signals?.[pair]) // only pairs with signal data
   .sort((a, b) => {
-    const aData = signals[a];
-    const bData = signals[b];
+    const aData = signals[a] || {};
+    const bData = signals[b] || {};
 
     const aIsPriority =
-      !aData.continuationEnded && aData.ema70Bounce &&
+      !aData.continuationEnded &&
+      aData.ema70Bounce &&
       (aData.bullishContinuation || aData.bearishContinuation);
 
     const bIsPriority =
-      !bData.continuationEnded && bData.ema70Bounce &&
+      !bData.continuationEnded &&
+      bData.ema70Bounce &&
       (bData.bullishContinuation || bData.bearishContinuation);
 
     if (aIsPriority && !bIsPriority) return -1;
     if (!aIsPriority && bIsPriority) return 1;
-    return 0;
+    return 0; // maintain order otherwise
   })
-  .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
+  .filter((pair) =>
+    pair.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   
   useEffect(() => {
@@ -777,16 +811,10 @@ return (
   <div
   ref={containerRef}
   className="relative w-full md:w-auto flex flex-col md:flex-row gap-4"
-  onClick={() => {
-    setDropdownVisible(true);
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 0); // Ensure focus happens after DOM updates
-  }}
 >
   <div className="relative w-full md:w-64">
     <input
-      ref={searchInputRef}  // Attach the ref here
+      ref={searchInputRef}
       type="text"
       placeholder="Search trading pair..."
       value={searchTerm}
@@ -794,7 +822,7 @@ return (
         setSearchTerm(e.target.value);
         setDropdownVisible(true);
       }}
-      onFocus={() => setDropdownVisible(true)}
+      onFocus={() => setDropdownVisible(true)} // This handles opening on focus
       className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
 
@@ -802,7 +830,7 @@ return (
     {searchTerm && (
       <button
         onClick={(e) => {
-          e.stopPropagation(); // prevent container click from triggering again
+          e.stopPropagation();
           setSearchTerm('');
         }}
         className="absolute right-2 top-2 text-gray-400 hover:text-white text-sm"
@@ -818,12 +846,13 @@ return (
           <li
             key={pair}
             onClick={(e) => {
-              e.stopPropagation(); // prevent input focus when clicking list item
+              e.stopPropagation();
               if (!selectedPairs.includes(pair)) {
                 setSelectedPairs([...selectedPairs, pair]);
               }
               setSearchTerm('');
               setDropdownVisible(false);
+              searchInputRef.current?.blur(); // optional: blur after selection
             }}
             className="px-4 py-2 text-white hover:bg-gray-700 cursor-pointer transition-colors"
           >
@@ -833,6 +862,7 @@ return (
       </ul>
     )}
   </div>
+
 
   {/* Select All */}
   <button
