@@ -645,7 +645,6 @@ if (type && level !== null) {
       symbols,
       signals,
       defaultSymbol,
-    }
     },
   };
         }
