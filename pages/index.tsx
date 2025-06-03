@@ -812,43 +812,44 @@ return (
         )}
 
 
-    {!data.continuationEnded && (data.bearishContinuation || data.bullishContinuation) && (
-      <div className="pt-4 border-t border-white/10 space-y-3">
-        <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
+    {data.ema70Bounce && !data.continuationEnded && (data.bearishContinuation || data.bullishContinuation) && (
+  <div className="pt-4 border-t border-white/10 space-y-3">
+    <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-        {data.bearishContinuation && (
-          <div className="text-red-400">
-            🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
-            <p className="text-sm text-white/70 ml-4">
-              • EMA70 is sloping downward<br />
-              • Lower highs near EMA70<br />
-              • Bounce off EMA70 occurred
-            </p>
-          </div>
-        )}
-
-        {data.bullishContinuation && (
-          <div className="text-green-400">
-            🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
-            <p className="text-sm text-white/70 ml-4">
-              • EMA70 is sloping upward<br />
-              • Higher lows near EMA70<br />
-              • Bounce off EMA70 occurred
-            </p>
-          </div>
-        )}
-  
-
-    {data.continuationEnded && (
-      <div className="pt-4 border-t border-white/10 text-yellow-400">
-        ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
+    {data.bearishContinuation && (
+      <div className="text-red-400">
+        🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
         <p className="text-sm text-white/70 ml-4">
-          • Price action failed to maintain structure<br />
-          • Trend continuation conditions no longer valid
+          • EMA70 is sloping downward<br />
+          • Lower highs near EMA70<br />
+          • Bounce off EMA70 occurred
         </p>
       </div>
     )}
 
+    {data.bullishContinuation && (
+      <div className="text-green-400">
+        🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
+        <p className="text-sm text-white/70 ml-4">
+          • EMA70 is sloping upward<br />
+          • Higher lows near EMA70<br />
+          • Bounce off EMA70 occurred
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+{data.continuationEnded && (
+  <div className="pt-4 border-t border-white/10 text-yellow-400">
+    ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
+    <p className="text-sm text-white/70 ml-4">
+      • Price action failed to maintain structure<br />
+      • Trend continuation conditions no longer valid
+    </p>
+  </div>
+)}
+          
         {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
           <div className="pt-4 border-t border-white/10 space-y-2">
             <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
@@ -863,6 +864,7 @@ return (
                 </span>
               </p>
             )}
+            
             {data.divergence && (
               <p className="text-orange-400">
                 📉 RSI High/Low Divergence: <span className="font-semibold">Pressure Zone</span>
