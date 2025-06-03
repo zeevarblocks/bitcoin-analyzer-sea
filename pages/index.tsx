@@ -658,7 +658,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-const [isLoadingPairs, setIsLoadingPairs] = useState(true);
+const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
@@ -878,55 +878,15 @@ return (
           Unselect
         </button>
           </div>
-          <button
-  onClick={fetchPairs}
-  disabled={isLoadingPairs}
-  className={`flex items-center gap-2 text-xs px-3 py-1 rounded ${
-    isLoadingPairs ? 'bg-white/10 text-white cursor-not-allowed animate-pulse' : 'bg-blue-600 hover:bg-blue-700 text-white'
-  }`}
->
-  {isLoadingPairs ? (
-    <>
-      <svg
-        className="w-3 h-3 animate-spin"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        ></circle>
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-        ></path>
-      </svg>
-      Loading...
-    </>
-  ) : (
-    <>
-      <svg
-        className="w-3 h-3"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 4v6h6M20 20v-6h-6M4 20l16-16"
-        />
-      </svg>
-      Refresh
-    </>
-  )}
-</button>
+          {isLoadingPairs && (
+  <button
+    disabled
+    className="flex items-center gap-2 text-xs px-3 py-1 rounded bg-white/10 text-white animate-pulse cursor-not-allowed"
+  >
+    {/* spinner here */}
+    Loading...
+  </button>
+)}
               <div className="space-y-1">
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
           <p>
