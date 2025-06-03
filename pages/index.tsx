@@ -741,8 +741,10 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
     .filter(([symbol]) => selectedPairs.includes(symbol))
     .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
     .filter(([_, data]) => {
-      if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
+      if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
       if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
+      if (activeFilter === 'continuationEnded') return data.continuationEnded;
+      if (activeFilter === 'divergence') return data.divergence;
       return true;
     });
 
@@ -843,20 +845,6 @@ return (
     Unselect All
   </button>
 </div>
-    <button
-          onClick={() => setActiveFilter('bullishBreakout')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-sm rounded transition"
-        >
-          🟢 Bullish Breakout
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('bearishContinuation')}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
-        >
-          🔻 Bearish Continuation
-        </button>
-
       <div className="flex items-center space-x-4">
         <label className="text-white font-medium">
           <input
@@ -868,6 +856,39 @@ return (
           Show only favorites
         </label>
       </div>
+        <div className="flex gap-2 flex-wrap">
+  <button
+    onClick={() => setActiveFilter('bullishBreakout')}
+    className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📈</span>
+    <span>Bullish Continuation</span>
+  </button>
+
+  <button
+    onClick={() => setActiveFilter('bearishContinuation')}
+    className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>Bearish Continuation</span>
+  </button>
+
+  <button
+    onClick={() => setActiveFilter('pressureZone')}
+    className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>🧱</span>
+    <span>Pressure Zone</span>
+  </button>
+
+  <button
+    onClick={() => setActiveFilter('trendEnd')}
+    className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>⚠️</span>
+    <span>End of Trend</span>
+  </button>
+</div>
 
       {filteredDisplaySignals.map(([symbol, data]) => (
         <div
