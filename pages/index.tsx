@@ -662,6 +662,7 @@ const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
+const searchInputRef = useRef<HTMLInputElement>(null);
   
 const filteredPairs = pairs
   .filter((pair) => signals?.[pair])
@@ -670,14 +671,16 @@ const filteredPairs = pairs
     const bData = signals[b];
 
     const aIsPriority =
-      !aData.continuationEnded && aData.ema70Bounce && 
+      !aData.continuationEnded && aData.ema70Bounce &&
       (aData.bullishContinuation || aData.bearishContinuation);
 
     const bIsPriority =
-      !bData.continuationEnded && bData.ema70Bounce && 
+      !bData.continuationEnded && bData.ema70Bounce &&
       (bData.bullishContinuation || bData.bearishContinuation);
 
-    return (bIsPriority ? 1 : 0) - (aIsPriority ? 1 : 0);
+    if (aIsPriority && !bIsPriority) return -1;
+    if (!aIsPriority && bIsPriority) return 1;
+    return 0;
   })
   .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -771,50 +774,65 @@ return (
 
     {/* Dropdown for Trading Pairs */}
       {/* Searchable input */}
-  <div ref={containerRef} className="relative w-full md:w-auto flex flex-col md:flex-row gap-4">
-      <div className="relative w-full md:w-64">
-        <input
-          type="text"
-          placeholder="Search trading pair..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setDropdownVisible(true);
-          }}
-          onFocus={() => setDropdownVisible(true)}
-          className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+  <div
+  ref={containerRef}
+  className="relative w-full md:w-auto flex flex-col md:flex-row gap-4"
+  onClick={() => {
+    setDropdownVisible(true);
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 0); // Ensure focus happens after DOM updates
+  }}
+>
+  <div className="relative w-full md:w-64">
+    <input
+      ref={searchInputRef}  // Attach the ref here
+      type="text"
+      placeholder="Search trading pair..."
+      value={searchTerm}
+      onChange={(e) => {
+        setSearchTerm(e.target.value);
+        setDropdownVisible(true);
+      }}
+      onFocus={() => setDropdownVisible(true)}
+      className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
 
-        {/* Clear button */}
-        {searchTerm && (
-          <button
-            onClick={() => setSearchTerm('')}
-            className="absolute right-2 top-2 text-gray-400 hover:text-white text-sm"
+    {/* Clear button */}
+    {searchTerm && (
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // prevent container click from triggering again
+          setSearchTerm('');
+        }}
+        className="absolute right-2 top-2 text-gray-400 hover:text-white text-sm"
+      >
+        ✕
+      </button>
+    )}
+
+    {/* Dropdown */}
+    {dropdownVisible && filteredPairs.length > 0 && (
+      <ul className="absolute z-50 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        {filteredPairs.map((pair) => (
+          <li
+            key={pair}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent input focus when clicking list item
+              if (!selectedPairs.includes(pair)) {
+                setSelectedPairs([...selectedPairs, pair]);
+              }
+              setSearchTerm('');
+              setDropdownVisible(false);
+            }}
+            className="px-4 py-2 text-white hover:bg-gray-700 cursor-pointer transition-colors"
           >
-            ✕
-          </button>
-        )}
-
-        {/* Dropdown */}
-        {dropdownVisible && filteredPairs.length > 0 && (
-          <ul className="absolute z-50 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-            {filteredPairs.map((pair) => (
-              <li
-                key={pair}
-                onClick={() => {
-                  if (!selectedPairs.includes(pair)) {
-                    setSelectedPairs([...selectedPairs, pair]);
-                  }
-                  setSearchTerm('');
-                  setDropdownVisible(false);
-                }}
-                className="px-4 py-2 text-white hover:bg-gray-700 cursor-pointer transition-colors"
-              >
-                {pair}
-              </li>
-            ))}
-          </ul>
-        )}
+            {pair}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
 </div>
 
   {/* Select All */}
