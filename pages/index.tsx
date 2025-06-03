@@ -845,6 +845,18 @@ return (
     Unselect All
   </button>
 </div>
+<button
+  onClick={fetchPairs}
+  disabled={isLoadingPairs}
+  className={`px-4 py-2 rounded-md font-medium transition ${
+    isLoadingPairs
+      ? 'bg-gray-700 text-gray-400 cursor-not-allowed animate-pulse'
+      : 'bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10'
+  }`}
+>
+  {isLoadingPairs ? 'Refreshing...' : '🔄 Refresh'}
+</button>
+    
       <div className="flex items-center space-x-4">
         <label className="text-white font-medium">
           <input
@@ -910,17 +922,7 @@ return (
           Unselect
         </button>
           </div>
-           <button
-        onClick={fetchPairs}
-        disabled={isLoadingPairs}
-        className={`refresh-button ${
-          isLoadingPairs
-            ? 'bg-gray-400 cursor-not-allowed animate-pulse'
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
-        } px-4 py-2 rounded`}
-      >
-        {isLoadingPairs ? 'Refreshing...' : 'Refresh'}
-      </button>
+           
               <div className="space-y-1">
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
           <p>
@@ -961,58 +963,52 @@ return (
           </div>
         )}
 
-{!data.continuationEnded && data.ema70Bounce && (
-  <div className="pt-4 border-t border-white/10 space-y-3">
-    <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
+          
+<div className="pt-4 border-t border-white/10 space-y-3">
+  <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
-    {data.bearishContinuation && (
-      <div className="text-red-400">
-        🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • EMA70 is sloping downward<br />
-          • Lower highs near EMA70<br />
-          • Bounce off EMA70 occurred
-        </p>
-      </div>
-    )}
-
-    {data.bullishContinuation && (
-      <div className="text-green-400">
-        🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • EMA70 is sloping upward<br />
-          • Higher lows near EMA70<br />
-          • Bounce off EMA70 occurred
-        </p>
-      </div>
-    )}
-
-    {!data.bullishContinuation && !data.bearishContinuation && (
-      <div className="text-white/70 ml-1">
-        ⚠️ No clear continuation structure found despite the EMA70 bounce.
-        <p className="text-sm ml-4 mt-1">
-          • The trend may be weakening or transitioning<br />
-          • Watch for breakout or reversal signals
-        </p>
-      </div>
-    )}
-  </div>
-)}
-
-{data.continuationEnded && (
-  <div className="pt-4 border-t border-white/10 text-yellow-400">
-    ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
-    <p className="text-sm text-white/70 ml-4 mt-1">
-      • Price action failed to maintain structure<br />
-      • Trend continuation conditions no longer valid
-      {data.continuationReason && (
-        <>
-          <br />• <span className="italic">Reason:</span> {data.continuationReason}
-        </>
-      )}
-    </p>
-  </div>
-)}
+  {data.continuationEnded ? (
+    <div className="text-yellow-400">
+      ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • Price action failed to maintain structure<br />
+        • Trend continuation conditions no longer valid
+        {data.continuationReason && (
+          <>
+            <br />• <span className="italic">Reason:</span> {data.continuationReason}
+          </>
+        )}
+      </p>
+    </div>
+  ) : data.bullishContinuation ? (
+    <div className="text-green-400">
+      🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • EMA70 is sloping upward<br />
+        • Higher lows near EMA70<br />
+        • Bounce off EMA70 occurred
+      </p>
+    </div>
+  ) : data.bearishContinuation ? (
+    <div className="text-red-400">
+      🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • EMA70 is sloping downward<br />
+        • Lower highs near EMA70<br />
+        • Bounce off EMA70 occurred
+      </p>
+    </div>
+  ) : data.ema70Bounce ? (
+    <div className="text-white/70">
+      ⚠️ <span className="font-semibold">Pressure Zone</span>: No clear trend continuation.
+      <p className="text-sm ml-4 mt-1">
+        • EMA70 bounce detected<br />
+        • But no valid bullish or bearish continuation<br />
+        • Trend might be stalling or transitioning
+      </p>
+    </div>
+  ) : null}
+</div>
           
           
           
