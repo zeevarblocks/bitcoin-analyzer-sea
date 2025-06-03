@@ -654,117 +654,114 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
     import { useState, useEffect, useRef } from 'react';
 
-export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
+export default function SignalChecker() {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [isLoadingPairs, setIsLoadingPairs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [signals, setSignals] = useState<Record<string, SignalData>>({});
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
-  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const containerRef = useRef(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Computed, filtered and prioritized pairs ---
   const filteredPairs = pairs
     .filter((pair) => signals?.[pair])
     .sort((a, b) => {
       const aData = signals[a] || {};
       const bData = signals[b] || {};
 
-      const aPriority = !aData.continuationEnded && aData.ema70Bounce && (aData.bullishContinuation || aData.bearishContinuation);
-      const bPriority = !bData.continuationEnded && bData.ema70Bounce && (bData.bullishContinuation || bData.bearishContinuation);
+      const aIsPriority =
+        !aData.continuationEnded &&
+        aData.ema70Bounce &&
+        (aData.bullishContinuation || aData.bearishContinuation);
 
-      if (aPriority && !bPriority) return -1;
-      if (!aPriority && bPriority) return 1;
+      const bIsPriority =
+        !bData.continuationEnded &&
+        bData.ema70Bounce &&
+        (bData.bullishContinuation || bData.bearishContinuation);
+
+      if (aIsPriority && !bIsPriority) return -1;
+      if (!aIsPriority && bIsPriority) return 1;
       return 0;
     })
-    .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
+    .filter((pair) =>
+      pair.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  // --- Fetch and refresh pairs from OKX ---
   useEffect(() => {
-    const fetchPairs = async () => {
+    const fetchData = async () => {
       setIsLoadingPairs(true);
       try {
-        const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-        const data = await response.json();
+        const [pairData, signalData] = await Promise.all([
+          fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT')
+            .then(res => res.json()),
+          fetch('/api/signals').then(res => res.json()), // update with your actual signal endpoint
+        ]);
 
-        const sorted = data.data
+        const sortedPairs = pairData.data
           .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
           .map((item: any) => item.instId);
 
-        setPairs(sorted);
+        setPairs(sortedPairs);
+        setSignals(signalData);
 
-        const saved = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-        const valid = saved.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
+        const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+        const validSaved = savedPairs.filter((pair: string) => signalData?.[pair]?.currentPrice !== undefined);
 
-        if (valid.length > 0) {
-          setSelectedPairs(valid);
+        if (validSaved.length > 0) {
+          setSelectedPairs(validSaved);
         } else {
-          const topValid = sorted
-            .filter((pair: string) => signals?.[pair]?.currentPrice !== undefined)
+          const topValidPairs = sortedPairs
+            .filter((pair) => signalData?.[pair]?.currentPrice !== undefined)
             .slice(0, 5);
-          setSelectedPairs(topValid);
+          setSelectedPairs(topValidPairs);
         }
       } catch (error) {
-        console.error('Error fetching trading pairs:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoadingPairs(false);
       }
     };
 
-    fetchPairs();
-    const interval = setInterval(fetchPairs, 30 * 1000);
-    return () => clearInterval(interval);
-  }, [signals]);
+    fetchData();
+    const intervalId = setInterval(fetchData, 30 * 1000);
+    return () => clearInterval(intervalId);
+  }, []);
 
-  // --- Persist selected pairs ---
   useEffect(() => {
     if (selectedPairs.length > 0) {
       localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
     }
   }, [selectedPairs]);
 
-  // --- Load and save favorite pairs ---
   useEffect(() => {
-    const favs = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
-    setFavorites(favs);
+    const fav = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
+    setFavorites(fav);
   }, []);
 
   useEffect(() => {
     localStorage.setItem('favoritePairs', JSON.stringify(favorites));
   }, [favorites]);
 
-  // --- Toggle favorite status ---
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
       prev.includes(symbol) ? prev.filter((s) => s !== symbol) : [...prev, symbol]
     );
   };
 
-  // --- Signals to be displayed based on selectedPairs ---
   const filteredSignals = selectedPairs.reduce((acc, pair) => {
-    if (signals[pair]) acc[pair] = signals[pair];
+    if (signals[pair]) {
+      acc[pair] = signals[pair];
+    }
     return acc;
   }, {} as Record<string, SignalData>);
 
-  // --- Final display signals (respecting favorites filter) ---
   const filteredDisplaySignals = Object.entries(filteredSignals).filter(([symbol]) =>
     showOnlyFavorites ? favorites.includes(symbol) : true
   );
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        setDropdownVisible(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [containerRef]);
   
 return (
   <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
