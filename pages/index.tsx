@@ -653,6 +653,7 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
     import { useState, useEffect, useRef } from 'react';
 
+const data: SignalData = getServerSideProps(); // or from props, context, etc.
 interface SignalData {
   continuationEnded: boolean;
   ema70Bounce: boolean;
