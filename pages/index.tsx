@@ -507,11 +507,12 @@ if (trend === 'bearish') {
     highs,
     ema70,
     rsi14,
-    ema14
+    ema14,
+    undefined // or null
   );
 
   bearishContinuation = continuation;
-  if (ended) {  // ended implies continuation ended
+  if (continuation && ended) {
     continuationEnded = true;
     continuationReason = reason;
   }
@@ -524,11 +525,12 @@ if (trend === 'bullish') {
     highs,
     ema70,
     rsi14,
-    ema14
+    ema14,
+    undefined // or null
   );
 
   bullishContinuation = continuation;
-  if (ended) {
+  if (continuation && ended) {
     continuationEnded = true;
     continuationReason = reason;
   }
