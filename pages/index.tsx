@@ -1,14 +1,14 @@
 import React from 'react';
 
 interface SignalData {
-  trend: string;
+  trend: 'bullish' | 'bearish' | 'neutral';
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
   divergence: boolean;
   divergenceType?: 'bullish' | 'bearish' | null;
   divergenceFromLevel: boolean;
-  divergenceFromLevelType?: 'bullish' | 'bearish' | null; 
+  divergenceFromLevelType?: 'bullish' | 'bearish' | null;
   nearOrAtEMA70Divergence: boolean;
   ema14Bounce: boolean;
   ema70Bounce: boolean;
@@ -21,6 +21,7 @@ interface SignalData {
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
   bullishContinuation: boolean;
+  cleanTrendContinuation: boolean; // NEW: captures aligned continuation
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
@@ -201,7 +202,21 @@ function hasDescendingTrendFromHighestHigh(highs: number[], fromIndex: number, m
   return true;
 }
 
-// === Bearish Continuation ===
+function isDescending(arr: number[], from: number, length = 3): boolean {
+  for (let i = from; i < from + length - 1; i++) {
+    if (arr[i] <= arr[i + 1]) return false;
+  }
+  return true;
+}
+
+function isAscending(arr: number[], from: number, length = 3): boolean {
+  for (let i = from; i < from + length - 1; i++) {
+    if (arr[i] >= arr[i + 1]) return false;
+  }
+  return true;
+}
+
+// === Bearish Continuation with Clean Trend Alignment ===
 function detectBearishContinuation(
   closes: number[],
   highs: number[],
@@ -209,34 +224,40 @@ function detectBearishContinuation(
   rsi: number[],
   ema14: number[],
 ): boolean {
-  for (let i = ema14.length - 2; i >= 1; i--) {
+  for (let i = ema14.length - 5; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
-    if (prev14 > prev70 && curr14 < curr70) {
+    const ema70IsDescending = isDescending(ema70, i - 2, 3);
+    if (prev14 > prev70 && curr14 < curr70 && ema70IsDescending) {
       const rsiAtCross = rsi[i];
       let lastHigh = highs[i];
+
       for (let j = i + 1; j < closes.length; j++) {
         const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
         const rsiHigher = rsi[j] > rsiAtCross;
         const lowerHigh = highs[j] < lastHigh;
+
         if (nearEMA70 && rsiHigher && lowerHigh) {
+          if (!isDescending(highs, j - 2, 3)) return false; // confirm lower highs
           lastHigh = highs[j];
         } else if (highs[j] > lastHigh) {
-          return false; // ascending high breaks pattern
+          return false;
         }
+
         if (j - i >= 2 && lowerHigh) return true;
       }
+
       break;
     }
   }
   return false;
 }
 
-// === Bullish Continuation ===
+// === Bullish Continuation with Clean Trend Alignment ===
 function detectBullishContinuation(
   closes: number[],
   lows: number[],
@@ -244,32 +265,38 @@ function detectBullishContinuation(
   rsi: number[],
   ema14: number[],
 ): boolean {
-  for (let i = ema14.length - 2; i >= 1; i--) {
+  for (let i = ema14.length - 5; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
-    if (prev14 < prev70 && curr14 > curr70) {
+    const ema70IsAscending = isAscending(ema70, i - 2, 3);
+    if (prev14 < prev70 && curr14 > curr70 && ema70IsAscending) {
       const rsiAtCross = rsi[i];
       let lastLow = lows[i];
+
       for (let j = i + 1; j < closes.length; j++) {
         const price = closes[j];
-        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.003;
         const rsiLower = rsi[j] < rsiAtCross;
         const higherLow = lows[j] > lastLow;
+
         if (nearEMA70 && rsiLower && higherLow) {
+          if (!isAscending(lows, j - 2, 3)) return false; // confirm higher lows
           lastLow = lows[j];
         } else if (lows[j] < lastLow) {
-          return false; // descending low breaks pattern
+          return false;
         }
+
         if (j - i >= 2 && higherLow) return true;
       }
+
       break;
     }
   }
   return false;
-}
+          }
 
 
 // logic in getServerSideProps:
@@ -349,17 +376,39 @@ export async function getServerSideProps() {
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
-    let bearishContinuation = false;
+let bearishContinuation = false;
 let bullishContinuation = false;
 
 if (trend === 'bearish') {
-  bearishContinuation = detectBearishContinuation(closes, highs, ema70, rsi14, ema14);
+  bearishContinuation = detectBearishContinuation(
+    closes,
+    highs,
+    ema70,
+    rsi14,
+    ema14
+  );
 }
 
 if (trend === 'bullish') {
-  bullishContinuation = detectBullishContinuation(closes, lows, ema70, rsi14, ema14);
-                                                               }
+  bullishContinuation = detectBullishContinuation(
+    closes,
+    lows,
+    ema70,
+    rsi14,
+    ema14
+  );
+}
 
+// Optional: unified signal object for easier debugging or UI use
+const continuationSignal = {
+  trend,
+  bearishContinuation,
+  bullishContinuation,
+  continuationDetected:
+    (trend === 'bearish' && bearishContinuation) ||
+    (trend === 'bullish' && bullishContinuation),
+};
+      
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
       const prevLowRSI = rsi14[prevLowIdx] ?? null;
@@ -411,14 +460,14 @@ if (type && level !== null) {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       signals[symbol] = {
-  trend,
+    trend,
   breakout,
   bullishBreakout,
   bearishBreakout,
   divergence,
   divergenceType,
   divergenceFromLevel,
-  divergenceFromLevelType,  
+  divergenceFromLevelType,
   nearOrAtEMA70Divergence,
   ema14Bounce,
   ema70Bounce,
@@ -431,12 +480,16 @@ if (type && level !== null) {
   touchedEMA70Today,
   bearishContinuation,
   bullishContinuation,
+  cleanTrendContinuation:
+    (trend === 'bearish' && bearishContinuation) ||
+    (trend === 'bullish' && bullishContinuation),
   intradayHigherHighBreak,
   intradayLowerLowBreak,
   todaysLowestLow,
   todaysHighestHigh,
   url: `https://okx.com/join/96631749`,
 };
+
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
     }
@@ -704,20 +757,30 @@ return (
         )}
 
         {(data.bearishContinuation || data.bullishContinuation) && (
-          <div className="pt-4 border-t border-white/10 space-y-2">
-            <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
-            {data.bearishContinuation && (
-              <p className="text-red-400">
-                🔻 Bearish Continuation: <span className="font-semibold">Confirmed</span>
-              </p>
-            )}
-            {data.bullishContinuation && (
-              <p className="text-green-400">
-                🔺 Bullish Continuation: <span className="font-semibold">Confirmed</span>
-              </p>
-            )}
-          </div>
-        )}
+  <div className="pt-4 border-t border-white/10 space-y-3">
+    <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
+
+    {data.bearishContinuation && (
+      <div className="text-red-400">
+        🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
+        <p className="text-sm text-white/70 ml-4">
+          • EMA70 is sloping downward<br />
+          • Lower highs near EMA70
+        </p>
+      </div>
+    )}
+
+    {data.bullishContinuation && (
+      <div className="text-green-400">
+        🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
+        <p className="text-sm text-white/70 ml-4">
+          • EMA70 is sloping upward<br />
+          • Higher lows near EMA70
+        </p>
+      </div>
+    )}
+  </div>
+)}
 
         {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
           <div className="pt-4 border-t border-white/10 space-y-2">
