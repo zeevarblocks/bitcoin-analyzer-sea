@@ -876,7 +876,7 @@ return (
     className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📈</span>
-    <span>Bullish Continuation</span>
+    <span>bullishContinuation</span>
   </button>
 
   <button
@@ -884,7 +884,7 @@ return (
     className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📉</span>
-    <span>Bearish Continuation</span>
+    <span>bearishContinuation</span>
   </button>
 
   <button
@@ -892,15 +892,15 @@ return (
     className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>🧱</span>
-    <span>Pressure Zone</span>
+    <span>divergence</span>
   </button>
 
   <button
-    onClick={() => setActiveFilter('ema70Bounce')}
+    onClick={() => setActiveFilter('divergenceFromLevel')}
     className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>⚠️</span>
-    <span>End of Trend</span>
+    <span>divergenceFromLevel</span>
   </button>
           
           <button
@@ -1031,7 +1031,7 @@ return (
 
           {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence</h3>
+    <h3 className="text-lg font-semibold text-white">📉 ✅ RSI Divergence: Support for Trend Continuation</h3>
 
     {data.divergenceFromLevel && (
       <div className="text-pink-400 space-y-2">
