@@ -658,7 +658,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-const [isLoadingPairs, setIsLoadingPairs] = useState(false);
+const [isLoadingPairs, setIsLoadingPairs] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
@@ -683,6 +683,7 @@ const filteredPairs = pairs
     return 0;
   })
   .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
+  
 
   
   useEffect(() => {
@@ -716,7 +717,7 @@ const filteredPairs = pairs
 };
 
     fetchPairs();
-    const intervalId = setInterval(fetchPairs, 30 * 1000);
+    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, [signals]);
 
@@ -877,11 +878,7 @@ return (
           Unselect
         </button>
           </div>
-              
-        
-        <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
-
-        <div className="space-y-1">
+              <div className="space-y-1">
           {isLoadingPairs && (
   <button
     disabled
@@ -906,9 +903,11 @@ return (
         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
       ></path>
     </svg>
-    Loading...
+    Refresh Data 
   </button>
 )}
+        
+        <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
           <p>
             💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
             <span className="text-blue-400">
