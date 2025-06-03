@@ -900,6 +900,14 @@ return (
     <span>⚠️</span>
     <span>End of Trend</span>
   </button>
+          
+          <button
+    onClick={() => setActiveFilter('nearOrAtEMA70Divergence')}
+    className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>🍞</span>
+    <span>nearOrAtEMA70Divergence</span>
+  </button>
 </div>
 
       {filteredDisplaySignals.map(([symbol, data]) => (
