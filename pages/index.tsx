@@ -665,6 +665,20 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
   
 const filteredPairs = pairs
   .filter((pair) => signals?.[pair])
+  .sort((a, b) => {
+    const aData = signals[a];
+    const bData = signals[b];
+
+    const aIsPriority =
+      !aData.continuationEnded && aData.ema70Bounce && 
+      (aData.bullishContinuation || aData.bearishContinuation);
+
+    const bIsPriority =
+      !bData.continuationEnded && bData.ema70Bounce && 
+      (bData.bullishContinuation || bData.bearishContinuation);
+
+    return (bIsPriority ? 1 : 0) - (aIsPriority ? 1 : 0);
+  })
   .filter((pair) => pair.toLowerCase().includes(searchTerm.toLowerCase()));
 
   
