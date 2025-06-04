@@ -566,10 +566,10 @@ function findRecentCrossings(
 
 function getTrendExtreme(candles: Candle[]) {
   let highestHighInBullish = Number.NEGATIVE_INFINITY;
-  let bullishTimestamp: string | null = null;
+  let bullishTimestamp: number | null = null;
 
   let lowestLowInBearish = Number.POSITIVE_INFINITY;
-  let bearishTimestamp: string | null = null;
+  let bearishTimestamp: number | null = null;
 
   for (const candle of candles) {
     if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
@@ -582,14 +582,8 @@ function getTrendExtreme(candles: Candle[]) {
     }
   }
 
-  return {
-    highestHighInBullish: highestHighInBullish === Number.NEGATIVE_INFINITY ? null : highestHighInBullish,
-    lowestLowInBearish: lowestLowInBearish === Number.POSITIVE_INFINITY ? null : lowestLowInBearish,
-    bullishTimestamp,
-    bearishTimestamp,
-  };
-  }
-
+  return { highestHighInBullish, bullishTimestamp, lowestLowInBearish, bearishTimestamp };
+}
 
 
 
