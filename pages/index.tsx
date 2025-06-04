@@ -1074,11 +1074,11 @@ return (
   </button>
 
   <button
-  onClick={() => setActiveFilter('ema70Bounce')}
+  onClick={() => setActiveFilter('recentCrossings')}
   className="bg-gray-800 hover:bg-yellow-700 text-yellow-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>⚠️</span>
-  <span>ema70Bounce</span>
+  <span>recentCrossings</span>
 </button>
           
 <button
@@ -1098,11 +1098,11 @@ return (
 </button>
 
           <button
-  onClick={() => setActiveFilter('recentCrossings')}
+  onClick={() => setActiveFilter('emaBounce')}
   className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>recentCrossings</span>
+  <span>emaBounce</span>
 </button>
                
 </div>
@@ -1293,12 +1293,26 @@ return (
 )}
 
 {data.recentCrossings?.length > 0 && (
-  <div>
-    <p className="font-semibold">🔄 Recent EMA Crossings:</p>
-    <ul className="ml-4 list-disc text-sm">
+  <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-xl shadow-inner mt-4">
+    <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">
+      🔄 Recent EMA Crossings
+    </p>
+    <ul className="space-y-2">
       {data.recentCrossings.map((cross, idx) => (
-        <li key={idx}>
-          {cross.type === 'bullish' ? '🟢 Bullish' : '🔴 Bearish'} at {cross.price.toFixed(2)}
+        <li
+          key={idx}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+            cross.type === 'bullish'
+              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
+              : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'
+          }`}
+        >
+          <span className="font-semibold">
+            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+          </span>
+          <span className="ml-auto font-mono text-sm">
+            @ ${cross.price.toFixed(9)}
+          </span>
         </li>
       ))}
     </ul>
