@@ -1397,35 +1397,35 @@ return (
   </div>
 )}
 
-          {emaExtremes && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📊 EMA14 Curve Signals</h3>
+            {emaExtremes && (
+        <div className="pt-4 border-t border-white/10 space-y-2">
+          <h3 className="text-lg font-semibold text-white">📊 EMA14 Curve Signals</h3>
 
-    {emaExtremes.keyResistance && (
-      <p className="text-red-400">
-        🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
-        <span className="font-semibold">
-          {emaExtremes.keyResistance.toFixed(2)}{" "}
-          <span className="text-white/70">
-            @ {new Date(emaExtremes.resistanceTimestamp).toLocaleString()}
-          </span>
-        </span>
-      </p>
-    )}
+          {emaExtremes.keyResistance && (
+            <p className="text-red-400">
+              🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
+              <span className="font-semibold">
+                {emaExtremes.keyResistance.toFixed(2)}{" "}
+                <span className="text-white/70">
+                  @ {new Date(emaExtremes.resistanceTimestamp).toLocaleString()}
+                </span>
+              </span>
+            </p>
+          )}
 
-    {emaExtremes.keySupport && (
-      <p className="text-green-400">
-        🟢 <span className="font-medium">EMA14 Support</span>:{" "}
-        <span className="font-semibold">
-          {emaExtremes.keySupport.toFixed(2)}{" "}
-          <span className="text-white/70">
-            @ {new Date(emaExtremes.supportTimestamp).toLocaleString()}
-          </span>
-        </span>
-      </p>
-    )}
-  </div>
-)}
+          {emaExtremes.keySupport && (
+            <p className="text-green-400">
+              🟢 <span className="font-medium">EMA14 Support</span>:{" "}
+              <span className="font-semibold">
+                {emaExtremes.keySupport.toFixed(2)}{" "}
+                <span className="text-white/70">
+                  @ {new Date(emaExtremes.supportTimestamp).toLocaleString()}
+                </span>
+              </span>
+            </p>
+          )}
+        </div>
+      )}
 
           
           
