@@ -796,6 +796,8 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
+const trendExtremes = getTrendExtreme(candles);  // candles must be defined in scope
+              
   const {
   highestHighInBullish = Number.NEGATIVE_INFINITY,
   bullishTimestamp = null,
