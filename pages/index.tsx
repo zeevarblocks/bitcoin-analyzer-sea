@@ -1377,30 +1377,30 @@ return (
   </div>
 )}
 
-  
-{(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
+  {(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
   <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📈 Trend Signals</h3>
+    <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
 
     {highestHighInBullish !== Number.NEGATIVE_INFINITY && (
       <p className="text-green-400">
-        🟢 Bullish Trend High:{' '}
+        🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
         <span className="font-semibold">
-          {highestHighInBullish.toFixed(2)} at {bullishTimeString}
+          {highestHighInBullish.toFixed(2)} @ {bullishTimeString || "N/A"}
         </span>
       </p>
     )}
 
     {lowestLowInBearish !== Number.POSITIVE_INFINITY && (
       <p className="text-red-400">
-        🔴 Bearish Trend Low:{' '}
+        🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
         <span className="font-semibold">
-          {lowestLowInBearish.toFixed(2)} at {bearishTimeString}
+          {lowestLowInBearish.toFixed(2)} @ {bearishTimeString || "N/A"}
         </span>
       </p>
     )}
   </div>
 )}
+
 
           
           
