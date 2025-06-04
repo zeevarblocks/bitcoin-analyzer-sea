@@ -878,14 +878,6 @@ return (
     Select All
   </button>
 
-  {/* Unselect All */}
-  <button
-    onClick={() => setSelectedPairs([])}
-    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm rounded transition"
-  >
-    Unselect All
-  </button>
-
   {/* Reset Toggles */}
   <button
     onClick={() => resetToggles()}
@@ -979,13 +971,13 @@ return (
           Unselect
         </button>
             <button
-  onClick={(handleRefresh) => {
-  }}
-  disabled={isLoadingPairs}
-  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
->
-  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
-</button>
+    onClick={handleRefresh}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition disabled:opacity-50"
+    disabled={isRefreshing}
+  >
+    {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+  </button>
+</div>
           </div>
            
               <div className="space-y-1">
