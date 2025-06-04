@@ -876,16 +876,7 @@ return (
     Unselect All
   </button>
 </div>
-<button
-  onClick={() => {
-    fetchPairs();         // Refresh trading pairs
-    refreshSignals();     // Refresh signal data from API
-  }}
-  disabled={isLoadingPairs}
-  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
->
-  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
-</button>
+
     
       <div className="flex items-center space-x-4">
         <label className="text-white font-medium">
@@ -968,6 +959,15 @@ return (
         >
           Unselect
         </button>
+            <button
+  onClick={() => {
+    refreshSignals(); // Refresh signal data from API
+  }}
+  disabled={isLoadingPairs}
+  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
+>
+  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
+</button>
           </div>
            
               <div className="space-y-1">
