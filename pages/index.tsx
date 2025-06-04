@@ -883,9 +883,7 @@ export default function SignalChecker({
 
   const handleRefresh = async () => {
   setIsRefreshing(true);
-  await Promise.all([
-    defaultSignals(filter) // pass the selected filter here
-  ]);
+  await Promise.all([fetchPairs(), refreshSignals()]);
   setIsRefreshing(false);
 };
 
@@ -1130,7 +1128,8 @@ return (
         </button>
                        <button
   onClick={() => {
-    defaultSignals(); // Refresh signal data from API
+    fetchPairs();
+    refreshSignals(); // Refresh signal data from API
   }}
   disabled={isLoadingPairs}
   className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
