@@ -799,7 +799,6 @@ if (type && level !== null) {
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
 const emaExtremes = getLocalEma14SupportResistance(candles);
-const emaExtremes = getLocalEma14SupportResistance(candles);
 
 const {
   keyResistance,
