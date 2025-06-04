@@ -1,39 +1,64 @@
 import React from 'react';
 
 interface SignalData {
+  // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
+
+  // === Divergence Signals ===
   divergence: boolean;
   divergenceType?: 'bullish' | 'bearish' | null;
   divergenceFromLevel: boolean;
   divergenceFromLevelType?: 'bullish' | 'bearish' | null;
   nearOrAtEMA70Divergence: boolean;
+
+  // === Bounce Events ===
   ema14Bounce: boolean;
   ema70Bounce: boolean;
-  currentPrice: number;
+
+  // === Continuation Logic ===
+  bullishContinuation: boolean;
+  bearishContinuation: boolean;
+  cleanTrendContinuation: boolean;
+  continuationEnded: boolean;
+  continuationReason?: string;
+
+  // === Support/Resistance Zones ===
   level: number | null;
   levelType: 'support' | 'resistance' | null;
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
   inferredLevelWithinRange: boolean;
+
+  // === Price + Intraday Movement ===
+  currentPrice: number;
   touchedEMA70Today: boolean;
-  bearishContinuation: boolean;
-  bullishContinuation: boolean;
-  cleanTrendContinuation: boolean;       // ✅ Confirmed continuation with clean trend
-  continuationEnded: boolean;            // ✅ NEW: true if clean continuation broke
-  continuationReason?: string;           // 👈 Reason why continuation ended
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
-  recentCrossings?: {                    // ✅ NEW: Last 2–3 EMA14–EMA70 crosses
+
+  // === Trend History ===
+  recentCrossings?: {
     type: 'bullish' | 'bearish';
     price: number;
-    index: number;                       // index in the price array
+    index: number;
   }[];
+
+  // === Trend Extremes (NEW)
+  trendExtremes?: {
+    highestHighInBullish: number;
+    bullishTimestamp: number | null;
+    lowestLowInBearish: number;
+    bearishTimestamp: number | null;
+  };
+
+  // === Metadata ===
   url: string;
+  timeframe?: '1D' | '1W' | '2W'; // Optional if you support multi-timeframe
+  updatedAt?: string; // Optional ISO date for debug/logging
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -566,27 +591,33 @@ function findRecentCrossings(
 
 // Utility function to compute trend extremes
 function getTrendExtreme(candles: Candle[]) {
-  let highestHighInBullish = Number.NEGATIVE_INFINITY;
-  let bullishTimestamp: number | null = null;
-
-  let lowestLowInBearish = Number.POSITIVE_INFINITY;
-  let bearishTimestamp: number | null = null;
+  let bullishPeak = { value: Number.NEGATIVE_INFINITY, timestamp: null as number | null };
+  let bearishLow = { value: Number.POSITIVE_INFINITY, timestamp: null as number | null };
 
   for (const candle of candles) {
-    if (typeof candle.ema14 === 'number' && typeof candle.ema70 === 'number') {
-      if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
-        highestHighInBullish = candle.ema14;
-        bullishTimestamp = candle.time;
-      }
+    const { ema14, ema70, time } = candle;
 
-      if (candle.ema14 < candle.ema70 && candle.ema14 < lowestLowInBearish) {
-        lowestLowInBearish = candle.ema14;
-        bearishTimestamp = candle.time;
-      }
+    if (typeof ema14 !== 'number' || typeof ema70 !== 'number') continue;
+
+    // Bullish trend: EMA14 > EMA70
+    if (ema14 > ema70 && ema14 > bullishPeak.value) {
+      bullishPeak.value = ema14;
+      bullishPeak.timestamp = time;
+    }
+
+    // Bearish trend: EMA14 < EMA70
+    if (ema14 < ema70 && ema14 < bearishLow.value) {
+      bearishLow.value = ema14;
+      bearishLow.timestamp = time;
     }
   }
 
-  return { highestHighInBullish, bullishTimestamp, lowestLowInBearish, bearishTimestamp };
+  return {
+    highestHighInBullish: bullishPeak.value,
+    bullishTimestamp: bullishPeak.timestamp,
+    lowestLowInBearish: bearishLow.value,
+    bearishTimestamp: bearishLow.timestamp,
+  };
 }
 
 
@@ -765,24 +796,12 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-const {
-  highestHighInBullish,
-  bullishTimestamp,
-  lowestLowInBearish,
-  bearishTimestamp,
-} = getTrendExtreme(candles);
-
-const bullishTimeString = bullishTimestamp
-  ? new Date(bullishTimestamp).toLocaleString()
-  : 'N/A';
-
-const bearishTimeString = bearishTimestamp
-  ? new Date(bearishTimestamp).toLocaleString()
-  : 'N/A';
-
-console.log('🟢 Highest EMA14 in Bullish Trend:', highestHighInBullish, 'at', bullishTimeString);
-console.log('🔴 Lowest EMA14 in Bearish Trend:', lowestLowInBearish, 'at', bearishTimeString);
-
+  const {
+  highestHighInBullish = Number.NEGATIVE_INFINITY,
+  bullishTimestamp = null,
+  lowestLowInBearish = Number.POSITIVE_INFINITY,
+  bearishTimestamp = null,
+} = trendExtremes ?? {};
 
 
 
@@ -818,9 +837,15 @@ console.log('🔴 Lowest EMA14 in Bearish Trend:', lowestLowInBearish, 'at', bea
   cleanTrendContinuation:
     (trend === 'bearish' && bearishContinuation) ||
     (trend === 'bullish' && bullishContinuation),
-  continuationEnded,    // NEW: indicates if continuation ended/broke
-  continuationReason,   // NEW: reason why continuation ended (optional)
+  continuationEnded,
+  continuationReason,
   recentCrossings,
+
+  // 🔼 Trend extremes (based on 15m candles)
+  highestHighInBullish,
+  bullishTimestamp,
+  lowestLowInBearish,
+  bearishTimestamp,
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -1366,30 +1391,37 @@ return (
   </div>
 )}
 
-  {(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
-      <div className="pt-4 border-t border-white/10 space-y-2">
-        <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
+{trendExtremes && (
+  <div className="pt-4 border-t border-white/10 space-y-2">
+    <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
 
-        {highestHighInBullish !== Number.NEGATIVE_INFINITY && (
-          <p className="text-green-400">
-            🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
-            <span className="font-semibold">
-              {highestHighInBullish.toFixed(2)} @ {bullishTimeString}
-            </span>
-          </p>
-        )}
-
-        {lowestLowInBearish !== Number.POSITIVE_INFINITY && (
-          <p className="text-red-400">
-            🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
-            <span className="font-semibold">
-              {lowestLowInBearish.toFixed(2)} @ {bearishTimeString}
-            </span>
-          </p>
-        )}
-      </div>
+    {trendExtremes.highestHighInBullish !== Number.NEGATIVE_INFINITY && (
+      <p className="text-green-400">
+        🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
+        <span className="font-semibold">
+          {trendExtremes.highestHighInBullish.toFixed(2)}{" "}
+          <span className="text-white/70">@ {trendExtremes.bullishTimestamp
+            ? new Date(trendExtremes.bullishTimestamp).toLocaleString()
+            : "N/A"}
+          </span>
+        </span>
+      </p>
     )}
 
+    {trendExtremes.lowestLowInBearish !== Number.POSITIVE_INFINITY && (
+      <p className="text-red-400">
+        🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
+        <span className="font-semibold">
+          {trendExtremes.lowestLowInBearish.toFixed(2)}{" "}
+          <span className="text-white/70">@ {trendExtremes.bearishTimestamp
+            ? new Date(trendExtremes.bearishTimestamp).toLocaleString()
+            : "N/A"}
+          </span>
+        </span>
+      </p>
+    )}
+  </div>
+)}
 
           
           
