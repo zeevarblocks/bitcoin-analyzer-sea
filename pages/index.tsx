@@ -638,12 +638,12 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
   const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=FUTURES');
   const data = await response.json();
 
-  const sorted = data.data
+  const usdtPerpFutures = data.data
     .filter((ticker: any) => ticker.instId.endsWith("USDT") && ticker.instId.includes("PERP"))
     .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
     .slice(0, limit);
 
-  return sorted.map((ticker: any) => ticker.instId);
+  return usdtPerpFutures.map((ticker: any) => ticker.instId);
 }
 
 const symbols = await fetchTopPairs(100);
@@ -941,14 +941,14 @@ export default function SignalChecker({
     const data = await response.json();
 
     // Filter only perpetual USDT futures (typically ending with "-USDT-SWAP")
-    const sorted = data.data
+    const perpPairs = data.data
       .filter((item: any) => item.instId.endsWith('USDT-SWAP'))
       .sort(
         (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
       )
       .map((item: any) => item.instId);
 
-    setPairs(sorted);
+    setPairs(perpPairs);
 
     const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
     const validSaved = savedPairs.filter(
@@ -958,7 +958,7 @@ export default function SignalChecker({
     if (validSaved.length > 0) {
       setSelectedPairs(validSaved);
     } else {
-      const topValidPairs = perpPairs
+      const topValidPairs = perpPairs 
         .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
         .slice(0, 5);
       setSelectedPairs(topValidPairs);
