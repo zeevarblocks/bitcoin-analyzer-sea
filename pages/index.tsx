@@ -22,8 +22,8 @@ interface SignalData {
   bearishContinuation: boolean;
   bullishContinuation: boolean;
   cleanTrendContinuation: boolean; // ✅ Confirmed continuation with clean trend
-  continuationEnded: boolean; // ✅ NEW: true if clean continuation broke
-  continuationReason?: string; // 👈 add this line
+  continuationEnded: boolean;      // ✅ NEW: true if clean continuation broke
+  continuationReason?: string;     // 👈 Added property to hold reason why continuation ended
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
@@ -255,88 +255,58 @@ function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: nu
   return isFlatOrDown || makingLowerLows || closeBelowEMA70;
 }
 
-function detectBullishContinuationWithEnd(
-  closes: number[],
-  lows: number[],
-  highs: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-  someOtherParam: number[] // <-- Add the correct type here
-): { continuation: boolean; ended: boolean; reason?: string } {
-  let pointAIndex = -1;
-  let pointBIndex = -1;
-  let pointCIndex = -1;
-  let lowestLow = Infinity;
-  let foundStructure = false;
+// Detect if there's a valid bearish trend first
+function isInBearishTrend(closes, ema70, rsi) {
+  let countBelow = 0;
+  for (let i = closes.length - 5; i < closes.length; i++) {
+    if (closes[i] < ema70[i]) countBelow++;
+  }
 
-  for (let i = ema14.length - 5; i >= 3; i--) {
-    const emaSlopeUp = ema70[i] > ema70[i - 1];
-    if (!emaSlopeUp) continue;
+  const emaSlopeDown = ema70[ema70.length - 1] < ema70[ema70.length - 2];
+  const avgRsi = rsi.slice(-5).reduce((a, b) => a + b, 0) / 5;
 
-    const nearEma70 = Math.abs(lows[i] - ema70[i]) / ema70[i] < 0.01;
-    if (nearEma70) {
-      pointAIndex = i;
-      lowestLow = lows[i];
+  return countBelow >= 3 && emaSlopeDown && avgRsi < 55;
+}
 
-      // Point B
-      for (let j = i - 1; j >= 2; j--) {
-        const nearEmaB = Math.abs(lows[j] - ema70[j]) / ema70[j] < 0.015;
-        if (lows[j] > lows[pointAIndex] && nearEmaB) {
-          pointBIndex = j;
-          lowestLow = Math.min(lowestLow, lows[j]);
+// Fast RSI rejection-based bearish continuation
+function detectRSIBasedBearishContinuation(closes, highs, ema70, rsi, ema14) {
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
 
-          // Point C
-          for (let k = j - 1; k >= 1; k--) {
-            const nearEmaC = Math.abs(lows[k] - ema70[k]) / ema70[k] < 0.015;
-            if (lows[k] > lows[pointBIndex] && nearEmaC) {
-              pointCIndex = k;
-              lowestLow = Math.min(lowestLow, lows[k]);
-              foundStructure = true;
-              break;
-            }
-          }
-
-          break;
+    if (prev14 > prev70 && curr14 < curr70) {
+      const rsiAtCross = rsi[i];
+      let lastHigh = highs[i];
+      for (let j = i + 1; j < closes.length; j++) {
+        const price = closes[j];
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const rsiHigher = rsi[j] > rsiAtCross;
+        const lowerHigh = highs[j] < lastHigh;
+        if (nearEMA70 && rsiHigher && lowerHigh) {
+          lastHigh = highs[j];
+        } else if (highs[j] > lastHigh) {
+          return false;
         }
+        if (j - i >= 2 && lowerHigh) return true;
       }
-
       break;
     }
   }
+  return false;
+}
 
-  if (foundStructure) {
-    const lastLow = lows[lows.length - 1];
-    if (lastLow < lowestLow) {
-      return {
-        continuation: false,
-        ended: true,
-        reason: 'Broke lowest low from structure',
-      };
-    } else {
-      return {
-        continuation: true,
-        ended: false,
-      };
-    }
+// ABC structure-based bearish continuation + ending check
+function detectBearishContinuationWithEnd(closes, lows, highs, ema70, rsi, ema14) {
+  if (!isInBearishTrend(closes, ema70, rsi)) {
+    return { continuation: false, ended: false, reason: 'No bearish trend detected' };
   }
 
-  return {
-    continuation: false,
-    ended: false,
-    reason: 'Structure not found',
-  };
-            }
+  if (detectRSIBasedBearishContinuation(closes, highs, ema70, rsi, ema14)) {
+    return { continuation: true, ended: false };
+  }
 
-function detectBearishContinuationWithEnd(
-  closes: number[],
-  lows: number[],
-  highs: number[],
-  ema70: number[],
-  rsi: number[],
-  ema14: number[],
-  someOtherParam: any, // replace or remove if unused
-): { continuation: boolean; ended: boolean; reason?: string } {
   let pointAIndex = -1;
   let pointBIndex = -1;
   let pointCIndex = -1;
@@ -350,15 +320,13 @@ function detectBearishContinuationWithEnd(
     const nearEma70 = Math.abs(highs[i] - ema70[i]) / ema70[i] < 0.01;
     if (nearEma70) {
       pointAIndex = i;
-      highestHigh = highs[i]; // only set once
+      highestHigh = highs[i];
 
-      // Point B
       for (let j = i - 1; j >= 2; j--) {
         const nearEmaB = Math.abs(highs[j] - ema70[j]) / ema70[j] < 0.015;
         if (highs[j] < highs[pointAIndex] && nearEmaB) {
           pointBIndex = j;
 
-          // Point C
           for (let k = j - 1; k >= 1; k--) {
             const nearEmaC = Math.abs(highs[k] - ema70[k]) / ema70[k] < 0.015;
             if (highs[k] < highs[pointBIndex] && nearEmaC) {
@@ -367,11 +335,9 @@ function detectBearishContinuationWithEnd(
               break;
             }
           }
-
           break;
         }
       }
-
       break;
     }
   }
@@ -386,7 +352,6 @@ function detectBearishContinuationWithEnd(
       };
     }
 
-    // Check if lowest low failed to close below EMA14
     let lowestLow = Infinity;
     let lowestLowIndex = -1;
 
@@ -397,10 +362,7 @@ function detectBearishContinuationWithEnd(
       }
     }
 
-    if (
-      lowestLowIndex !== -1 &&
-      closes[lowestLowIndex] >= ema14[lowestLowIndex]
-    ) {
+    if (lowestLowIndex !== -1 && closes[lowestLowIndex] >= ema14[lowestLowIndex]) {
       return {
         continuation: false,
         ended: true,
@@ -417,9 +379,147 @@ function detectBearishContinuationWithEnd(
   return {
     continuation: false,
     ended: false,
+    reason: 'No valid bearish continuation structure or RSI rejection found',
   };
-      }
+                        }
+                
 
+// Detect if there's a valid bullish trend first
+function isInBullishTrend(closes: number[], ema70: number[], rsi: number[]): boolean {
+  let countAbove = 0;
+  for (let i = closes.length - 5; i < closes.length; i++) {
+    if (closes[i] > ema70[i]) countAbove++;
+  }
+
+  const emaSlopeUp = ema70[ema70.length - 1] > ema70[ema70.length - 2];
+  const avgRsi = rsi.slice(-5).reduce((a, b) => a + b, 0) / 5;
+
+  return countAbove >= 3 && emaSlopeUp && avgRsi > 45;
+}
+
+// Fast RSI rejection-based bullish continuation
+function detectRSIBasedBullishContinuation(
+  closes: number[],
+  lows: number[],
+  ema70: number[],
+  rsi: number[],
+  ema14: number[]
+): boolean {
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    // EMA14 crosses above EMA70
+    if (prev14 < prev70 && curr14 > curr70) {
+      const rsiAtCross = rsi[i];
+      let lastLow = lows[i];
+      for (let j = i + 1; j < closes.length; j++) {
+        const price = closes[j];
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const rsiLower = rsi[j] < rsiAtCross;
+        const higherLow = lows[j] > lastLow;
+
+        if (nearEMA70 && rsiLower && higherLow) {
+          lastLow = lows[j];
+        } else if (lows[j] < lastLow) {
+          return false; // pattern broken by lower low
+        }
+
+        if (j - i >= 2 && higherLow) return true; // valid bullish continuation
+      }
+      break;
+    }
+  }
+  return false;
+}
+
+// ABC structure-based bullish continuation + ending check
+function detectBullishContinuationWithEnd(
+  closes: number[],
+  lows: number[],
+  highs: number[],
+  ema70: number[],
+  rsi: number[],
+  ema14: number[]
+): { continuation: boolean; ended: boolean; reason?: string } {
+  if (!isInBullishTrend(closes, ema70, rsi)) {
+    return { continuation: false, ended: false, reason: 'No bullish trend detected' };
+  }
+
+  if (detectRSIBasedBullishContinuation(closes, lows, ema70, rsi, ema14)) {
+    return { continuation: true, ended: false };
+  }
+
+  let pointAIndex = -1;
+  let pointBIndex = -1;
+  let pointCIndex = -1;
+  let lowestLow = Infinity;
+  let foundStructure = false;
+
+  for (let i = ema14.length - 5; i >= 3; i--) {
+    const emaSlopeUp = ema70[i] > ema70[i - 1];
+    if (!emaSlopeUp) continue;
+
+    const nearEma70 = Math.abs(lows[i] - ema70[i]) / ema70[i] < 0.01;
+    if (nearEma70) {
+      pointAIndex = i;
+      lowestLow = lows[i];
+
+      for (let j = i - 1; j >= 2; j--) {
+        const nearEmaB = Math.abs(lows[j] - ema70[j]) / ema70[j] < 0.015;
+        if (lows[j] > lows[pointAIndex] && nearEmaB) {
+          pointBIndex = j;
+
+          for (let k = j - 1; k >= 1; k--) {
+            const nearEmaC = Math.abs(lows[k] - ema70[k]) / ema70[k] < 0.015;
+            if (lows[k] > lows[pointBIndex] && nearEmaC) {
+              pointCIndex = k;
+              foundStructure = true;
+              break;
+            }
+          }
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  if (foundStructure) {
+    const lastLow = lows[lows.length - 1];
+    if (lastLow < lowestLow) {
+      return {
+        continuation: false,
+        ended: true,
+        reason: 'Broke lowest low from structure',
+      };
+    }
+
+    let highestHigh = -Infinity;
+    let highestHighIndex = -1;
+
+    for (let i = pointCIndex; i < highs.length; i++) {
+      if (highs[i] > highestHigh) {
+        highestHigh = highs[i];
+        highestHighIndex = i;
+      }
+    }
+
+    if (highestHighIndex !== -1 && closes[highestHighIndex] <= ema14[highestHighIndex]) {
+      return {
+        continuation: false,
+        ended: true,
+        reason: 'No candle closed above EMA14 at highest high of trend',
+      };
+    }
+
+    return { continuation: true, ended: false };
+  }
+
+  return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
+                                       }
         
 
 
@@ -507,7 +607,7 @@ let continuationEnded = false;
 let continuationReason = '';
 
 if (trend === 'bearish') {
-  const { continuation, ended, reason } = detectBearishContinuationWithEnd(
+  const { continuation = false, ended = false, reason = '' } = detectBearishContinuationWithEnd(
     closes,
     lows,
     highs,
@@ -519,14 +619,14 @@ if (trend === 'bearish') {
 
   bearishContinuation = continuation;
 
-  if (continuation && ended) {
+  if (ended) {
     continuationEnded = true;
     continuationReason = reason;
   }
 }
 
 if (trend === 'bullish') {
-  const { continuation, ended, reason } = detectBullishContinuationWithEnd(
+  const { continuation = false, ended = false, reason = '' } = detectBullishContinuationWithEnd(
     closes,
     lows,
     highs,
@@ -538,11 +638,14 @@ if (trend === 'bullish') {
 
   bullishContinuation = continuation;
 
-  if (continuation && ended) {
+  if (ended) {
     continuationEnded = true;
     continuationReason = reason;
   }
-    }
+}
+
+// Optional: summary or logging
+// console.log({ bearishContinuation, bullishContinuation, continuationEnded, continuationReason });
       
       const currentRSI = rsi14.at(-1);
       const prevHighRSI = rsi14[prevHighIdx] ?? null;
@@ -626,8 +729,8 @@ if (type && level !== null) {
   cleanTrendContinuation:
     (trend === 'bearish' && bearishContinuation) ||
     (trend === 'bullish' && bullishContinuation),
-  continuationEnded, // NEW: tells you if trend continuation has ended
-  continuationReason,
+  continuationEnded,    // NEW: indicates if continuation ended/broke
+  continuationReason,   // NEW: reason why continuation ended (optional)
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -1059,7 +1162,7 @@ return (
     </div>
   ) : data.ema70Bounce ? (
     <div className="text-white/70">
-      ⚠️ <span className="font-semibold">EMA70 bounce detected</span>: No clear trend continuation.
+      ⚠️ <span className="font-semibold">EMA70 Bounce Detected</span>: No clear trend continuation.
       <p className="text-sm ml-4 mt-1">
         • EMA70 bounce detected<br />
         • But no valid bullish or bearish continuation<br />
@@ -1068,6 +1171,7 @@ return (
     </div>
   ) : null}
 </div>
+
 
           {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
