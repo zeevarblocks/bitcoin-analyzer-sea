@@ -560,7 +560,31 @@ function findRecentCrossings(
   return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
+function getTrendExtreme(candles: Candle[]) {
+  let highestHighInBullish = Number.NEGATIVE_INFINITY;
+  let bullishTimestamp: string | null = null;
 
+  let lowestLowInBearish = Number.POSITIVE_INFINITY;
+  let bearishTimestamp: string | null = null;
+
+  for (const candle of candles) {
+    if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
+      highestHighInBullish = candle.ema14;
+      bullishTimestamp = candle.time;
+    }
+    if (candle.ema14 < candle.ema70 && candle.ema14 < lowestLowInBearish) {
+      lowestLowInBearish = candle.ema14;
+      bearishTimestamp = candle.time;
+    }
+  }
+
+  return {
+    highestHighInBullish: highestHighInBullish === Number.NEGATIVE_INFINITY ? null : highestHighInBullish,
+    lowestLowInBearish: lowestLowInBearish === Number.POSITIVE_INFINITY ? null : lowestLowInBearish,
+    bullishTimestamp,
+    bearishTimestamp,
+  };
+  }
 
 
 
@@ -738,6 +762,18 @@ if (type && level !== null) {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+      
+      for (const candle of candles) {
+  if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
+    highestHighInBullish = candle.ema14;
+    bullishTimestamp = candle.time;
+  }
+
+  if (candle.ema14 < candle.ema70 && candle.ema14 < lowestLowInBearish) {
+    lowestLowInBearish = candle.ema14;
+    bearishTimestamp = candle.time;
+  }
+      }
 
       signals[symbol] = {
   trend,
@@ -1318,6 +1354,46 @@ return (
     </ul>
   </div>
 )}
+
+           <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl p-6 shadow-xl border border-gray-700/60">
+      <h2 className="text-xl font-bold text-white mb-6 tracking-wide flex items-center gap-2">
+        📊 <span className="text-indigo-400">EMA14 Trend Extremes</span>
+      </h2>
+
+      <div className="space-y-5">
+        {/* Bullish */}
+        <div className="bg-gradient-to-r from-green-800/30 to-green-900/20 border border-green-600/30 p-4 rounded-lg shadow-inner">
+          <p className="text-green-400 font-semibold mb-1">🟢 Bullish Trend High</p>
+          {highestHighInBullish !== null ? (
+            <p className="text-sm text-green-200">
+              EMA14 reached <strong className="text-green-300">{highestHighInBullish.toFixed(2)}</strong>
+              {bullishTimestamp && (
+                <> on <span className="italic text-green-400">{bullishTimestamp}</span></>
+              )}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-400">No bullish data available.</p>
+          )}
+        </div>
+
+        {/* Bearish */}
+        <div className="bg-gradient-to-r from-red-800/30 to-red-900/20 border border-red-600/30 p-4 rounded-lg shadow-inner">
+          <p className="text-red-400 font-semibold mb-1">🔴 Bearish Trend Low</p>
+          {lowestLowInBearish !== null ? (
+            <p className="text-sm text-red-200">
+              EMA14 dropped to <strong className="text-red-300">{lowestLowInBearish.toFixed(2)}</strong>
+              {bearishTimestamp && (
+                <> on <span className="italic text-red-400">{bearishTimestamp}</span></>
+              )}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-400">No bearish data available.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
           
           
         {/* Trade Link */}
