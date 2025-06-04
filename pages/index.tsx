@@ -758,11 +758,12 @@ type FilterType =
   | null
   | 'bullishContinuation'
   | 'bearishContinuation'
+  | 'ema14Bounce'
   | 'ema70Bounce'
+  | 'emaBounce'               // combined EMA14 & EMA70 bounce filter
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
-  | 'divergenceFromLevel'
-     'emaBounce';
+  | 'divergenceFromLevel';
 
 export default function SignalChecker({
   signals,
@@ -883,9 +884,7 @@ export default function SignalChecker({
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
-      if (activeFilter === 'emaBounce') {
-  return data.ema14Bounce || data.ema70Bounce;
-        }
+      if (activeFilter === 'emaBounce') {  return data.ema14Bounce || data.ema70Bounce;  }
       return true;
     });
 
