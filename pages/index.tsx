@@ -9,9 +9,9 @@ interface SignalData {
 
   // === Divergence Signals ===
   divergence: boolean;
-  divergenceType?: 'bullish' | 'bearish' | null;
+  divergenceType: 'bullish' | 'bearish' | null;
   divergenceFromLevel: boolean;
-  divergenceFromLevelType?: 'bullish' | 'bearish' | null;
+  divergenceFromLevelType: 'bullish' | 'bearish' | null;
   nearOrAtEMA70Divergence: boolean;
 
   // === Bounce Events ===
@@ -47,17 +47,16 @@ interface SignalData {
     index: number;
   }[];
 
-  // === Trend Extremes (NEW)
-  
-  highestHighInBullish?: number;
-  bullishTimestamp?: number;
-  lowestLowInBearish?: number;
-  bearishTimestamp?: number;
+  // === Trend Extremes (REQUIRED)
+  highestHighInBullish: number;
+  bullishTimestamp: number;
+  lowestLowInBearish: number;
+  bearishTimestamp: number;
 
   // === Metadata ===
   url: string;
-  timeframe?: '1D' | '1W' | '2W'; // Optional if you support multi-timeframe
-  updatedAt?: string; // Optional ISO date for debug/logging
+  timeframe?: '1D' | '1W' | '2W';
+  updatedAt?: string;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -797,12 +796,12 @@ if (type && level !== null) {
 
 const trendExtremes = getTrendExtreme(candles);  // candles must be defined in scope
               
-  const {
-  highestHighInBullish = Number.NEGATIVE_INFINITY,
-  bullishTimestamp = null,
-  lowestLowInBearish = Number.POSITIVE_INFINITY,
-  bearishTimestamp = null,
-} = trendExtremes ?? {};
+   const {
+    highestHighInBullish,
+    bullishTimestamp,
+    lowestLowInBearish,
+    bearishTimestamp,
+  } = getTrendExtreme(candles);
 
 
 
@@ -1392,31 +1391,29 @@ return (
   </div>
 )}
 
-{trendExtremes && (
+          {trendExtremes && (
   <div className="pt-4 border-t border-white/10 space-y-2">
     <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
 
-    {trendExtremes.highestHighInBullish !== Number.NEGATIVE_INFINITY && (
+    {trendExtremes.highestHighInBullish > 0 && (
       <p className="text-green-400">
         🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
         <span className="font-semibold">
           {trendExtremes.highestHighInBullish.toFixed(2)}{" "}
-          <span className="text-white/70">@ {trendExtremes.bullishTimestamp
-            ? new Date(trendExtremes.bullishTimestamp).toLocaleString()
-            : "N/A"}
+          <span className="text-white/70">
+            @ {new Date(trendExtremes.bullishTimestamp).toLocaleString()}
           </span>
         </span>
       </p>
     )}
 
-    {trendExtremes.lowestLowInBearish !== Number.POSITIVE_INFINITY && (
+    {trendExtremes.lowestLowInBearish > 0 && (
       <p className="text-red-400">
         🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
         <span className="font-semibold">
           {trendExtremes.lowestLowInBearish.toFixed(2)}{" "}
-          <span className="text-white/70">@ {trendExtremes.bearishTimestamp
-            ? new Date(trendExtremes.bearishTimestamp).toLocaleString()
-            : "N/A"}
+          <span className="text-white/70">
+            @ {new Date(trendExtremes.bearishTimestamp).toLocaleString()}
           </span>
         </span>
       </p>
