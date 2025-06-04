@@ -761,14 +761,13 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
       
-      // Initialize tracking variables before the loop
+      // Declare variables outside the loop, with correct types
 let highestHighInBullish: number = Number.NEGATIVE_INFINITY;
-let bullishTimestamp: string | null = null;
+let bullishTimestamp: number | null = null;
 
 let lowestLowInBearish: number = Number.POSITIVE_INFINITY;
-let bearishTimestamp: string | null = null;
+let bearishTimestamp: number | null = null;
 
-// Loop through candles to update extremes
 for (const candle of candles) {
   const { ema14, ema70, time } = candle;
 
@@ -776,16 +775,28 @@ for (const candle of candles) {
     // 🟢 Bullish Trend: EMA14 above EMA70, track highest high
     if (ema14 > ema70 && ema14 > highestHighInBullish) {
       highestHighInBullish = ema14;
-      bullishTimestamp = time;
+      bullishTimestamp = time; // number type, matches declaration
     }
 
     // 🔴 Bearish Trend: EMA14 below EMA70, track lowest low
     if (ema14 < ema70 && ema14 < lowestLowInBearish) {
       lowestLowInBearish = ema14;
-      bearishTimestamp = time;
+      bearishTimestamp = time; // number type, matches declaration
     }
   }
 }
+
+// Optional: Convert timestamps to readable strings for UI or logging
+const bullishTimeString = bullishTimestamp
+  ? new Date(bullishTimestamp).toLocaleString()
+  : 'No bullish timestamp found';
+
+const bearishTimeString = bearishTimestamp
+  ? new Date(bearishTimestamp).toLocaleString()
+  : 'No bearish timestamp found';
+
+console.log('Highest EMA14 in Bullish Trend:', highestHighInBullish, 'at', bullishTimeString);
+console.log('Lowest EMA14 in Bearish Trend:', lowestLowInBearish, 'at', bearishTimeString);
 
       signals[symbol] = {
   trend,
