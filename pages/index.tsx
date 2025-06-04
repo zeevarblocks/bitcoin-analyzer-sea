@@ -678,7 +678,7 @@ export default function SignalChecker({
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
-  const [signals, setSignals] = useState<FilterType[]>([]);
+  
 
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
