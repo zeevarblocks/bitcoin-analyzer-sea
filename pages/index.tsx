@@ -761,17 +761,7 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-      
-// Example: Compute or retrieve these from your data somewhere before JSX
-const highestHighInBullish = data.highestHighInBullish ?? Number.NEGATIVE_INFINITY;
-const lowestLowInBearish = data.lowestLowInBearish ?? Number.POSITIVE_INFINITY;
-
-// Also prepare time strings for display
-const bullishTimeString = data.bullishHighTime || "N/A";
-const bearishTimeString = data.bearishLowTime || "N/A";
-      
-      
-      // Declare variables outside the loop, with correct types
+      // ✅ Declare variables
 let highestHighInBullish: number = Number.NEGATIVE_INFINITY;
 let bullishTimestamp: number | null = null;
 
@@ -782,21 +772,18 @@ for (const candle of candles) {
   const { ema14, ema70, time } = candle;
 
   if (typeof ema14 === 'number' && typeof ema70 === 'number') {
-    // 🟢 Bullish Trend: EMA14 above EMA70, track highest high
     if (ema14 > ema70 && ema14 > highestHighInBullish) {
       highestHighInBullish = ema14;
-      bullishTimestamp = time; // number type, matches declaration
+      bullishTimestamp = time;
     }
 
-    // 🔴 Bearish Trend: EMA14 below EMA70, track lowest low
     if (ema14 < ema70 && ema14 < lowestLowInBearish) {
       lowestLowInBearish = ema14;
-      bearishTimestamp = time; // number type, matches declaration
+      bearishTimestamp = time;
     }
   }
 }
 
-// Optional: Convert timestamps to readable strings for UI or logging
 const bullishTimeString = bullishTimestamp
   ? new Date(bullishTimestamp).toLocaleString()
   : 'No bullish timestamp found';
@@ -807,6 +794,8 @@ const bearishTimeString = bearishTimestamp
 
 console.log('Highest EMA14 in Bullish Trend:', highestHighInBullish, 'at', bullishTimeString);
 console.log('Lowest EMA14 in Bearish Trend:', lowestLowInBearish, 'at', bearishTimeString);
+
+
 
       signals[symbol] = {
   trend,
