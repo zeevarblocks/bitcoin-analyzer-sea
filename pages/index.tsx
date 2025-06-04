@@ -761,7 +761,15 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
       
-      for (const candle of candles) {
+      // Initialize tracking variables before the loop
+let highestHighInBullish: number = Number.NEGATIVE_INFINITY;
+let bullishTimestamp: string | null = null;
+
+let lowestLowInBearish: number = Number.POSITIVE_INFINITY;
+let bearishTimestamp: string | null = null;
+
+// Loop through candles to update extremes
+for (const candle of candles) {
   const { ema14, ema70, time } = candle;
 
   if (typeof ema14 === 'number' && typeof ema70 === 'number') {
@@ -777,7 +785,7 @@ if (type && level !== null) {
       bearishTimestamp = time;
     }
   }
-  }
+}
 
       signals[symbol] = {
   trend,
