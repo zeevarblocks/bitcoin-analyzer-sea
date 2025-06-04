@@ -725,8 +725,13 @@ export default function SignalChecker({
 
   const handleRefresh = async () => {
   setIsRefreshing(true);
-  await Promise.all([fetchPairs(), refreshSignals()]);
-  setIsRefreshing(false);
+  try {
+    await refreshSignals(); // Only refresh signal data
+  } catch (error) {
+    console.error('Error refreshing signals:', error);
+  } finally {
+    setIsRefreshing(false);
+  }
 };
 
   // Fetch pairs on mount and every 5 minutes
