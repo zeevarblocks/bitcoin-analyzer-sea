@@ -1229,18 +1229,18 @@ return (
 )}
 
 
-          {activeFilter === 'emaBounce' && (data.ema14Bounce || data.ema70Bounce) && (
+          {(activeFilter === 'emaBounce' || data?.ema14Bounce || data?.ema70Bounce) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
     <p className="text-sm text-white/80">
-      Recent candles have bounced above short-term (EMA14) and/or medium-term (EMA70) averages.
+      Recent candles have bounced above the 14 and/or 70 EMA. This often indicates a consolidation zone where price is stabilizing between short- and medium-term averages.
     </p>
 
     <div className="space-y-1">
-      {data.ema14Bounce && (
+      {data?.ema14Bounce && (
         <p className="text-green-400 text-lg font-semibold">🔁 EMA14: Yes</p>
       )}
-      {data.ema70Bounce && (
+      {data?.ema70Bounce && (
         <p className="text-green-400 text-lg font-semibold">🟡 EMA70: Yes</p>
       )}
     </div>
