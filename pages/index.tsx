@@ -47,12 +47,19 @@ interface SignalData {
     index: number;
   }[];
 
+  // === EMA14 Extremes (Legacy Flat Keys) ===
+  keyResistance: number | null;
+  resistanceTimestamp: number | null;
+  keySupport: number | null;
+  supportTimestamp: number | null;
 
-  keyResistance: number | null,        // highest local peak of EMA14
-  resistanceTimestamp: number | null,  // when it occurred
-  keySupport: number | null,           // lowest local valley of EMA14
-  supportTimestamp: number | null,     // when it occurred
-
+  // === Grouped EMA14 Extremes ===
+  emaExtremes?: {
+    keyResistance: number | null;
+    resistanceTimestamp: number | null;
+    keySupport: number | null;
+    supportTimestamp: number | null;
+  };
 
   // === Metadata ===
   url: string;
@@ -852,7 +859,7 @@ console.log("Key Support Level:", keySupport, "at", supportTimestamp);
   resistanceTimestamp,  // when it occurred
   keySupport,           // lowest local valley of EMA14
   supportTimestamp,     // when it occurred
-
+	emaExtremes,
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -1412,7 +1419,7 @@ return (
           <span className="font-semibold">
             {data.keyResistance.toFixed(2)}{" "}
             <span className="text-white/70">
-              @ {new Date(data.resistanceTimestamp).map()}
+              @ {new Date(data.resistanceTimestamp).toLocaleString()}
             </span>
           </span>
         </p>
@@ -1424,7 +1431,7 @@ return (
           <span className="font-semibold">
             {data.keySupport.toFixed(2)}{" "}
             <span className="text-white/70">
-              @ {new Date(data.supportTimestamp).map()}
+              @ {new Date(data.supportTimestamp).toLocaleString()}
             </span>
           </span>
         </p>
