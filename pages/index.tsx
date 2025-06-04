@@ -707,8 +707,6 @@ export default function SignalChecker({
     }
   }, [signals]);
 
-const [signals, setSignals] = useState<Record<string, SignalData>>({});
-
 const fetchSignals = async () => {
   try {
     const res = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT'); // Replace with your actual endpoint
