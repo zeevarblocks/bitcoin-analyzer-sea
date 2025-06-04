@@ -876,8 +876,15 @@ return (
     Unselect All
   </button>
 </div>
-<button onClick={handleRefresh} disabled={isRefreshing}>
-  {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
+<button
+  onClick={() => {
+    fetchPairs();         // Refresh trading pairs
+    refreshSignals();     // Refresh signal data from API
+  }}
+  disabled={isLoadingPairs}
+  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+>
+  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
 </button>
     
       <div className="flex items-center space-x-4">
@@ -1061,9 +1068,9 @@ return (
           • Type:{" "}
           <span className="capitalize text-white">
             {data.divergenceFromLevelType === "bullish"
-              ? "Bullish Continuation"
+              ? "Bullish Trend"
               : data.divergenceFromLevelType === "bearish"
-              ? "Bearish Continuation"
+              ? "Bearish Trend"
               : "Confirmed"}
           </span><br />
           • RSI divergence confirmed against a key{" "}
