@@ -564,6 +564,7 @@ function findRecentCrossings(
   return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
+// Utility function to compute trend extremes
 function getTrendExtreme(candles: Candle[]) {
   let highestHighInBullish = Number.NEGATIVE_INFINITY;
   let bullishTimestamp: number | null = null;
@@ -572,13 +573,16 @@ function getTrendExtreme(candles: Candle[]) {
   let bearishTimestamp: number | null = null;
 
   for (const candle of candles) {
-    if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
-      highestHighInBullish = candle.ema14;
-      bullishTimestamp = candle.time;
-    }
-    if (candle.ema14 < candle.ema70 && candle.ema14 < lowestLowInBearish) {
-      lowestLowInBearish = candle.ema14;
-      bearishTimestamp = candle.time;
+    if (typeof candle.ema14 === 'number' && typeof candle.ema70 === 'number') {
+      if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
+        highestHighInBullish = candle.ema14;
+        bullishTimestamp = candle.time;
+      }
+
+      if (candle.ema14 < candle.ema70 && candle.ema14 < lowestLowInBearish) {
+        lowestLowInBearish = candle.ema14;
+        bearishTimestamp = candle.time;
+      }
     }
   }
 
@@ -761,39 +765,26 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-      // ✅ Declare variables
-let highestHighInBullish: number = Number.NEGATIVE_INFINITY;
-let bullishTimestamp: number | null = null;
+const candles: Candle[] = [...]; // your data input
 
-let lowestLowInBearish: number = Number.POSITIVE_INFINITY;
-let bearishTimestamp: number | null = null;
-
-for (const candle of candles) {
-  const { ema14, ema70, time } = candle;
-
-  if (typeof ema14 === 'number' && typeof ema70 === 'number') {
-    if (ema14 > ema70 && ema14 > highestHighInBullish) {
-      highestHighInBullish = ema14;
-      bullishTimestamp = time;
-    }
-
-    if (ema14 < ema70 && ema14 < lowestLowInBearish) {
-      lowestLowInBearish = ema14;
-      bearishTimestamp = time;
-    }
-  }
-}
+const {
+  highestHighInBullish,
+  bullishTimestamp,
+  lowestLowInBearish,
+  bearishTimestamp,
+} = getTrendExtreme(candles);
 
 const bullishTimeString = bullishTimestamp
   ? new Date(bullishTimestamp).toLocaleString()
-  : 'No bullish timestamp found';
+  : 'N/A';
 
 const bearishTimeString = bearishTimestamp
   ? new Date(bearishTimestamp).toLocaleString()
-  : 'No bearish timestamp found';
+  : 'N/A';
 
-console.log('Highest EMA14 in Bullish Trend:', highestHighInBullish, 'at', bullishTimeString);
-console.log('Lowest EMA14 in Bearish Trend:', lowestLowInBearish, 'at', bearishTimeString);
+console.log('🟢 Highest EMA14 in Bullish Trend:', highestHighInBullish, 'at', bullishTimeString);
+console.log('🔴 Lowest EMA14 in Bearish Trend:', lowestLowInBearish, 'at', bearishTimeString);
+
 
 
 
@@ -1378,28 +1369,28 @@ return (
 )}
 
   {(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
+      <div className="pt-4 border-t border-white/10 space-y-2">
+        <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
 
-    {highestHighInBullish !== Number.NEGATIVE_INFINITY && (
-      <p className="text-green-400">
-        🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
-        <span className="font-semibold">
-          {highestHighInBullish.toFixed(2)} @ {bullishTimeString || "N/A"}
-        </span>
-      </p>
-    )}
+        {highestHighInBullish !== Number.NEGATIVE_INFINITY && (
+          <p className="text-green-400">
+            🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
+            <span className="font-semibold">
+              {highestHighInBullish.toFixed(2)} @ {bullishTimeString}
+            </span>
+          </p>
+        )}
 
-    {lowestLowInBearish !== Number.POSITIVE_INFINITY && (
-      <p className="text-red-400">
-        🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
-        <span className="font-semibold">
-          {lowestLowInBearish.toFixed(2)} @ {bearishTimeString || "N/A"}
-        </span>
-      </p>
+        {lowestLowInBearish !== Number.POSITIVE_INFINITY && (
+          <p className="text-red-400">
+            🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
+            <span className="font-semibold">
+              {lowestLowInBearish.toFixed(2)} @ {bearishTimeString}
+            </span>
+          </p>
+        )}
+      </div>
     )}
-  </div>
-)}
 
 
           
