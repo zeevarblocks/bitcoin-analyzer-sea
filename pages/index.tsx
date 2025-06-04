@@ -677,6 +677,7 @@ export default function SignalChecker({
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -721,6 +722,12 @@ export default function SignalChecker({
       setIsLoadingPairs(false);
     }
   }, [signals]);
+
+  const handleRefresh = async () => {
+  setIsRefreshing(true);
+  await Promise.all([fetchPairs(), refreshSignals()]);
+  setIsRefreshing(false);
+};
 
   // Fetch pairs on mount and every 5 minutes
   useEffect(() => {
@@ -869,15 +876,8 @@ return (
     Unselect All
   </button>
 </div>
-<button
-  onClick={() => {
-    fetchPairs();         // Refresh trading pairs
-    refreshSignals();     // Refresh signal data from API
-  }}
-  disabled={isLoadingPairs}
-  ...
->
-  {isLoadingPairs ? 'Refreshing...' : '🔄 Refresh'}
+<button onClick={handleRefresh} disabled={isRefreshing}>
+  {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
 </button>
     
       <div className="flex items-center space-x-4">
