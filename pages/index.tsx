@@ -1231,25 +1231,21 @@ return (
 )}
 
 
-          {activeFilter === 'emaBounce' && (
+          {activeFilter === 'emaBounce' && data.ema14Bounce && data.ema70Bounce && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📈 EMA Bounce Signals</h3>
+    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
     <p className="text-sm text-white/80">
-      Highlights if recent candles have bounced above the 14 or 70 EMA, which may suggest a bullish continuation from dynamic support levels.
+      Recent candles have bounced above both the 14 and 70 EMA. This often indicates a consolidation zone where price is stabilizing between short- and medium-term averages.
     </p>
 
     <p>
       🔁 EMA14 Bounce:{" "}
-      <span className={data.ema14Bounce ? "text-green-400" : "text-red-400"}>
-        {data.ema14Bounce ? "Yes" : "No"}
-      </span>
+      <span className="text-green-400">Yes</span>
     </p>
 
     <p>
       🟡 EMA70 Bounce:{" "}
-      <span className={data.ema70Bounce ? "text-green-400" : "text-red-400"}>
-        {data.ema70Bounce ? "Yes" : "No"}
-      </span>
+      <span className="text-green-400">Yes</span>
     </p>
   </div>
 )}
