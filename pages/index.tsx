@@ -723,7 +723,7 @@ export default function SignalChecker({
     }
   }, [signals]);
 
-  const refreshSignals = useCallback(async () => {
+  const refreshSignalsClient = useCallback(async () => {
   try {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT'); // Or wherever your signals endpoint is
     const data = await response.json();
@@ -976,7 +976,7 @@ return (
         </button>
             <button
   onClick={() => {
-    refreshSignals(); // Refresh signal data from API
+    refreshSignalsClient(); // Refresh signal data from API
   }}
   disabled={isLoadingPairs}
   className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
