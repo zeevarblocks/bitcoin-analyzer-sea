@@ -761,7 +761,8 @@ type FilterType =
   | 'ema70Bounce'
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
-  | 'divergenceFromLevel';
+  | 'divergenceFromLevel'
+     'emaBounce';
 
 export default function SignalChecker({
   signals,
@@ -882,6 +883,9 @@ export default function SignalChecker({
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
+      if (activeFilter === 'emaBounce') {
+  return data.ema14Bounce || data.ema70Bounce;
+        }
       return true;
     });
 
@@ -1027,16 +1031,16 @@ return (
   </button>
 
   <button
-    onClick={() => setActiveFilter('ema70Bounce')}
-    className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>⚠️</span>
-    <span>ema70Bounce</span>
-  </button>
+  onClick={() => setActiveFilter('ema70Bounce')}
+  className="bg-gray-800 hover:bg-yellow-700 text-yellow-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>⚠️</span>
+  <span>ema70Bounce</span>
+</button>
           
-          <button
+<button
   onClick={() => setActiveFilter('nearOrAtEMA70Divergence')}
-  className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-indigo-700 text-indigo-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📐</span> {/* EMA proximity + divergence */}
   <span>nearOrAtEMA70Divergence</span>
@@ -1044,10 +1048,18 @@ return (
 
 <button
   onClick={() => setActiveFilter('divergenceFromLevel')}
-  className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-pink-700 text-pink-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📉</span> {/* Level-based divergence — potential trap signal */}
   <span>divergenceFromLevel</span>
+</button>
+
+          <button
+  onClick={() => setActiveFilter('emaBounce')}
+  className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>emaBounce</span>
 </button>
                
 </div>
@@ -1170,14 +1182,13 @@ return (
   ) : null}
 </div>
 
-
-          {(data.divergenceFromLevel || data.divergence || data.nearOrAtEMA70Divergence) && (
+{(data.divergenceFromLevel || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📉 ✅ RSI Divergence: Support for Trend Continuation</h3>
+    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
     {data.divergenceFromLevel && (
       <div className="text-pink-400 space-y-2">
-        🔍 <span className="font-semibold">Divergence vs Level</span>
+        🔍 <span className="font-semibold">Divergence vs Key Level</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
           • Type:{" "}
           <span className="capitalize text-white">
@@ -1187,40 +1198,64 @@ return (
               ? "Bearish Trend"
               : "Confirmed"}
           </span><br />
-          • RSI divergence confirmed against a key{" "}
-          {data.levelType || "support/resistance"} level<br />
-          • Signals potential trend continuation or trap setup
+          • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
+          • Suggests a potential trend continuation or a fakeout trap
         </p>
       </div>
     )}
-
-    {data.divergence && (
-      <div className="text-purple-400 space-y-2">
-        ⚠️ <span className="font-semibold">Classic RSI Divergence</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • Price is moving opposite to RSI<br />
-          • Indicates potential reversal, correction, or exhaustion<br />
-          • Watch closely for fakeouts or trend shifts
-        </p>
-      </div>
-    )}
-
+    
     {data.nearOrAtEMA70Divergence && (
       <div className="text-indigo-400 space-y-2">
         🧭 <span className="font-semibold">EMA70 RSI Divergence</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • RSI divergence detected near EMA70<br />
-          • Reinforces signal strength at dynamic support/resistance<br />
-          • Often aligns with continuation or bounce zones
+          • Divergence detected near the 70 EMA<br />
+          • Confluence with dynamic support/resistance enhances signal reliability<br />
+          • Often marks bounce zones or momentum continuation setups
         </p>
       </div>
     )}
   </div>
 )}
           
-          
-        
+    
+<div className="pt-4 border-t border-white/10 space-y-4">
+  <h3 className="text-lg font-semibold text-white">🔍 RSI Divergence Signal: Monitoring for Reversal Setup</h3>
+  {data.divergence && (
+    <div className="text-purple-400 space-y-2">
+      ⚠️ <span className="font-semibold">Classic {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} RSI Divergence</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • RSI is moving opposite to price direction<br />
+        • Indicates possible {data.divergenceType === 'bullish' ? 'bullish momentum despite lower lows' : 'bearish momentum despite higher highs'}<br />
+        • Watch for volume spikes, candlestick confirmation, or trendline breaks
+      </p>
+    </div>
+  )}
+</div>
 
+          {activeFilter === 'emaBounce' && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">📈 EMA Bounce Signals</h3>
+    <p className="text-sm text-white/80">
+      Highlights if recent candles have bounced above the 14 or 70 EMA, which may suggest a bullish continuation from dynamic support levels.
+    </p>
+
+    <p>
+      🔁 EMA14 Bounce:{" "}
+      <span className={data.ema14Bounce ? "text-green-400" : "text-red-400"}>
+        {data.ema14Bounce ? "Yes" : "No"}
+      </span>
+    </p>
+
+    <p>
+      🟡 EMA70 Bounce:{" "}
+      <span className={data.ema70Bounce ? "text-green-400" : "text-red-400"}>
+        {data.ema70Bounce ? "Yes" : "No"}
+      </span>
+    </p>
+  </div>
+)}
+
+          
         {/* Trade Link */}
         <div className="flex justify-center pt-4">
           <button
