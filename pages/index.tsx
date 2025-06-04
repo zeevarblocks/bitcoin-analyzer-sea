@@ -725,7 +725,7 @@ export default function SignalChecker({
 
   const refreshSignalsClient = useCallback(async () => {
   try {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT'); // Or wherever your signals endpoint is
+    const response = await fetch('SignalData'); // Or wherever your signals endpoint is
     const data = await response.json();
     setSignals(data);
   } catch (error) {
