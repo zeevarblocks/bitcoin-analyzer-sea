@@ -47,16 +47,15 @@ interface SignalData {
     index: number;
   }[];
 
-  // === Trend Extremes (REQUIRED)
-  highestHighInBullish: number;
-  bullishTimestamp: number;
-  lowestLowInBearish: number;
-  bearishTimestamp: number;
+
+  keyResistance: number | null,        // highest local peak of EMA14
+  resistanceTimestamp: number | null,  // when it occurred
+  keySupport: number | null,           // lowest local valley of EMA14
+  supportTimestamp: number | null,     // when it occurred
+
 
   // === Metadata ===
   url: string;
-  timeframe?: '1D' | '1W' | '2W';
-  updatedAt?: string;
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -587,36 +586,41 @@ function findRecentCrossings(
   return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
-// Utility function to compute trend extremes
-function getTrendExtreme(candles: Candle[]) {
-  let bullishPeak = { value: Number.NEGATIVE_INFINITY, timestamp: null as number | null };
-  let bearishLow = { value: Number.POSITIVE_INFINITY, timestamp: null as number | null };
 
-  for (const candle of candles) {
-    const { ema14, ema70, time } = candle;
+function getLocalEma14SupportResistance(candles: Candle[]) {
+  const emaPeaks: { value: number; timestamp: number }[] = [];
+  const emaValleys: { value: number; timestamp: number }[] = [];
 
-    if (typeof ema14 !== 'number' || typeof ema70 !== 'number') continue;
+  for (let i = 1; i < candles.length - 1; i++) {
+    const prev = candles[i - 1].ema14;
+    const curr = candles[i].ema14;
+    const next = candles[i + 1].ema14;
 
-    // Bullish trend: EMA14 > EMA70
-    if (ema14 > ema70 && ema14 > bullishPeak.value) {
-      bullishPeak.value = ema14;
-      bullishPeak.timestamp = time;
+    // Skip if any value is invalid
+    if ([prev, curr, next].some(v => typeof v !== 'number')) continue;
+
+    // Local peak (resistance)
+    if (curr > prev && curr > next) {
+      emaPeaks.push({ value: curr, timestamp: candles[i].time });
     }
 
-    // Bearish trend: EMA14 < EMA70
-    if (ema14 < ema70 && ema14 < bearishLow.value) {
-      bearishLow.value = ema14;
-      bearishLow.timestamp = time;
+    // Local valley (support)
+    if (curr < prev && curr < next) {
+      emaValleys.push({ value: curr, timestamp: candles[i].time });
     }
   }
 
+  // Get the most extreme values (most significant levels)
+  const highestPeak = emaPeaks.reduce((a, b) => (a.value > b.value ? a : b), { value: -Infinity, timestamp: 0 });
+  const lowestValley = emaValleys.reduce((a, b) => (a.value < b.value ? a : b), { value: Infinity, timestamp: 0 });
+
   return {
-    highestHighInBullish: bullishPeak.value,
-    bullishTimestamp: bullishPeak.timestamp,
-    lowestLowInBearish: bearishLow.value,
-    bearishTimestamp: bearishLow.timestamp,
+    keyResistance: highestPeak.value === -Infinity ? null : highestPeak.value,
+    resistanceTimestamp: highestPeak.timestamp || null,
+    keySupport: lowestValley.value === Infinity ? null : lowestValley.value,
+    supportTimestamp: lowestValley.timestamp || null,
   };
-}
+                                }
 
 
 
@@ -794,14 +798,10 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-const trendExtremes = getTrendExtreme(candles);  // candles must be defined in scope
-              
-   const {
-    highestHighInBullish,
-    bullishTimestamp,
-    lowestLowInBearish,
-    bearishTimestamp,
-  } = getTrendExtreme(candles);
+const emaExtremes = getLocalEma14SupportResistance(candles);
+
+console.log("Key Resistance Level:", keyLevels.keyResistance, "at", keyLevels.resistanceTimestamp);
+console.log("Key Support Level:", keyLevels.keySupport, "at", keyLevels.supportTimestamp);
 
 
 
@@ -841,11 +841,12 @@ const trendExtremes = getTrendExtreme(candles);  // candles must be defined in s
   continuationReason,
   recentCrossings,
 
-  // 🔼 Trend extremes (based on 15m candles)
-  highestHighInBullish,
-  bullishTimestamp,
-  lowestLowInBearish,
-  bearishTimestamp,
+  
+  keyResistance,        // highest local peak of EMA14
+  resistanceTimestamp,  // when it occurred
+  keySupport,           // lowest local valley of EMA14
+  supportTimestamp,     // when it occurred
+
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -1391,29 +1392,29 @@ return (
   </div>
 )}
 
-          {trendExtremes && (
+          {emaExtremes && (
   <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📊 Trend Signals</h3>
+    <h3 className="text-lg font-semibold text-white">📊 EMA14 Curve Signals</h3>
 
-    {trendExtremes.highestHighInBullish > 0 && (
-      <p className="text-green-400">
-        🟢 <span className="font-medium">Bullish EMA14 Peak</span>:{" "}
+    {emaExtremes.keyResistance && (
+      <p className="text-red-400">
+        🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
         <span className="font-semibold">
-          {trendExtremes.highestHighInBullish.toFixed(2)}{" "}
+          {emaExtremes.keyResistance.toFixed(2)}{" "}
           <span className="text-white/70">
-            @ {new Date(trendExtremes.bullishTimestamp).toLocaleString()}
+            @ {new Date(emaExtremes.resistanceTimestamp).toLocaleString()}
           </span>
         </span>
       </p>
     )}
 
-    {trendExtremes.lowestLowInBearish > 0 && (
-      <p className="text-red-400">
-        🔴 <span className="font-medium">Bearish EMA14 Low</span>:{" "}
+    {emaExtremes.keySupport && (
+      <p className="text-green-400">
+        🟢 <span className="font-medium">EMA14 Support</span>:{" "}
         <span className="font-semibold">
-          {trendExtremes.lowestLowInBearish.toFixed(2)}{" "}
+          {emaExtremes.keySupport.toFixed(2)}{" "}
           <span className="text-white/70">
-            @ {new Date(trendExtremes.bearishTimestamp).toLocaleString()}
+            @ {new Date(emaExtremes.supportTimestamp).toLocaleString()}
           </span>
         </span>
       </p>
