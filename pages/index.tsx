@@ -653,7 +653,13 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-export default function SignalChecker({ signals }: { signals: Record<string, SignalData> }) {
+export default function SignalChecker({
+  signals,
+  refreshSignals,
+}: {
+  signals: Record<string, SignalData>;
+  refreshSignals: () => void;
+})  {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -664,7 +670,7 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [signals, setSignals] = useState<Record<string, SignalData>>({});
+  
 
 
   const filteredPairs = pairs.filter((pair) =>
@@ -700,6 +706,8 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       setIsLoadingPairs(false);
     }
   }, [signals]);
+
+const [signals, setSignals] = useState<Record<string, SignalData>>({});
 
 const fetchSignals = async () => {
   try {
