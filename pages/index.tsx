@@ -767,10 +767,10 @@ type FilterType =
 
 export default function SignalChecker({
   signals,
-  refreshSignals,
+  defaultSignals,
 }: {
   signals: Record<string, SignalData>;
-  refreshSignals: () => void;
+  defaultSignals: SignalData[];
 }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
