@@ -800,10 +800,8 @@ if (type && level !== null) {
 
 const emaExtremes = getLocalEma14SupportResistance(candles);
 
-console.log("Key Resistance Level:", keyLevels.keyResistance, "at", keyLevels.resistanceTimestamp);
-console.log("Key Support Level:", keyLevels.keySupport, "at", keyLevels.supportTimestamp);
-
-
+console.log("Key Resistance Level:", emaExtremes.keyResistance, "at", emaExtremes.resistanceTimestamp);
+console.log("Key Support Level:", emaExtremes.keySupport, "at", emaExtremes.supportTimestamp);
 
       signals[symbol] = {
   trend,
