@@ -636,7 +636,7 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
     .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
     .slice(0, limit);
 
-  return usdtPerpFutures.map((ticker: any) => ticker.instId);
+  return sorted.map((ticker: any) => ticker.instId);
 }
 
 const symbols = await fetchTopPairs(100);
@@ -1412,7 +1412,7 @@ return (
           <span className="font-semibold">
             {data.keyResistance.toFixed(2)}{" "}
             <span className="text-white/70">
-              @ {new Date(data.resistanceTimestamp).toLocaleString()}
+              @ {new Date(data.resistanceTimestamp).map()}
             </span>
           </span>
         </p>
@@ -1424,7 +1424,7 @@ return (
           <span className="font-semibold">
             {data.keySupport.toFixed(2)}{" "}
             <span className="text-white/70">
-              @ {new Date(data.supportTimestamp).toLocaleString()}
+              @ {new Date(data.supportTimestamp).map()}
             </span>
           </span>
         </p>
