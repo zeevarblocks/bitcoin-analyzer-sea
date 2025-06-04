@@ -1379,43 +1379,29 @@ return (
 )}
 
   
-  <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl p-6 shadow-xl border border-gray-700/60">
-    <h2 className="text-xl font-bold text-white mb-6 tracking-wide flex items-center gap-2">
-      📊 <span className="text-indigo-400">EMA14 Trend Extremes</span>
-    </h2>
+  {(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
+  <div className="pt-4 border-t border-white/10 space-y-2">
+    <h3 className="text-lg font-semibold text-white">📈 Trend Signals</h3>
 
-    <div className="space-y-5">
-      {/* Bullish */}
-      <div className="bg-gradient-to-r from-green-800/30 to-green-900/20 border border-green-600/30 p-4 rounded-lg shadow-inner">
-        <p className="text-green-400 font-semibold mb-1">🟢 Bullish Trend High</p>
-        {highestHighInBullish !== Number.NEGATIVE_INFINITY ? (
-          <p className="text-sm text-green-200">
-            EMA14 reached <strong className="text-green-300">{highestHighInBullish.toFixed(2)}</strong>
-            {bullishTimestamp && (
-              <> on <span className="italic text-green-400">{bullishTimestamp}</span></>
-            )}
-          </p>
-        ) : (
-          <p className="text-sm text-gray-400">No bullish data available.</p>
-        )}
-      </div>
+    {highestHighInBullish !== Number.NEGATIVE_INFINITY && (
+      <p className="text-green-400">
+        🟢 Bullish Trend High:{' '}
+        <span className="font-semibold">
+          {highestHighInBullish.toFixed(2)} at {bullishTimeString}
+        </span>
+      </p>
+    )}
 
-      {/* Bearish */}
-      <div className="bg-gradient-to-r from-red-800/30 to-red-900/20 border border-red-600/30 p-4 rounded-lg shadow-inner">
-        <p className="text-red-400 font-semibold mb-1">🔴 Bearish Trend Low</p>
-        {lowestLowInBearish !== Number.POSITIVE_INFINITY ? (
-          <p className="text-sm text-red-200">
-            EMA14 dropped to <strong className="text-red-300">{lowestLowInBearish.toFixed(2)}</strong>
-            {bearishTimestamp && (
-              <> on <span className="italic text-red-400">{bearishTimestamp}</span></>
-            )}
-          </p>
-        ) : (
-          <p className="text-sm text-gray-400">No bearish data available.</p>
-        )}
-      </div>
-    </div>
+    {lowestLowInBearish !== Number.POSITIVE_INFINITY && (
+      <p className="text-red-400">
+        🔴 Bearish Trend Low:{' '}
+        <span className="font-semibold">
+          {lowestLowInBearish.toFixed(2)} at {bearishTimeString}
+        </span>
+      </p>
+    )}
   </div>
+)}
 
           
           
