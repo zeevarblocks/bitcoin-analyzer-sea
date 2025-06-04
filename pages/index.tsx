@@ -48,12 +48,11 @@ interface SignalData {
   }[];
 
   // === Trend Extremes (NEW)
-  trendExtremes?: {
-      highestHighInBullish?: number;
+  
+  highestHighInBullish?: number;
   bullishTimestamp?: number;
   lowestLowInBearish?: number;
   bearishTimestamp?: number;
-  };
 
   // === Metadata ===
   url: string;
