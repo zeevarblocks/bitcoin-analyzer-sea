@@ -626,19 +626,19 @@ function getLocalEma14SupportResistance(candles: Candle[]) {
 
 
 // logic in getServerSideProps:
-export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 100): Promise<string[]> {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
-    const data = await response.json();
+async function fetchTopPairs(limit = 100): Promise<string[]> {
+  const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=FUTURES');
+  const data = await response.json();
 
-    const sorted = data.data
-      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .slice(0, limit);
+  const usdtPerpFutures = data.data
+    .filter((ticker: any) => ticker.instId.endsWith("USDT") && ticker.instId.includes("PERP"))
+    .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+    .slice(0, limit);
 
-    return sorted.map((ticker: any) => ticker.instId);
-  }
+  return usdtPerpFutures.map((ticker: any) => ticker.instId);
+}
 
-  const symbols = await fetchTopPairs(100);
+const symbols = await fetchTopPairs(100);
 
   const signals: Record<string, SignalData> = {};
 
