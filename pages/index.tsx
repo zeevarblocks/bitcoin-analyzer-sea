@@ -977,8 +977,7 @@ return (
   >
     {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
   </button>
-</div>
-          </div>
+            </div>
            
               <div className="space-y-1">
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
