@@ -614,7 +614,6 @@ if (trend === 'bearish') {
     ema70,
     rsi14,
     ema14,
-    undefined // or provide actual PointA if available
   );
 
   bearishContinuation = continuation;
@@ -633,7 +632,6 @@ if (trend === 'bullish') {
     ema70,
     rsi14,
     ema14,
-    undefined // or provide actual PointA if available
   );
 
   bullishContinuation = continuation;
