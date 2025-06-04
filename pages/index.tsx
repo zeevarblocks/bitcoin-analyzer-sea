@@ -728,7 +728,7 @@ export default function SignalChecker({
   const handleRefresh = async () => {
   setIsRefreshing(true);
   try {
-    await refreshSignals(); // Only refresh signal data
+    await signals(); // Only refresh signal data
   } catch (error) {
     console.error('Error refreshing signals:', error);
   } finally {
@@ -968,7 +968,7 @@ return (
         </button>
             <button
   onClick={() => {
-    refreshSignals(); // Refresh signal data from API
+    signals(); // Refresh signal data from API
   }}
   disabled={isLoadingPairs}
   className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
