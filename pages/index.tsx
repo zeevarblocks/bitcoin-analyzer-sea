@@ -38,12 +38,14 @@ interface SignalData {
 
 // fetchCandles, calculateEMA, etc.,.
 interface Candle {
-  timestamp: number;
+  time: string;
   open: number;
   high: number;
   low: number;
   close: number;
   volume: number;
+  ema14: number;
+  ema70: number;
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
@@ -764,16 +766,22 @@ if (type && level !== null) {
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
       
       for (const candle of candles) {
-  if (candle.ema14 > candle.ema70 && candle.ema14 > highestHighInBullish) {
-    highestHighInBullish = candle.ema14;
-    bullishTimestamp = candle.time;
-  }
+  const { ema14, ema70, time } = candle;
 
-  if (candle.ema14 < candle.ema70 && candle.ema14 < lowestLowInBearish) {
-    lowestLowInBearish = candle.ema14;
-    bearishTimestamp = candle.time;
+  if (typeof ema14 === 'number' && typeof ema70 === 'number') {
+    // 🟢 Bullish Trend: EMA14 above EMA70, track highest high
+    if (ema14 > ema70 && ema14 > highestHighInBullish) {
+      highestHighInBullish = ema14;
+      bullishTimestamp = time;
+    }
+
+    // 🔴 Bearish Trend: EMA14 below EMA70, track lowest low
+    if (ema14 < ema70 && ema14 < lowestLowInBearish) {
+      lowestLowInBearish = ema14;
+      bearishTimestamp = time;
+    }
   }
-      }
+  }
 
       signals[symbol] = {
   trend,
