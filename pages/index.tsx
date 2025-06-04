@@ -653,44 +653,70 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+type SignalData = {
+  currentPrice: number;
+  bullishContinuation?: boolean;
+  bearishContinuation?: boolean;
+  continuationEnded?: boolean;
+  divergence?: boolean;
+  nearOrAtEMA70Divergence?: boolean;
+  divergenceFromLevel?: boolean;
+  // add other properties as needed
+};
+
+type FilterType =
+  | null
+  | 'bullishContinuation'
+  | 'bearishContinuation'
+  | 'continuationEnded'
+  | 'divergence'
+  | 'nearOrAtEMA70Divergence'
+  | 'divergenceFromLevel';
+
 export default function SignalChecker({
   signals,
   refreshSignals,
 }: {
   signals: Record<string, SignalData>;
   refreshSignals: () => void;
-})  {
+}) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [isLoadingPairs, setIsLoadingPairs] = useState(true);
-  const [activeFilter, setActiveFilter] = useState(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const containerRef = useRef(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
 
-
+  // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
-    pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
+    pair.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
-  // Move fetchPairs outside useEffect and wrap with useCallback for stable reference
+
+  // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
     try {
-      const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+      const response = await fetch(
+        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+      );
       const data = await response.json();
       const sortedPairs = data.data
-        .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+        .sort(
+          (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
+        )
         .map((item: any) => item.instId);
 
       setPairs(sortedPairs);
 
       const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-      const validSaved = savedPairs.filter((pair: string) => signals?.[pair]?.currentPrice !== undefined);
+      const validSaved = savedPairs.filter(
+        (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      );
 
       if (validSaved.length > 0) {
         setSelectedPairs(validSaved);
@@ -707,22 +733,6 @@ export default function SignalChecker({
     }
   }, [signals]);
 
-const fetchSignals = async () => {
-  try {
-    const res = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT'); // Replace with your actual endpoint
-    const data = await res.json();
-    setSignals(data); // Update state
-  } catch (err) {
-    console.error('Failed to fetch signals:', err);
-  }
-};
-
-// Fetch on mount
-useEffect(() => {
-  fetchSignals();
-}, []);
-  
-
   // Fetch pairs on mount and every 5 minutes
   useEffect(() => {
     fetchPairs();
@@ -730,36 +740,32 @@ useEffect(() => {
     return () => clearInterval(intervalId);
   }, [fetchPairs]);
 
+  // Persist selected pairs in localStorage
   useEffect(() => {
     if (selectedPairs.length > 0) {
       localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
     }
   }, [selectedPairs]);
 
+  // Load favorites from localStorage on mount
   useEffect(() => {
     const fav = JSON.parse(localStorage.getItem('favoritePairs') || '[]');
     setFavorites(fav);
   }, []);
 
+  // Persist favorites in localStorage
   useEffect(() => {
     localStorage.setItem('favoritePairs', JSON.stringify(favorites));
   }, [favorites]);
 
-  
-
+  // Toggle favorite state for a symbol
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
       prev.includes(symbol) ? prev.filter((s) => s !== symbol) : [...prev, symbol]
     );
   };
 
-  const filteredSignals = selectedPairs.reduce((acc, pair) => {
-    if (signals[pair]) {
-      acc[pair] = signals[pair];
-    }
-    return acc;
-  }, {} as Record<string, SignalData>);
-
+  // Filter signals for display
   const filteredDisplaySignals = Object.entries(signals || {})
     .filter(([symbol]) => selectedPairs.includes(symbol))
     .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
@@ -768,7 +774,8 @@ useEffect(() => {
       if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
       if (activeFilter === 'continuationEnded') return data.continuationEnded;
       if (activeFilter === 'divergence') return data.divergence;
-      if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
+      if (activeFilter === 'nearOrAtEMA70Divergence')
+        return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       return true;
     });
@@ -776,14 +783,18 @@ useEffect(() => {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setDropdownVisible(false);
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [containerRef]);
+  }, []);
+
   
 return (
   <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
