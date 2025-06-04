@@ -653,17 +653,6 @@ if (type && level !== null) {
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-type SignalData = {
-  currentPrice: number;
-  bullishContinuation?: boolean;
-  bearishContinuation?: boolean;
-  continuationEnded?: boolean;
-  divergence?: boolean;
-  nearOrAtEMA70Divergence?: boolean;
-  divergenceFromLevel?: boolean;
-  // add other properties as needed
-};
-
 type FilterType =
   | null
   | 'bullishContinuation'
@@ -772,10 +761,9 @@ export default function SignalChecker({
     .filter(([_, data]) => {
       if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
       if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
-      if (activeFilter === 'continuationEnded') return data.continuationEnded;
+      if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
       if (activeFilter === 'divergence') return data.divergence;
-      if (activeFilter === 'nearOrAtEMA70Divergence')
-        return data.nearOrAtEMA70Divergence;
+      if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       return true;
     });
@@ -929,11 +917,11 @@ return (
   </button>
 
   <button
-    onClick={() => setActiveFilter('divergenceFromLevel')}
+    onClick={() => setActiveFilter('ema70Bounce')}
     className="bg-gray-800 hover:bg-purple-700 text-purple-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>⚠️</span>
-    <span>divergenceFromLevel</span>
+    <span>ema70Bounce</span>
   </button>
           
           <button
@@ -1052,7 +1040,7 @@ return (
     </div>
   ) : data.ema70Bounce ? (
     <div className="text-white/70">
-      ⚠️ <span className="font-semibold">Continuation Ended</span>: No clear trend continuation.
+      ⚠️ <span className="font-semibold">EMA70 bounce detected</span>: No clear trend continuation.
       <p className="text-sm ml-4 mt-1">
         • EMA70 bounce detected<br />
         • But no valid bullish or bearish continuation<br />
