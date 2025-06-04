@@ -858,6 +858,7 @@ return (
   </div>
 
 
+  <div className="flex gap-2 flex-wrap mt-4">
   {/* Select All */}
   <button
     onClick={() =>
@@ -877,7 +878,16 @@ return (
   >
     Unselect All
   </button>
+
+  {/* Reset Toggles */}
+  <button
+    onClick={() => setToggles(defaultToggles)}
+    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
+  >
+    Reset All Toggles
+  </button>
 </div>
+  </div>
 
     
       <div className="flex items-center space-x-4">
