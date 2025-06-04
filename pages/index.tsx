@@ -834,10 +834,22 @@ export default function SignalChecker({
     }
   }, [signals]);
 
+const refreshSignals = async (filter: FilterType | null) => {
+  try {
+    const res = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const data = await res.json();
+    setSignals(data);
+  } catch (error) {
+    console.error('Failed to fetch signals', error);
+  }
+};
+  
 
   const handleRefresh = async () => {
   setIsRefreshing(true);
-  await Promise.all([fetchPairs(), refreshSignals()]);
+  await Promise.all([
+    refreshSignals(filter) // pass the selected filter here
+  ]);
   setIsRefreshing(false);
 };
 
@@ -1082,8 +1094,6 @@ return (
         </button>
                        <button
   onClick={() => {
-    SignalChecker();
-    fetchPairs();
     refreshSignals(); // Refresh signal data from API
   }}
   disabled={isLoadingPairs}
