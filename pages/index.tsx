@@ -765,8 +765,6 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-const candles: Candle[] = [...]; // your data input
-
 const {
   highestHighInBullish,
   bullishTimestamp,
