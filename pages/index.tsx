@@ -631,7 +631,7 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
   const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=FUTURES');
   const data = await response.json();
 
-  const usdtPerpFutures = data.data
+  const sorted = data.data
     .filter((ticker: any) => ticker.instId.endsWith("USDT") && ticker.instId.includes("PERP"))
     .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
     .slice(0, limit);
