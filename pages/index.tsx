@@ -1082,6 +1082,7 @@ return (
         </button>
                        <button
   onClick={() => {
+    filteredPairs();
     fetchPairs();
     refreshSignals(); // Refresh signal data from API
   }}
