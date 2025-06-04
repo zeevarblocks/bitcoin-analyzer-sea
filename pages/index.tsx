@@ -664,10 +664,11 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const containerRef = useRef(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [signals, setSignals] = useState<Record<string, SignalData>>({});
 
 
   const filteredPairs = pairs.filter((pair) =>
-    pair.toLowerCase().includes(searchTerm.toLowerCase())
+    pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
   );
   
   // Move fetchPairs outside useEffect and wrap with useCallback for stable reference
@@ -699,6 +700,22 @@ export default function SignalChecker({ signals }: { signals: Record<string, Sig
       setIsLoadingPairs(false);
     }
   }, [signals]);
+
+const fetchSignals = async () => {
+  try {
+    const res = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT'); // Replace with your actual endpoint
+    const data = await res.json();
+    setSignals(data); // Update state
+  } catch (err) {
+    console.error('Failed to fetch signals:', err);
+  }
+};
+
+// Fetch on mount
+useEffect(() => {
+  fetchSignals();
+}, []);
+  
 
   // Fetch pairs on mount and every 5 minutes
   useEffect(() => {
@@ -848,13 +865,12 @@ return (
   </button>
 </div>
 <button
-  onClick={fetchPairs}
+  onClick={() => {
+    fetchPairs();         // Refresh trading pairs
+    refreshSignals();     // Refresh signal data from API
+  }}
   disabled={isLoadingPairs}
-  className={`px-4 py-2 rounded-md font-medium transition ${
-    isLoadingPairs
-      ? 'bg-gray-700 text-gray-400 cursor-not-allowed animate-pulse'
-      : 'bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10'
-  }`}
+  ...
 >
   {isLoadingPairs ? 'Refreshing...' : '🔄 Refresh'}
 </button>
