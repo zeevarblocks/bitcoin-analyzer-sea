@@ -760,6 +760,16 @@ if (type && level !== null) {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+
+      
+// Example: Compute or retrieve these from your data somewhere before JSX
+const highestHighInBullish = data.highestHighInBullish ?? Number.NEGATIVE_INFINITY;
+const lowestLowInBearish = data.lowestLowInBearish ?? Number.POSITIVE_INFINITY;
+
+// Also prepare time strings for display
+const bullishTimeString = data.bullishHighTime || "N/A";
+const bearishTimeString = data.bearishLowTime || "N/A";
+      
       
       // Declare variables outside the loop, with correct types
 let highestHighInBullish: number = Number.NEGATIVE_INFINITY;
@@ -1379,7 +1389,7 @@ return (
 )}
 
   
-  {(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
+{(highestHighInBullish !== Number.NEGATIVE_INFINITY || lowestLowInBearish !== Number.POSITIVE_INFINITY) && (
   <div className="pt-4 border-t border-white/10 space-y-2">
     <h3 className="text-lg font-semibold text-white">📈 Trend Signals</h3>
 
