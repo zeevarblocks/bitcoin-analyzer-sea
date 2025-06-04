@@ -37,15 +37,17 @@ interface SignalData {
 }
 
 // fetchCandles, calculateEMA, etc.,.
+// Somewhere in your types.ts or in the component file
 interface Candle {
-  time: string;
   open: number;
   high: number;
   low: number;
   close: number;
   volume: number;
-  ema14: number;
-  ema70: number;
+  ema14?: number;
+  ema70?: number;
+  time: number; // or string depending on your source
+  timestamp: number; // ✅ Add this if timestamp exists
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
