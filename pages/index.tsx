@@ -678,6 +678,13 @@ export default function SignalChecker({
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
+  const resetToggles = () => {
+  setSelectedPairs([]);
+  setFavorites([]);
+  setActiveFilter(null);
+  localStorage.removeItem('selectedPairs');
+  localStorage.removeItem('favoritePairs');
+};
   
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -881,7 +888,7 @@ return (
 
   {/* Reset Toggles */}
   <button
-    onClick={() => setToggles(defaultToggles)}
+    onClick={() => resetToggles()}
     className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Reset All Toggles
@@ -972,9 +979,7 @@ return (
           Unselect
         </button>
             <button
-  onClick={() => {
-      fetchPairs();  
-    refreshSignals(); // Refresh signal data from API
+  onClick={(handleRefresh) => {
   }}
   disabled={isLoadingPairs}
   className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
