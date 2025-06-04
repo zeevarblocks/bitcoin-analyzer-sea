@@ -799,9 +799,17 @@ if (type && level !== null) {
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
 const emaExtremes = getLocalEma14SupportResistance(candles);
+const emaExtremes = getLocalEma14SupportResistance(candles);
 
-console.log("Key Resistance Level:", emaExtremes.keyResistance, "at", emaExtremes.resistanceTimestamp);
-console.log("Key Support Level:", emaExtremes.keySupport, "at", emaExtremes.supportTimestamp);
+const {
+  keyResistance,
+  resistanceTimestamp,
+  keySupport,
+  supportTimestamp,
+} = emaExtremes;
+
+console.log("Key Resistance Level:", keyResistance, "at", resistanceTimestamp);
+console.log("Key Support Level:", keySupport, "at", supportTimestamp);
 
       signals[symbol] = {
   trend,
