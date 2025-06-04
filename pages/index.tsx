@@ -21,14 +21,18 @@ interface SignalData {
   touchedEMA70Today: boolean;
   bearishContinuation: boolean;
   bullishContinuation: boolean;
-  cleanTrendContinuation: boolean; // ✅ Confirmed continuation with clean trend
-  continuationEnded: boolean;      // ✅ NEW: true if clean continuation broke
-  continuationReason?: string;     // 👈 Added property to hold reason why continuation ended
+  cleanTrendContinuation: boolean;       // ✅ Confirmed continuation with clean trend
+  continuationEnded: boolean;            // ✅ NEW: true if clean continuation broke
+  continuationReason?: string;           // 👈 Reason why continuation ended
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
-  recentCrossings: recentCrossings,
+  recentCrossings?: {                    // ✅ NEW: Last 2–3 EMA14–EMA70 crosses
+    type: 'bullish' | 'bearish';
+    price: number;
+    index: number;                       // index in the price array
+  }[];
   url: string;
 }
 
