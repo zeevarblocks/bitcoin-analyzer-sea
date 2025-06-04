@@ -1236,15 +1236,7 @@ return (
       Recent candles have bounced above both the 14 and 70 EMA. This often indicates a consolidation zone where price is stabilizing between short- and medium-term averages.
     </p>
 
-    <p>
-      🔁 EMA14 Bounce:{" "}
-      <span className="text-green-400">Yes</span>
-    </p>
-
-    <p>
-      🟡 EMA70 Bounce:{" "}
-      <span className="text-green-400">Yes</span>
-    </p>
+    <p className="text-green-400 text-lg font-semibold">✅ Yes</p>
   </div>
 )}
 
