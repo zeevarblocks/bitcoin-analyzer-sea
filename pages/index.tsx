@@ -657,7 +657,7 @@ type FilterType =
   | null
   | 'bullishContinuation'
   | 'bearishContinuation'
-  | 'continuationEnded'
+  | 'ema70Bounce'
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel';
