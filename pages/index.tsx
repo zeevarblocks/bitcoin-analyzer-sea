@@ -883,7 +883,7 @@ export default function SignalChecker({
 
   const handleRefresh = async () => {
   setIsRefreshing(true);
-  await Promise.all([fetchPairs(), refreshSignals()]);
+  await Promise.all([fetchPairs()]);
   setIsRefreshing(false);
 };
 
