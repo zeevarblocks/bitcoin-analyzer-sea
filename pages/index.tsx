@@ -28,6 +28,7 @@ interface SignalData {
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
+  recentCrossings: recentCrossings,
   url: string;
 }
 
@@ -520,7 +521,44 @@ function detectBullishContinuationWithEnd(
 
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
                                        }
-        
+function findRecentCrossings(
+  ema14: number[],
+  ema70: number[],
+  closes: number[]
+): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
+  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+
+  for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    // Bullish crossover
+    if (prev14 < prev70 && curr14 >= curr70) {
+      crossings.push({
+        type: 'bullish',
+        price: closes[i],
+        index: i,
+      });
+    }
+
+    // Bearish crossover
+    if (prev14 > prev70 && curr14 <= curr70) {
+      crossings.push({
+        type: 'bearish',
+        price: closes[i],
+        index: i,
+      });
+    }
+  }
+
+  return crossings.reverse(); // So it's ordered from oldest to newest
+}
+
+
+
+
 
 
 
@@ -695,6 +733,8 @@ if (type && level !== null) {
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+
       signals[symbol] = {
   trend,
   breakout,
@@ -729,6 +769,7 @@ if (type && level !== null) {
     (trend === 'bullish' && bullishContinuation),
   continuationEnded,    // NEW: indicates if continuation ended/broke
   continuationReason,   // NEW: reason why continuation ended (optional)
+  recentCrossings,
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -763,11 +804,13 @@ type FilterType =
   | 'emaBounce'               // combined EMA14 & EMA70 bounce filter
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
-  | 'divergenceFromLevel';
+  | 'divergenceFromLevel'
+  |	'recentCrossings';
 
 export default function SignalChecker({
   signals,
   defaultSignals,
+  setSignals,
 }: {
   signals: Record<string, SignalData>;
   defaultSignals: SignalData[];
@@ -892,7 +935,7 @@ const refreshSignals = async (filter: FilterType | null) => {
     .filter(([_, data]) => {
       if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
       if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
-      if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
+      if (activeFilter === 'recentCrossings') return data.recentCrossings;
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
@@ -1064,11 +1107,11 @@ return (
 </button>
 
           <button
-  onClick={() => setActiveFilter('emaBounce')}
+  onClick={() => setActiveFilter('recentCrossings')}
   className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>emaBounce</span>
+  <span>recentCrossings</span>
 </button>
                
 </div>
@@ -1258,6 +1301,19 @@ return (
   </div>
 )}
 
+{data.recentCrossings?.length > 0 && (
+  <div>
+    <p className="font-semibold">🔄 Recent EMA Crossings:</p>
+    <ul className="ml-4 list-disc text-sm">
+      {data.recentCrossings.map((cross, idx) => (
+        <li key={idx}>
+          {cross.type === 'bullish' ? '🟢 Bullish' : '🔴 Bearish'} at {cross.price.toFixed(2)}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+          
           
         {/* Trade Link */}
         <div className="flex justify-center pt-4">
