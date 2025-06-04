@@ -1129,7 +1129,6 @@ return (
                        <button
   onClick={() => {
     fetchPairs();
-    refreshSignals(); // Refresh signal data from API
   }}
   disabled={isLoadingPairs}
   className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
