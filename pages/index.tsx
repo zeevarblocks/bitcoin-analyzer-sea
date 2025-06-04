@@ -724,15 +724,6 @@ export default function SignalChecker({
     }
   }, [signals]);
 
-  const refreshSignalsClient = useCallback(async () => {
-  try {
-    const response = await fetch('FilterType'); // Or wherever your signals endpoint is
-    const data = await response.json();
-    setSignals(data);
-  } catch (error) {
-    console.error('Error refreshing signals:', error);
-  }
-}, []);
 
   const handleRefresh = async () => {
   setIsRefreshing(true);
@@ -977,7 +968,7 @@ return (
         </button>
             <button
   onClick={() => {
-    refreshSignalsClient(); // Refresh signal data from API
+    refreshSignals(); // Refresh signal data from API
   }}
   disabled={isLoadingPairs}
   className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
