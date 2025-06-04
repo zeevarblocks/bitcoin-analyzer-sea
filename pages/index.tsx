@@ -1216,10 +1216,9 @@ return (
   </div>
 )}
           
-    
-<div className="pt-4 border-t border-white/10 space-y-4">
-  <h3 className="text-lg font-semibold text-white">🔍 RSI Divergence Signal: Monitoring for Reversal Setup</h3>
-  {data.divergence && (
+    {data.divergence && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">🔍 Monitoring for Reversal Setup</h3>
     <div className="text-purple-400 space-y-2">
       ⚠️ <span className="font-semibold">Classic {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} RSI Divergence</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1228,8 +1227,9 @@ return (
         • Watch for volume spikes, candlestick confirmation, or trendline breaks
       </p>
     </div>
-  )}
-</div>
+  </div>
+)}
+
 
           {activeFilter === 'emaBounce' && (
   <div className="pt-4 border-t border-white/10 space-y-4">
