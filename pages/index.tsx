@@ -871,7 +871,7 @@ console.log("Key Support Level:", keySupport, "at", supportTimestamp);
       defaultSymbol,
     },
   };
-        }
+        
 
 
 // In the component SignalChecker, just render the two new fields like this:
