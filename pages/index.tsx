@@ -929,7 +929,7 @@ export default function SignalChecker({
     setIsLoadingPairs(true);
     try {
       const response = await fetch(
-        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+        'https://www.okx.com/api/v5/market/tickers?instType=FUTURES'
       );
       const data = await response.json();
       const sortedPairs = data.data
