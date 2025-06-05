@@ -1315,7 +1315,6 @@ return (
 </div>
           
 {/* 📉 RSI Divergence Evidence */}
-{(data.divergenceFromLevel || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -1365,7 +1364,7 @@ return (
   </div>
 )}
 
-      {activeFilter === 'emaBounce' && (
+      
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
     <p className="text-sm text-white/80">
@@ -1381,7 +1380,7 @@ return (
       )}
     </div>
   </div>
-)}
+}
   
 
   {/* 🔄 Recent EMA Crossings */}
