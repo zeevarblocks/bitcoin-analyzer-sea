@@ -1385,27 +1385,6 @@ return (
   </div>
 )}
 
-{/* 🔁 EMA14 Filter */}
-{activeFilter === 'ema14Bounce' && data?.ema14Bounce === true && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">🔁 EMA14 Bounce Detected</h3>
-    <p className="text-sm text-white/70 ml-4 mt-1">
-      • Price recently bounced off the 14 EMA<br />
-      • Suggests short-term support and trend continuation
-    </p>
-  </div>
-)}
-
-{/* 🟡 EMA70 Filter */}
-{activeFilter === 'ema70Bounce' && data?.ema70Bounce === true && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">🟡 EMA70 Bounce Detected</h3>
-    <p className="text-sm text-white/70 ml-4 mt-1">
-      • Price recently bounced off the 70 EMA<br />
-      • Indicates mid-term support or consolidation near trend baseline
-    </p>
-  </div>
-)}
 
 {/* 🟦 Default: Show any true EMA bounces (if no filter active) */}
 {!activeFilter && (data?.ema14Bounce || data?.ema70Bounce) && (
