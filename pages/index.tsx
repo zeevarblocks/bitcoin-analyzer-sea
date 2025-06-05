@@ -822,6 +822,9 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
+	      let trend: TrendSignal['trend'] = 'neutral';
+  let signal: TrendSignal['signal'] = 'no_signal';
+  let lastCrossIndex: number | null = null;
 	    const trendSignal = detectTrendAndSignal(candles);
 console.log(trendSignal.trend);  // 'bullish', 'bearish', or 'neutral'
 console.log(trendSignal.signal); // 'trend_continue', 'trend_stop', or 'no_signal'
