@@ -3,6 +3,7 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
+
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
@@ -19,11 +20,11 @@ interface SignalData {
   ema70Bounce: boolean;
 
   // === Continuation Logic ===
-  bullishContinuation: boolean;
-  bearishContinuation: boolean;
-  cleanTrendContinuation: boolean;
-  continuationEnded: boolean;
-  continuationReason?: string;
+  bullishContinuation: boolean;  // true if bullish trend is continuing with higher highs
+  bearishContinuation: boolean;  // true if bearish trend is continuing with lower lows
+  cleanTrendContinuation: boolean; // if trend continuation is confirmed without contradictions
+  continuationEnded: boolean;      // true if the trend continuation has stopped (trend exhaustion)
+  continuationReason?: string;     // explanation for why continuation ended, e.g. "price failed higher highs"
 
   // === Support/Resistance Zones ===
   level: number | null;
@@ -47,12 +48,9 @@ interface SignalData {
     index: number;
   }[];
 
-    // Inject EMA14 extremes here:
-  keyResistance: emaExtremes.keyResistance,
-  resistanceTimestamp: emaExtremes.resistanceTimestamp,
-  keySupport: emaExtremes.keySupport,
-  supportTimestamp: emaExtremes.supportTimestamp,
-	
+  // === Trend/Signal Detection from EMA14/EMA70 + price pattern ===
+  trendSignal?: 'trend_continue' | 'trend_stop' | 'no_signal';  // new field for signal type from trend detection
+
   // === Metadata ===
   url: string;
 }
@@ -585,6 +583,71 @@ function findRecentCrossings(
   return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
+function detectTrendAndSignal(candles: Candle[]): TrendSignal {
+  if (candles.length < 2) return { trend: 'neutral', signal: 'no_signal', lastCrossIndex: null };
+
+  let trend: Trend = 'neutral';
+  let signal: Signal = 'no_signal';
+  let lastCrossIndex: number | null = null;
+
+  // Find the last EMA14/EMA70 crossing
+  for (let i = candles.length - 1; i > 0; i--) {
+    const prevEma14 = candles[i - 1].ema14;
+    const prevEma70 = candles[i - 1].ema70;
+    const currEma14 = candles[i].ema14;
+    const currEma70 = candles[i].ema70;
+
+    if (prevEma14 <= prevEma70 && currEma14 > currEma70) {
+      // Bullish cross detected
+      trend = 'bullish';
+      lastCrossIndex = i;
+      break;
+    }
+    if (prevEma14 >= prevEma70 && currEma14 < currEma70) {
+      // Bearish cross detected
+      trend = 'bearish';
+      lastCrossIndex = i;
+      break;
+    }
+  }
+
+  if (lastCrossIndex === null) {
+    // No cross found, return neutral
+    return { trend: 'neutral', signal: 'no_signal', lastCrossIndex };
+  }
+
+  // Check price and EMA14 trend after last cross
+  const recentCandles = candles.slice(lastCrossIndex);
+
+  // Helpers for higher high and lower low checks
+  const isHigherHighs = (arr: number[]) =>
+    arr.every((v, i, a) => i === 0 || v > a[i - 1]);
+  const isLowerLows = (arr: number[]) =>
+    arr.every((v, i, a) => i === 0 || v < a[i - 1]);
+
+  // Extract closes and ema14 values for trend confirmation
+  const closes = recentCandles.map(c => c.close);
+  const ema14s = recentCandles.map(c => c.ema14);
+
+  if (trend === 'bullish') {
+    if (isHigherHighs(closes) && isHigherHighs(ema14s)) {
+      signal = 'trend_continue';
+    } else {
+      signal = 'trend_stop';
+    }
+  } else if (trend === 'bearish') {
+    if (isLowerLows(closes) && isLowerLows(ema14s)) {
+      signal = 'trend_continue';
+    } else {
+      signal = 'trend_stop';
+    }
+  }
+
+  return { trend, signal, lastCrossIndex };
+	  }
+
+
+
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
@@ -759,6 +822,10 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
+	    const trendSignal = detectTrendAndSignal(candles);
+console.log(trendSignal.trend);  // 'bullish', 'bearish', or 'neutral'
+console.log(trendSignal.signal); // 'trend_continue', 'trend_stop', or 'no_signal'
+
 
       signals[symbol] = {
   trend,
@@ -796,13 +863,8 @@ if (type && level !== null) {
   continuationReason,
   recentCrossings,
 
-  
-    // EMA14 extremes injected here
-  keyResistance: emaExtremes.keyResistance,
-  resistanceTimestamp: emaExtremes.resistanceTimestamp,
-  keySupport: emaExtremes.keySupport,
-  supportTimestamp: emaExtremes.supportTimestamp,
-	
+  // New trend signal field based on EMA + price HH/LL pattern detection
+  trendSignal, // e.g. 'trend_continue' | 'trend_stop' | 'no_signal'
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -1194,6 +1256,21 @@ return (
             <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
           </p>
         </div>
+		 <div className="bg-gray-900 text-gray-200 p-6 rounded-md max-w-sm mx-auto font-sans">
+      <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2">
+        📈 Trend & Signal
+      </h2>
+
+      <p className="mb-2">
+        <strong>Trend:</strong>{' '}
+        <span className={trendColor}>{trend.toUpperCase()}</span>
+      </p>
+
+      <p>
+        <strong>Signal:</strong>{' '}
+        <span className={signalColor}>{signalLabel}</span>
+      </p>
+    </div>
 
           {(data.bullishBreakout || data.bearishBreakout) && (
           <div className="pt-4 border-t border-white/10 space-y-2">
