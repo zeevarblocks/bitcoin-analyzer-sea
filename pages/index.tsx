@@ -1346,8 +1346,6 @@ return (
         </p>
       </div>
     )}
-  </div>
-)}
 
 {/* 🔍 Momentum Shift (RSI) */}
 {data.divergence && (
