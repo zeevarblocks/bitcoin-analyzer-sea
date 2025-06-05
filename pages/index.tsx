@@ -1178,6 +1178,13 @@ return (
            
               <div className="space-y-1">
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
+                <a
+  href={`https://okx.com/join/96631749?redirect=https://www.okx.com/trade-spot/${pair}`}
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  {pair}
+</a>
           <p>
             💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
             <span className="text-blue-400">
