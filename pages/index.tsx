@@ -961,11 +961,8 @@ const scrollToTop = () => {
     .filter(([symbol]) => selectedPairs.includes(symbol))
     .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
     .filter(([_, data]) => {
-      if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
       if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
-      if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
       if (activeFilter === 'bearishBreakout') return data.bearishBreakout;
-      if (activeFilter === 'recentCrossings') return data.recentCrossings;
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
@@ -1093,13 +1090,6 @@ return (
         </label>
       </div>
         <div className="flex gap-2 flex-wrap">
-<button
-  onClick={() => setActiveFilter('bullishContinuation')}
-  className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>📈</span>
-  <span>bullishContinuation</span>
-</button>
 
 <button
   onClick={() => setActiveFilter('bullishBreakout')}
@@ -1107,14 +1097,6 @@ return (
 >
   <span>🚀</span>
   <span>bullishBreakout</span>
-</button>
-
-<button
-  onClick={() => setActiveFilter('bearishContinuation')}
-  className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>📉</span>
-  <span>bearishContinuation</span>
 </button>
 
 <button
@@ -1132,14 +1114,6 @@ return (
     <span>🧱</span>
     <span>trendPullback</span>
   </button>
-
-  <button
-  onClick={() => setActiveFilter('recentCrossings')}
-  className="bg-gray-800 hover:bg-yellow-700 text-yellow-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>⚠️</span>
-  <span>recentCrossings</span>
-</button>
           
 <button
   onClick={() => setActiveFilter('nearOrAtEMA70Divergence')}
@@ -1315,6 +1289,7 @@ return (
 </div>
           
 {/* 📉 RSI Divergence Evidence */}
+{(data.divergenceFromLevel || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -1346,6 +1321,8 @@ return (
         </p>
       </div>
     )}
+  </div>
+)}
 
 {/* 🔍 Momentum Shift (RSI) */}
 {data.divergence && (
@@ -1362,26 +1339,29 @@ return (
   </div>
 )}
 
-      
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
-    <p className="text-sm text-white/80">
-      Recent candles have bounced above the 14 and/or 70 EMA. This often indicates a consolidation zone where price is stabilizing between short- and medium-term averages.
+{/* 🔁 EMA14 Bounce */}
+{data?.ema14Bounce && (activeFilter === 'ema14Bounce' || !activeFilter) && (
+  <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
+    🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
+    <p className="text-sm text-white/70 ml-4 mt-1">
+      • Price recently bounced off the 14 EMA<br />
+      • Suggests short-term support and trend continuation
     </p>
-
-    <div className="space-y-1">
-      {data.ema14Bounce && (
-            <p className="text-green-400">🔁 EMA14 Bounce: <span className="font-semibold">Yes</span></p>
-          )}
-          {data.ema70Bounce && (
-            <p className="text-yellow-300">🟡 EMA70 Bounce: <span className="font-semibold">Yes</span></p>
-          )}
-    </div>
   </div>
-}
-  
+)}
 
-  {/* 🔄 Recent EMA Crossings */}
+{/* 🟡 EMA70 Bounce */}
+{data?.ema70Bounce && (activeFilter === 'ema70Bounce' || !activeFilter) && (
+  <div className="text-yellow-400 space-y-2 pt-4 border-t border-white/10">
+    🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
+    <p className="text-sm text-white/70 ml-4 mt-1">
+      • Price recently bounced off the 70 EMA<br />
+      • Indicates mid-term support or consolidation near trend baseline
+    </p>
+  </div>
+)}
+
+{/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
     <p className="text-base font-semibold text-blue-400 mb-2">
