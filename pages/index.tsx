@@ -1357,12 +1357,16 @@ return (
 )}
 
 {(
-  // If no filter is active, show any bounce signals detected
+  // Default mode — show if any bounce
   (!activeFilter && (data?.ema14Bounce || data?.ema70Bounce)) ||
 
-  // Otherwise, show signals based on the active filter and data
+  // emaBounce mode — show only if BOTH are true
   (activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce) ||
+
+  // ema14Bounce mode — show only if ema14 is true
   (activeFilter === 'ema14Bounce' && data?.ema14Bounce) ||
+
+  // ema70Bounce mode — show only if ema70 is true
   (activeFilter === 'ema70Bounce' && data?.ema70Bounce)
 ) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
@@ -1371,16 +1375,35 @@ return (
       Signals based on recent price action bouncing off Exponential Moving Averages.
     </p>
 
-    {(!activeFilter || activeFilter === 'emaBounce') && data?.ema14Bounce && data?.ema70Bounce && (
-      <p className="text-green-400 text-lg font-semibold">🔁 Both EMA14 & EMA70 Bounce Detected</p>
+    {/* Both */}
+    {activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce && (
+      <p className="text-green-400 text-lg font-semibold">
+        🔁 Both EMA14 & EMA70 Bounce Detected
+      </p>
     )}
 
-    {(!activeFilter || activeFilter === 'ema14Bounce') && data?.ema14Bounce && (
-      <p className="text-green-400 text-lg font-semibold">🔁 EMA14 Bounce Detected</p>
+    {/* Default mode (no filter): show each separately */}
+    {!activeFilter && data?.ema14Bounce && (
+      <p className="text-green-400 text-lg font-semibold">
+        🔁 EMA14 Bounce Detected
+      </p>
+    )}
+    {!activeFilter && data?.ema70Bounce && (
+      <p className="text-yellow-300 text-lg font-semibold">
+        🟡 EMA70 Bounce Detected
+      </p>
     )}
 
-    {(!activeFilter || activeFilter === 'ema70Bounce') && data?.ema70Bounce && (
-      <p className="text-yellow-300 text-lg font-semibold">🟡 EMA70 Bounce Detected</p>
+    {/* Individual filters */}
+    {activeFilter === 'ema14Bounce' && data?.ema14Bounce && (
+      <p className="text-green-400 text-lg font-semibold">
+        🔁 EMA14 Bounce Detected
+      </p>
+    )}
+    {activeFilter === 'ema70Bounce' && data?.ema70Bounce && (
+      <p className="text-yellow-300 text-lg font-semibold">
+        🟡 EMA70 Bounce Detected
+      </p>
     )}
   </div>
 )}
