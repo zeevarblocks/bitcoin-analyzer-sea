@@ -971,6 +971,7 @@ const scrollToTop = () => {
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       if (activeFilter === 'emaBounce') {return data.ema14Bounce && data.ema70Bounce;} 
       if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
+      if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       return true;  
     });
   		
@@ -1169,6 +1170,13 @@ return (
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
   <span>ema70Bounce</span>
+</button>
+          <button
+  onClick={() => setActiveFilter('ema14Bounce')}
+  className="bg-gray-800 hover:bg-gradient-600 text-indigo-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>ema14Bounce</span>
 </button>
                
 </div>
