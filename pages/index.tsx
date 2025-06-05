@@ -1072,35 +1072,37 @@ return (
         </label>
       </div>
         <div className="flex gap-2 flex-wrap">
-  <button
-    onClick={() => setActiveFilter('bullishContinuation')}
-    className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>📈</span>
-    <span>bullishContinuation</span>
-  </button>
-          <button
-    onClick={() => setActiveFilter('bullishBreakout')}
-    className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>📈</span>
-    <span>bullishBreakout</span>
-  </button>
+<button
+  onClick={() => setActiveFilter('bullishContinuation')}
+  className="bg-green-900 hover:bg-green-700 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span>
+  <span>Bullish Continuation</span>
+</button>
 
-  <button
-    onClick={() => setActiveFilter('bearishContinuation')}
-    className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>📉</span>
-    <span>bearishContinuation</span>
-  </button>
-          <button
-    onClick={() => setActiveFilter('bearishBreakout')}
-    className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>📉</span>
-    <span>bearishBreakout</span>
-  </button>
+<button
+  onClick={() => setActiveFilter('bullishBreakout')}
+  className="bg-emerald-800 hover:bg-emerald-600 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>🚀</span>
+  <span>Bullish Breakout</span>
+</button>
+
+<button
+  onClick={() => setActiveFilter('bearishContinuation')}
+  className="bg-red-900 hover:bg-red-700 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📉</span>
+  <span>Bearish Continuation</span>
+</button>
+
+<button
+  onClick={() => setActiveFilter('bearishBreakout')}
+  className="bg-rose-800 hover:bg-rose-600 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>⚠️</span>
+  <span>Bearish Breakout</span>
+</button>
 
   <button
     onClick={() => setActiveFilter('divergence')}
@@ -1236,8 +1238,13 @@ return (
       🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
       <p className="text-sm text-white/70 ml-4 mt-1">
         • EMA70 is sloping upward<br />
-        • Higher lows near EMA70<br />
-        • Bounce off EMA70 occurred
+        • Higher lows near EMA70 structure<br />
+        • Bounce from EMA70 or RSI confirmation detected
+        {data.continuationReason && (
+          <>
+            <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
+          </>
+        )}
       </p>
     </div>
   ) : data.bearishContinuation ? (
@@ -1245,17 +1252,26 @@ return (
       🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
       <p className="text-sm text-white/70 ml-4 mt-1">
         • EMA70 is sloping downward<br />
-        • Lower highs near EMA70<br />
-        • Bounce off EMA70 occurred
+        • Lower highs forming<br />
+        • Bearish structure or RSI confirms continuation
+        {data.continuationReason && (
+          <>
+            <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
+          </>
+        )}
       </p>
     </div>
   ) : data.ema70Bounce ? (
     <div className="text-white/70">
       ⚠️ <span className="font-semibold">EMA70 Bounce Detected</span>: No clear trend continuation.
       <p className="text-sm ml-4 mt-1">
-        • EMA70 bounce detected<br />
-        • But no valid bullish or bearish continuation<br />
-        • Trend might be stalling or transitioning
+        • EMA70 bounce occurred<br />
+        • But continuation pattern not confirmed<br />
+        {data.continuationReason && (
+          <>
+            • <span className="italic">Observation:</span> {data.continuationReason}
+          </>
+        )}
       </p>
     </div>
   ) : null}
