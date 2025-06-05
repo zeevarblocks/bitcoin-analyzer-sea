@@ -1365,7 +1365,7 @@ return (
   </div>
 )}
 
-      {(activeFilter === 'emaBounce' || data?.ema14Bounce || data?.ema70Bounce) && (
+      {activeFilter === 'emaBounce' && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
     <p className="text-sm text-white/80">
