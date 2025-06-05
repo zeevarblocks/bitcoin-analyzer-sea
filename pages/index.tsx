@@ -586,44 +586,6 @@ function findRecentCrossings(
 }
 
 
-function getLocalEma14SupportResistance(candles: Candle[]) {
-  const emaPeaks: { value: number; timestamp: number }[] = [];
-  const emaValleys: { value: number; timestamp: number }[] = [];
-
-  for (let i = 1; i < candles.length - 1; i++) {
-    const prev = candles[i - 1].ema14;
-    const curr = candles[i].ema14;
-    const next = candles[i + 1].ema14;
-
-    // Skip if any value is invalid
-    if ([prev, curr, next].some(v => typeof v !== 'number')) continue;
-
-    // Local peak (resistance)
-    if (curr > prev && curr > next) {
-      emaPeaks.push({ value: curr, timestamp: candles[i].time });
-    }
-
-    // Local valley (support)
-    if (curr < prev && curr < next) {
-      emaValleys.push({ value: curr, timestamp: candles[i].time });
-    }
-  }
-
-  // Get the most extreme values (most significant levels)
-  const highestPeak = emaPeaks.reduce((a, b) => (a.value > b.value ? a : b), { value: -Infinity, timestamp: 0 });
-  const lowestValley = emaValleys.reduce((a, b) => (a.value < b.value ? a : b), { value: Infinity, timestamp: 0 });
-
-  return {
-    keyResistance: highestPeak.value === -Infinity ? null : highestPeak.value,
-    resistanceTimestamp: highestPeak.timestamp || null,
-    keySupport: lowestValley.value === Infinity ? null : lowestValley.value,
-    supportTimestamp: lowestValley.timestamp || null,
-  };
-                                }
-
-
-
-
 // logic in getServerSideProps:
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
@@ -797,13 +759,6 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-	    // Example: After fetching candles & calculating ema14 for each candle
-const candlesWithEMA14: Candle[] = candles.map(candle => ({
-  ...candle,
-}));
-
-const { keyResistance, resistanceTimestamp, keySupport, supportTimestamp } =
-  getLocalEma14SupportResistance(candles);
 
       signals[symbol] = {
   trend,
@@ -1368,21 +1323,21 @@ return (
 )}
 
 {data.recentCrossings?.length > 0 && (
-  <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-xl shadow-inner mt-4">
-    <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">
+  <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
+    <p className="text-base font-semibold text-blue-400 mb-2">
       🔄 Recent EMA Crossings
     </p>
-    <ul className="space-y-2">
+    <ul className="space-y-1">
       {data.recentCrossings.map((cross, idx) => (
         <li
           key={idx}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
             cross.type === 'bullish'
-              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
-              : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'
+              ? 'bg-green-900 text-green-300'
+              : 'bg-red-900 text-red-300'
           }`}
         >
-          <span className="font-semibold">
+          <span>
             {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
           </span>
           <span className="ml-auto font-mono text-sm">
@@ -1391,44 +1346,6 @@ return (
         </li>
       ))}
     </ul>
-  </div>
-)}
-
-       {data && (data.keyResistance != null || data.keySupport != null) && (
-  <div className="pt-4 border-t border-white/10 space-y-2">
-    <h3 className="text-lg font-semibold text-white">📊 EMA14 Curve Signals</h3>
-
-    {data.keyResistance != null && (
-      <p className="text-red-400">
-        🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
-        <span className="font-semibold">
-          {data.keyResistance.toFixed(2)}{" "}
-          {data.resistanceTimestamp ? (
-            <span className="text-white/70">
-              @ {new Date(data.resistanceTimestamp).toLocaleString()}
-            </span>
-          ) : (
-            <span className="text-white/70">@ Unknown time</span>
-          )}
-        </span>
-      </p>
-    )}
-
-    {data.keySupport != null && (
-      <p className="text-green-400">
-        🟢 <span className="font-medium">EMA14 Support</span>:{" "}
-        <span className="font-semibold">
-          {data.keySupport.toFixed(2)}{" "}
-          {data.supportTimestamp ? (
-            <span className="text-white/70">
-              @ {new Date(data.supportTimestamp).toLocaleString()}
-            </span>
-          ) : (
-            <span className="text-white/70">@ Unknown time</span>
-          )}
-        </span>
-      </p>
-    )}
   </div>
 )}
           
