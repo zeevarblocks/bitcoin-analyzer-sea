@@ -1305,8 +1305,7 @@ return (
   )}
 </div>
           
-
-
+{/* 📉 RSI Divergence Evidence */}
 {(data.divergenceFromLevel || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
@@ -1328,7 +1327,7 @@ return (
         </p>
       </div>
     )}
-    
+
     {data.nearOrAtEMA70Divergence && (
       <div className="text-indigo-400 space-y-2">
         🧭 <span className="font-semibold">EMA70 RSI Divergence</span>
@@ -1341,10 +1340,11 @@ return (
     )}
   </div>
 )}
-          
-    {data.divergence && (
+
+{/* 🔍 Momentum Shift (RSI) */}
+{data.divergence && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback </h3>
+    <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
     <div className="text-purple-400 space-y-2">
       ⚠️ <span className="font-semibold">Momentum Shift {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI)</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1355,6 +1355,8 @@ return (
     </div>
   </div>
 )}
+
+
 
 {activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce && (
   <div className="pt-4 border-t border-white/10 space-y-4">
@@ -1381,12 +1383,11 @@ return (
       </p>
     </div>
   </div>
-)}
-
-          
+)}       
   
-{(activeFilter === 'ema14Bounce' || (!activeFilter && data?.ema14Bounce)) && data?.ema14Bounce && (
-  <div className="text-green-400 space-y-2">
+{/* 🔁 EMA14 Bounce */}
+{data?.ema14Bounce && (activeFilter === 'ema14Bounce' || !activeFilter) && (
+  <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
     🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
     <p className="text-sm text-white/70 ml-4 mt-1">
       • Price recently bounced off the 14 EMA<br />
@@ -1394,9 +1395,10 @@ return (
     </p>
   </div>
 )}
-    
-{(activeFilter === 'ema70Bounce' || (!activeFilter && data?.ema70Bounce)) && data?.ema70Bounce && (
-  <div className="text-yellow-400 space-y-2">
+
+{/* 🟡 EMA70 Bounce */}
+{data?.ema70Bounce && (activeFilter === 'ema70Bounce' || !activeFilter) && (
+  <div className="text-yellow-400 space-y-2 pt-4 border-t border-white/10">
     🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
     <p className="text-sm text-white/70 ml-4 mt-1">
       • Price recently bounced off the 70 EMA<br />
@@ -1405,8 +1407,7 @@ return (
   </div>
 )}
 
-  
-
+  {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
     <p className="text-base font-semibold text-blue-400 mb-2">
@@ -1433,6 +1434,7 @@ return (
     </ul>
   </div>
 )}
+
           
           
         {/* Trade Link */}
