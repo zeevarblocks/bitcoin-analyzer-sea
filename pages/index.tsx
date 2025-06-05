@@ -1391,8 +1391,7 @@ return (
         </p>
       </div>
     )}
-  </div>
-)}
+  
 
   {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
