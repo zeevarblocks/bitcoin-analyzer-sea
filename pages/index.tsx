@@ -970,7 +970,7 @@ const scrollToTop = () => {
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       if (activeFilter === 'emaBounce') {return data.ema14Bounce && data.ema70Bounce;} return true;
-    	if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
+    	if (activeFilter === 'ema70Bounce') return data?.ema70Bounce;
     });
   		
 
