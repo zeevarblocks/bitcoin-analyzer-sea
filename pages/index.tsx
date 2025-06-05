@@ -47,11 +47,11 @@ interface SignalData {
     index: number;
   }[];
 
-  // === EMA14 Extremes (Legacy Flat Keys) ===
-  keyResistance: number | null;
-  resistanceTimestamp: number | null;
-  keySupport: number | null;
-  supportTimestamp: number | null;
+    // Inject EMA14 extremes here:
+  keyResistance: emaExtremes.keyResistance,
+  resistanceTimestamp: emaExtremes.resistanceTimestamp,
+  keySupport: emaExtremes.keySupport,
+  supportTimestamp: emaExtremes.supportTimestamp,
 	
   // === Metadata ===
   url: string;
@@ -797,6 +797,11 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
+	    // Example: After fetching candles & calculating ema14 for each candle
+const candlesWithEMA14: Candle[] = candles.map(candle => ({
+  ...candle,
+}));
+
 const { keyResistance, resistanceTimestamp, keySupport, supportTimestamp } =
   getLocalEma14SupportResistance(candles);
 
@@ -837,10 +842,11 @@ const { keyResistance, resistanceTimestamp, keySupport, supportTimestamp } =
   recentCrossings,
 
   
-  keyResistance,        // highest local peak of EMA14
-  resistanceTimestamp,  // when it occurred
-  keySupport,           // lowest local valley of EMA14
-  supportTimestamp,     // when it occurred
+    // EMA14 extremes injected here
+  keyResistance: emaExtremes.keyResistance,
+  resistanceTimestamp: emaExtremes.resistanceTimestamp,
+  keySupport: emaExtremes.keySupport,
+  supportTimestamp: emaExtremes.supportTimestamp,
 	
 
   // Metadata
@@ -1388,33 +1394,37 @@ return (
   </div>
 )}
 
-       {data && (data.keyResistance !== null || data.keySupport !== null) && (
+       {data && (data.keyResistance != null || data.keySupport != null) && (
   <div className="pt-4 border-t border-white/10 space-y-2">
     <h3 className="text-lg font-semibold text-white">📊 EMA14 Curve Signals</h3>
 
-    {data.keyResistance !== null && (
+    {data.keyResistance != null && (
       <p className="text-red-400">
         🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
         <span className="font-semibold">
           {data.keyResistance.toFixed(2)}{" "}
-          {data.resistanceTimestamp && (
+          {data.resistanceTimestamp ? (
             <span className="text-white/70">
               @ {new Date(data.resistanceTimestamp).toLocaleString()}
             </span>
+          ) : (
+            <span className="text-white/70">@ Unknown time</span>
           )}
         </span>
       </p>
     )}
 
-    {data.keySupport !== null && (
+    {data.keySupport != null && (
       <p className="text-green-400">
         🟢 <span className="font-medium">EMA14 Support</span>:{" "}
         <span className="font-semibold">
           {data.keySupport.toFixed(2)}{" "}
-          {data.supportTimestamp && (
+          {data.supportTimestamp ? (
             <span className="text-white/70">
               @ {new Date(data.supportTimestamp).toLocaleString()}
             </span>
+          ) : (
+            <span className="text-white/70">@ Unknown time</span>
           )}
         </span>
       </p>
