@@ -1356,15 +1356,25 @@ return (
   </div>
 )}
 
-{/* 📊 EMA Bounce (Both) */}
-{activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce && (
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
-    <p className="text-sm text-white/80">
-      Recent candles have bounced off both the 14 and 70 EMA. This suggests a consolidation zone where short- and mid-term trends are aligning.
-    </p>
+{/* 📊 EMA Bounce (Always show when true, highlight if filter is active) */}
+{data?.ema14Bounce && data?.ema70Bounce && (
+  <div className={`pt-4 border-t space-y-4 ${activeFilter === 'emaBounce' ? 'border-purple-400' : 'border-white/10'}`}>
+    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce</h3>
+    <div className="text-purple-400 space-y-2">
+      ⚠️ <span className="font-semibold">EMA Bounce Signal (14 & 70 EMA)</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • Price has bounced off both EMA 14 and EMA 70<br />
+        • Suggests strong support/resistance and possible consolidation zone<br />
+        • Indicates alignment between short- and mid-term trend directions
+      </p>
+      {activeFilter === 'emaBounce' && (
+        <p className="text-xs text-purple-300 mt-1">🔍 This matches your current filter</p>
+      )}
+    </div>
+  </div>
+)}
 
-    {data?.ema14Bounce && (
+    {data.ema14Bounce && (
       <div className="text-green-400 space-y-2">
         🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1373,7 +1383,7 @@ return (
       </div>
     )}
 
-    {data?.ema70Bounce && (
+    {data.ema70Bounce && (
       <div className="text-yellow-400 space-y-2">
         🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
