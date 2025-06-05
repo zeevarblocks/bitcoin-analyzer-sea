@@ -858,7 +858,7 @@ console.log("Key Support Level:", keySupport, "at", supportTimestamp);
   resistanceTimestamp,  // when it occurred
   keySupport,           // lowest local valley of EMA14
   supportTimestamp,     // when it occurred
-	emaExtremes,
+	
 
   // Metadata
   url: `https://okx.com/join/96631749`,
@@ -876,6 +876,7 @@ console.log("Key Support Level:", keySupport, "at", supportTimestamp);
       symbols,
       signals,
       defaultSymbol,
+	emaExtremes,
     },
   };
 }
