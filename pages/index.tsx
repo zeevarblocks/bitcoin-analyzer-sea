@@ -69,7 +69,7 @@ interface Candle {
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
   const response = await fetch(
-    `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
   );
   const data = await response.json();
 
@@ -585,15 +585,15 @@ function findRecentCrossings(
 // logic in getServerSideProps:
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
     const data = await response.json();
 
     const sorted = data.data
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // ✅ Only USDT pairs
+      .filter((ticker: any) => ticker.instId.endsWith('USDT')) // ✅ Only USDT pairs
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
       .slice(0, limit);
 
-    return sorted.map((ticker: any) => ticker.symbol);
+    return sorted.map((ticker: any) => ticker.instId);
   }
 
 const symbols = await fetchTopPairs(100);
@@ -870,7 +870,7 @@ export default function SignalChecker({
     setIsLoadingPairs(true);
     try {
       const response = await fetch(
-        'https://fapi.binance.com/fapi/v1/ticker/24hr'
+        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
       );
       const data = await response.json();
       const sortedPairs = data.data
@@ -1395,4 +1395,4 @@ return (
   </div>
 );
 
-  }
+        }
