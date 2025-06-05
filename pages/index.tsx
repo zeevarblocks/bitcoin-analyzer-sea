@@ -966,7 +966,6 @@ const scrollToTop = () => {
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
-      if (activeFilter === 'emaBounce') {return data.ema14Bounce && data.ema70Bounce;} 
       if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       return true;  
@@ -1129,14 +1128,6 @@ return (
 >
   <span>📉</span> {/* Level-based divergence — potential trap signal */}
   <span>divergenceFromLevel</span>
-</button>
-
-          <button
-  onClick={() => setActiveFilter('emaBounce')}
-  className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>emaBounce14&70</span>
 </button>
           <button
   onClick={() => setActiveFilter('ema70Bounce')}
@@ -1340,7 +1331,7 @@ return (
 )}
 
 {/* 🔁 EMA14 Bounce */}
-{data?.ema14Bounce && (activeFilter === 'ema14Bounce' || !activeFilter) && (
+{data?.ema14Bounce && (
   <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
     🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
     <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1351,7 +1342,7 @@ return (
 )}
 
 {/* 🟡 EMA70 Bounce */}
-{data?.ema70Bounce && (activeFilter === 'ema70Bounce' || !activeFilter) && (
+{data?.ema70Bounce && (
   <div className="text-yellow-400 space-y-2 pt-4 border-t border-white/10">
     🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
     <p className="text-sm text-white/70 ml-4 mt-1">
