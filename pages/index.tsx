@@ -1372,12 +1372,12 @@ return (
     </p>
 
     <div className="space-y-1">
-      {data?.ema14Bounce && (
-        <p className="text-green-400 text-lg font-semibold">🔁 EMA14: Yes</p>
-      )}
-      {data?.ema70Bounce && (
-        <p className="text-green-400 text-lg font-semibold">🟡 EMA70: Yes</p>
-      )}
+      {data.ema14Bounce && (
+            <p className="text-green-400">🔁 EMA14 Bounce: <span className="font-semibold">Yes</span></p>
+          )}
+          {data.ema70Bounce && (
+            <p className="text-yellow-300">🟡 EMA70 Bounce: <span className="font-semibold">Yes</span></p>
+          )}
     </div>
   </div>
 }
