@@ -52,15 +52,7 @@ interface SignalData {
   resistanceTimestamp: number | null;
   keySupport: number | null;
   supportTimestamp: number | null;
-
-  // === Grouped EMA14 Extremes ===
-  emaExtremes?: {
-    keyResistance: number | null;
-    resistanceTimestamp: number | null;
-    keySupport: number | null;
-    supportTimestamp: number | null;
-  };
-
+	
   // === Metadata ===
   url: string;
 }
@@ -805,17 +797,8 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
-const emaExtremes = getLocalEma14SupportResistance(candles);
-
-const {
-  keyResistance,
-  resistanceTimestamp,
-  keySupport,
-  supportTimestamp,
-} = emaExtremes;
-
-console.log("Key Resistance Level:", keyResistance, "at", resistanceTimestamp);
-console.log("Key Support Level:", keySupport, "at", supportTimestamp);
+const { keyResistance, resistanceTimestamp, keySupport, supportTimestamp } =
+  getLocalEma14SupportResistance(candles);
 
       signals[symbol] = {
   trend,
@@ -876,7 +859,6 @@ console.log("Key Support Level:", keySupport, "at", supportTimestamp);
       symbols,
       signals,
       defaultSymbol,
-	emaExtremes,
     },
   };
 }
