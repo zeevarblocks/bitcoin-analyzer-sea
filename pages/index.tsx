@@ -824,13 +824,13 @@ type FilterType =
   | 'bearishContinuation'
   | 'ema14Bounce'
   | 'ema70Bounce'
-  | 'emaBounce'               // combined EMA14 & EMA70 bounce filter
+  | 'emaBounce' // Combined EMA14 & EMA70 bounce filter
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
-  |	'recentCrossings';
-	|	'bullishBreakout';
-	|	'bearishBreakout';
+  | 'recentCrossings'
+  | 'bullishBreakout'
+  | 'bearishBreakout';
 
 export default function SignalChecker({
   signals,
