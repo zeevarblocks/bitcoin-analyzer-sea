@@ -1357,54 +1357,30 @@ return (
 )}
 
 {(
-  // Default mode — show if any bounce
   (!activeFilter && (data?.ema14Bounce || data?.ema70Bounce)) ||
-
-  // emaBounce mode — show only if BOTH are true
   (activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce) ||
-
-  // ema14Bounce mode — show only if ema14 is true
   (activeFilter === 'ema14Bounce' && data?.ema14Bounce) ||
-
-  // ema70Bounce mode — show only if ema70 is true
   (activeFilter === 'ema70Bounce' && data?.ema70Bounce)
 ) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals</h3>
+    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
     <p className="text-sm text-white/80">
-      Signals based on recent price action bouncing off Exponential Moving Averages.
+      Recent candles have bounced above the 14 and/or 70 EMA. This often indicates a consolidation zone where price is stabilizing between short- and medium-term averages.
     </p>
 
-    {/* Both */}
-    {activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce && (
-      <p className="text-green-400 text-lg font-semibold">
-        🔁 Both EMA14 & EMA70 Bounce Detected
-      </p>
-    )}
+    <div className="space-y-1">
+      {/* EMA14 Block */}
+      {(activeFilter === 'ema14Bounce' || (!activeFilter && data?.ema14Bounce) || 
+        (activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce)) && (
+        <p className="text-green-400 text-lg font-semibold">🔁 EMA14: Bounce Detected</p>
+      )}
 
-    {/* Default mode (no filter): show each separately */}
-    {!activeFilter && data?.ema14Bounce && (
-      <p className="text-green-400 text-lg font-semibold">
-        🔁 EMA14 Bounce Detected
-      </p>
-    )}
-    {!activeFilter && data?.ema70Bounce && (
-      <p className="text-yellow-300 text-lg font-semibold">
-        🟡 EMA70 Bounce Detected
-      </p>
-    )}
-
-    {/* Individual filters */}
-    {activeFilter === 'ema14Bounce' && data?.ema14Bounce && (
-      <p className="text-green-400 text-lg font-semibold">
-        🔁 EMA14 Bounce Detected
-      </p>
-    )}
-    {activeFilter === 'ema70Bounce' && data?.ema70Bounce && (
-      <p className="text-yellow-300 text-lg font-semibold">
-        🟡 EMA70 Bounce Detected
-      </p>
-    )}
+      {/* EMA70 Block */}
+      {(activeFilter === 'ema70Bounce' || (!activeFilter && data?.ema70Bounce) || 
+        (activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce)) && (
+        <p className="text-yellow-400 text-lg font-semibold">🟡 EMA70: Bounce Detected</p>
+      )}
+    </div>
   </div>
 )}
   
