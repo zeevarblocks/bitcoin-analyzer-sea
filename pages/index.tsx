@@ -809,7 +809,6 @@ if (type && level !== null) {
       symbols,
       signals,
       defaultSymbol,
-      topPairs,
     },
   };
 }
@@ -1181,7 +1180,7 @@ return (
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
                 
                 <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-  {topPairs.map((pair) => (
+  {symbols.map((pair) => (
     <li key={pair}>
       <a
         href={`https://www.okx.com/trade-spot/${pair}`}
