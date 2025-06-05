@@ -1356,20 +1356,30 @@ return (
   </div>
 )}
 
-{filteredData.length > 0 && (
+{(
+  // If no filter is active, show any bounce signals detected
+  (!activeFilter && (data?.ema14Bounce || data?.ema70Bounce)) ||
+
+  // Otherwise, show signals based on the active filter and data
+  (activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce) ||
+  (activeFilter === 'ema14Bounce' && data?.ema14Bounce) ||
+  (activeFilter === 'ema70Bounce' && data?.ema70Bounce)
+) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals</h3>
     <p className="text-sm text-white/80">
       Signals based on recent price action bouncing off Exponential Moving Averages.
     </p>
 
-    {activeFilter === 'emaBounce' && (
+    {(!activeFilter || activeFilter === 'emaBounce') && data?.ema14Bounce && data?.ema70Bounce && (
       <p className="text-green-400 text-lg font-semibold">🔁 Both EMA14 & EMA70 Bounce Detected</p>
     )}
-    {activeFilter === 'ema14Bounce' && (
+
+    {(!activeFilter || activeFilter === 'ema14Bounce') && data?.ema14Bounce && (
       <p className="text-green-400 text-lg font-semibold">🔁 EMA14 Bounce Detected</p>
     )}
-    {activeFilter === 'ema70Bounce' && (
+
+    {(!activeFilter || activeFilter === 'ema70Bounce') && data?.ema70Bounce && (
       <p className="text-yellow-300 text-lg font-semibold">🟡 EMA70 Bounce Detected</p>
     )}
   </div>
