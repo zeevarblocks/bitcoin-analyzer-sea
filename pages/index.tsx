@@ -854,8 +854,6 @@ export default function SignalChecker({
   setActiveFilter(null);
   localStorage.removeItem('selectedPairs');
   localStorage.removeItem('favoritePairs');
-    const redirectUrl = encodeURIComponent(`https://www.okx.com/trade-spot/${pair}`);
-  const referralUrl = `https://okx.com/join/96631749?redirect=${redirectUrl}`;
 };
   
 
@@ -1181,16 +1179,21 @@ return (
               <div className="space-y-1">
         <h2 className="text-2xl font-bold text-yellow-400">📡 {symbol} Signal Overview</h2>
                 
-                {topPairs.map((pair) => {
-    <a
-      key={pair}
-      href={referralUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {pair}
-    </a>
-        }
+                <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+  {topPairs.map((pair) => (
+    <li key={pair}>
+      <a
+        href={`https://www.okx.com/trade-spot/${pair}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block p-4 bg-white shadow-md rounded-xl hover:bg-gray-100 transition"
+      >
+        <div className="text-lg font-semibold text-blue-600">{pair}</div>
+        <div className="text-sm text-gray-500">Trade on OKX</div>
+      </a>
+    </li>
+  ))}
+</ul>
   
           <p>
             💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
