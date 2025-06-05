@@ -589,6 +589,7 @@ export async function getServerSideProps() {
     const data = await response.json();
 
     const sorted = data.data
+      .filter((ticker: any) => ticker.instId.endsWith('USDT')) // ✅ Only USDT pairs
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
       .slice(0, limit);
 
@@ -828,6 +829,8 @@ type FilterType =
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
   |	'recentCrossings';
+	|	'bullishBreakout';
+	|	'bearishBreakout';
 
 export default function SignalChecker({
   signals,
@@ -943,7 +946,9 @@ export default function SignalChecker({
     .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
     .filter(([_, data]) => {
       if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
+      if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
       if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
+      if (activeFilter === 'bearishBreakout') return data.bearishBreakout;
       if (activeFilter === 'recentCrossings') return data.recentCrossings;
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
@@ -1074,6 +1079,13 @@ return (
     <span>📈</span>
     <span>bullishContinuation</span>
   </button>
+          <button
+    onClick={() => setActiveFilter('bullishBreakout')}
+    className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📈</span>
+    <span>bullishBreakout</span>
+  </button>
 
   <button
     onClick={() => setActiveFilter('bearishContinuation')}
@@ -1081,6 +1093,13 @@ return (
   >
     <span>📉</span>
     <span>bearishContinuation</span>
+  </button>
+          <button
+    onClick={() => setActiveFilter('bearishBreakout')}
+    className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>bearishBreakout</span>
   </button>
 
   <button
