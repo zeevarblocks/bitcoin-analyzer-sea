@@ -1388,38 +1388,39 @@ return (
   </div>
 )}
 
-       {data &&
-  (data.keyResistance != null || data.keySupport != null) && (
-    <div className="pt-4 border-t border-white/10 space-y-2">
-      <h3 className="text-lg font-semibold text-white">
-        📊 EMA14 Curve Signals
-      </h3>
+       {data && (data.keyResistance !== null || data.keySupport !== null) && (
+  <div className="pt-4 border-t border-white/10 space-y-2">
+    <h3 className="text-lg font-semibold text-white">📊 EMA14 Curve Signals</h3>
 
-      {data.keyResistance != null && (
-        <p className="text-red-400">
-          🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
-          <span className="font-semibold">
-            {data.keyResistance.toFixed(2)}{" "}
+    {data.keyResistance !== null && (
+      <p className="text-red-400">
+        🔴 <span className="font-medium">EMA14 Resistance</span>:{" "}
+        <span className="font-semibold">
+          {data.keyResistance.toFixed(2)}{" "}
+          {data.resistanceTimestamp && (
             <span className="text-white/70">
               @ {new Date(data.resistanceTimestamp).toLocaleString()}
             </span>
-          </span>
-        </p>
-      )}
+          )}
+        </span>
+      </p>
+    )}
 
-      {data.keySupport != null && (
-        <p className="text-green-400">
-          🟢 <span className="font-medium">EMA14 Support</span>:{" "}
-          <span className="font-semibold">
-            {data.keySupport.toFixed(2)}{" "}
+    {data.keySupport !== null && (
+      <p className="text-green-400">
+        🟢 <span className="font-medium">EMA14 Support</span>:{" "}
+        <span className="font-semibold">
+          {data.keySupport.toFixed(2)}{" "}
+          {data.supportTimestamp && (
             <span className="text-white/70">
               @ {new Date(data.supportTimestamp).toLocaleString()}
             </span>
-          </span>
-        </p>
-      )}
-    </div>
-  )} 
+          )}
+        </span>
+      </p>
+    )}
+  </div>
+)}
           
           
         {/* Trade Link */}
