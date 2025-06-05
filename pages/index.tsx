@@ -817,6 +817,7 @@ if (type && level !== null) {
 
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowUp } from 'lucide-react'; // or your preferred icon
 
 type FilterType =
   | null
@@ -848,6 +849,7 @@ export default function SignalChecker({
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
@@ -862,8 +864,22 @@ export default function SignalChecker({
 
   // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
-    pair.toLowerCase().includes(searchTerm.toLowerCase())
+    pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
   );
+
+
+useEffect(() => {
+  const handleScroll = () => {
+    setShowScrollButton(window.scrollY > 200);
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
@@ -1085,7 +1101,7 @@ return (
 
 <button
   onClick={() => setActiveFilter('bullishBreakout')}
-  className="bg-gray-800 hover:bg-emerald-600 text-green-900 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-emerald-600 text-green-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>🚀</span>
   <span>Bullish Breakout</span>
@@ -1093,7 +1109,7 @@ return (
 
 <button
   onClick={() => setActiveFilter('bearishContinuation')}
-  className="bg-gray-800 hover:bg-red-700 text-red-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📉</span>
   <span>Bearish Continuation</span>
@@ -1101,7 +1117,7 @@ return (
 
 <button
   onClick={() => setActiveFilter('bearishBreakout')}
-  className="bg-gray-800 hover:bg-rose-600 text-red-800 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-rose-600 text-red-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>⚠️</span>
   <span>Bearish Breakout</span>
@@ -1340,24 +1356,25 @@ return (
   </div>
 )}
 
-
-  {(activeFilter === 'emaBounce' || activeFilter === 'ema14Bounce' || activeFilter === 'ema70Bounce') && (
+{filteredData.length > 0 && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals</h3>
     <p className="text-sm text-white/80">
       Signals based on recent price action bouncing off Exponential Moving Averages.
     </p>
 
-    <div className="space-y-1">
-      {(activeFilter === 'emaBounce' || activeFilter === 'ema14Bounce') && data?.ema14Bounce && (
-        <p className="text-green-400 text-lg font-semibold">🔁 EMA14: Bounce Detected</p>
-      )}
-      {(activeFilter === 'emaBounce' || activeFilter === 'ema70Bounce') && data?.ema70Bounce && (
-        <p className="text-yellow-300 text-lg font-semibold">🟡 EMA70: Bounce Detected</p>
-      )}
-    </div>
+    {activeFilter === 'emaBounce' && (
+      <p className="text-green-400 text-lg font-semibold">🔁 Both EMA14 & EMA70 Bounce Detected</p>
+    )}
+    {activeFilter === 'ema14Bounce' && (
+      <p className="text-green-400 text-lg font-semibold">🔁 EMA14 Bounce Detected</p>
+    )}
+    {activeFilter === 'ema70Bounce' && (
+      <p className="text-yellow-300 text-lg font-semibold">🟡 EMA70 Bounce Detected</p>
+    )}
   </div>
-)}        
+)}
+  
 
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
@@ -1399,6 +1416,16 @@ return (
         </div>
       </div>
     ))}
+
+    {showScrollButton && (
+  <button
+    onClick={scrollToTop}
+    className="fixed bottom-5 right-5 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur shadow-lg transition duration-300"
+    aria-label="Scroll to top"
+  >
+    <ArrowUp size={20} />
+  </button>
+)}
 
     {/* Footer */}
     <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
