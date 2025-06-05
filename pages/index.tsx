@@ -1077,7 +1077,7 @@ return (
         <div className="flex gap-2 flex-wrap">
 <button
   onClick={() => setActiveFilter('bullishContinuation')}
-  className="bg-green-900 hover:bg-green-700 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-green-700 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📈</span>
   <span>Bullish Continuation</span>
@@ -1085,7 +1085,7 @@ return (
 
 <button
   onClick={() => setActiveFilter('bullishBreakout')}
-  className="bg-emerald-800 hover:bg-emerald-600 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-emerald-600 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>🚀</span>
   <span>Bullish Breakout</span>
@@ -1093,7 +1093,7 @@ return (
 
 <button
   onClick={() => setActiveFilter('bearishContinuation')}
-  className="bg-red-900 hover:bg-red-700 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-red-700 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📉</span>
   <span>Bearish Continuation</span>
@@ -1101,7 +1101,7 @@ return (
 
 <button
   onClick={() => setActiveFilter('bearishBreakout')}
-  className="bg-rose-800 hover:bg-rose-600 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-rose-600 text-white px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>⚠️</span>
   <span>Bearish Breakout</span>
@@ -1144,7 +1144,7 @@ return (
   className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>ema70Bounce</span>
+  <span>emaBounce14&70</span>
 </button>
          <button
   onClick={() => setActiveFilter('ema70Bounce')}
@@ -1227,8 +1227,7 @@ return (
           </div>
         )}
 
-          
-<div className="pt-4 border-t border-white/10 space-y-3">
+          <div className="pt-4 border-t border-white/10 space-y-3">
   <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
 
   {data.continuationEnded ? (
@@ -1248,9 +1247,8 @@ return (
     <div className="text-green-400">
       🔺 <span className="font-semibold">Bullish Continuation</span>: Confirmed
       <p className="text-sm text-white/70 ml-4 mt-1">
-        • EMA70 is sloping upward<br />
-        • Higher lows near EMA70 structure<br />
-        • Bounce from EMA70 or RSI confirmation detected
+        • EMA trend is upward<br />
+        • Higher lows or RSI structure confirmed<br />
         {data.continuationReason && (
           <>
             <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
@@ -1262,9 +1260,8 @@ return (
     <div className="text-red-400">
       🔻 <span className="font-semibold">Bearish Continuation</span>: Confirmed
       <p className="text-sm text-white/70 ml-4 mt-1">
-        • EMA70 is sloping downward<br />
-        • Lower highs forming<br />
-        • Bearish structure or RSI confirms continuation
+        • EMA trend is downward<br />
+        • Lower highs or RSI confirmation detected<br />
         {data.continuationReason && (
           <>
             <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
@@ -1272,21 +1269,27 @@ return (
         )}
       </p>
     </div>
-  ) : data.ema70Bounce ? (
-    <div className="text-white/70">
-      ⚠️ <span className="font-semibold">EMA70 Bounce Detected</span>: No clear trend continuation.
+  ) : (
+    <div className="text-white/60">
+      ℹ️ <span className="font-semibold">No Continuation Signal</span>
       <p className="text-sm ml-4 mt-1">
-        • EMA70 bounce occurred<br />
-        • But continuation pattern not confirmed<br />
-        {data.continuationReason && (
+        • Trend continuation pattern not confirmed<br />
+        • Waiting for valid structure or RSI alignment
+        {data.continuationReason ? (
           <>
-            • <span className="italic">Observation:</span> {data.continuationReason}
+            <br />• <span className="italic">Reason:</span> {data.continuationReason}
+          </>
+        ) : (
+          <>
+            <br />• <span className="italic">Reason:</span> No significant trend pattern or indicator alignment detected
           </>
         )}
       </p>
     </div>
-  ) : null}
+  )}
 </div>
+          
+
 
 {(data.divergenceFromLevel || data.nearOrAtEMA70Divergence) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
@@ -1327,7 +1330,7 @@ return (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback Entry</h3>
     <div className="text-purple-400 space-y-2">
-      ⚠️ <span className="font-semibold">Classic {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} RSI Divergence</span>
+      ⚠️ <span className="font-semibold">Momentum {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Shift Signal (RSI)</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
         • RSI is moving opposite to price direction<br />
         • Indicates possible {data.divergenceType === 'bullish' ? 'bullish momentum despite lower lows' : 'bearish momentum despite higher highs'}<br />
