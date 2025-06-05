@@ -970,6 +970,7 @@ const scrollToTop = () => {
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       if (activeFilter === 'emaBounce') {return data.ema14Bounce && data.ema70Bounce;} return true;
+      if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
     });
   		
 
@@ -1161,6 +1162,13 @@ return (
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
   <span>emaBounce14&70</span>
 </button>
+          <button
+  onClick={() => setActiveFilter('ema70Bounce')}
+  className="bg-gray-800 hover:bg-yellow-600 text-violet-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>ema70Bounce</span>
+</button>
                
 </div>
 
@@ -1348,9 +1356,7 @@ return (
   </div>
 )}
 
-
-
-{activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce && (
+{(activeFilter === 'emaBounce' && data?.ema14Bounce && data?.ema70Bounce) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
     <p className="text-sm text-white/80">
@@ -1375,12 +1381,12 @@ return (
       </p>
     </div>
   </div>
-)}       
-  
-{/* 🔁 EMA14 Bounce */}
-{data?.ema14Bounce && (activeFilter === 'ema14Bounce' || !activeFilter) && (
-  <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
-    🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
+)}
+
+{/* Show individual bounces if not using 'emaBounce' filter */}
+{activeFilter === 'ema14Bounce' && data?.ema14Bounce && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">🔁 EMA14: Bounce Detected</h3>
     <p className="text-sm text-white/70 ml-4 mt-1">
       • Price recently bounced off the 14 EMA<br />
       • Suggests short-term support and trend continuation
@@ -1388,16 +1394,45 @@ return (
   </div>
 )}
 
-{/* 🟡 EMA70 Bounce */}
-{data?.ema70Bounce && (activeFilter === 'ema70Bounce' || !activeFilter) && (
-  <div className="text-yellow-400 space-y-2 pt-4 border-t border-white/10">
-    🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
+{activeFilter === 'ema70Bounce' && data?.ema70Bounce && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">🟡 EMA70: Bounce Detected</h3>
     <p className="text-sm text-white/70 ml-4 mt-1">
       • Price recently bounced off the 70 EMA<br />
       • Indicates mid-term support or consolidation near trend baseline
     </p>
   </div>
 )}
+
+{/* Show general bounce section if no filter is active */}
+{!activeFilter && (data?.ema14Bounce || data?.ema70Bounce) && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals</h3>
+    <p className="text-sm text-white/80">
+      Recent candles have bounced above one or both EMAs. This may indicate a consolidation zone or short-term reversal area.
+    </p>
+
+    {data?.ema14Bounce && (
+      <div className="text-green-400 space-y-2">
+        🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Price recently bounced off the 14 EMA
+        </p>
+      </div>
+    )}
+
+    {data?.ema70Bounce && (
+      <div className="text-yellow-400 space-y-2">
+        🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Price recently bounced off the 70 EMA
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+
 
   {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
