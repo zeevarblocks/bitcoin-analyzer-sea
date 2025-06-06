@@ -1138,7 +1138,7 @@ return (
 </button>
           <button
   onClick={() => setActiveFilter('ema14Bounce')}
-  className="bg-gray-800 hover:bg-gradient-600 text-indigo-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  className="bg-gray-800 hover:bg-purple-600 text-indigo-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
   <span>ema14Bounce</span>
@@ -1331,6 +1331,8 @@ return (
 )}
 
 {/* 🔁 EMA14 Bounce */}
+        <div className="text-yellow-400 space-y-2">
+      🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
 {data?.ema14Bounce && (
   <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
     🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
@@ -1342,7 +1344,7 @@ return (
 )}
 
 {/* 🟡 EMA70 Bounce */}
-{data?.ema70Bounce && (
+          {data?.ema70Bounce && (
   <div className="text-yellow-400 space-y-2 pt-4 border-t border-white/10">
     🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
     <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1351,6 +1353,7 @@ return (
     </p>
   </div>
 )}
+</div>             
 
 {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
