@@ -626,9 +626,6 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
 }
 
-
-
-// getServerSideProps.ts
 async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
   try {
     const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
@@ -638,14 +635,18 @@ async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
     const sorted = data
       .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
       .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, 100);
+      .slice(0, limit);
 
     return sorted.map((t) => t.symbol);
   } catch (err) {
     console.error('❌ Failed to fetch Binance perpetual futures:', err);
     return [];
   }
-}
+    }
+
+
+// getServerSideProps.ts
+
 
 export async function getServerSideProps() {
     try {
