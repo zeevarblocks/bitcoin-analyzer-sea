@@ -1492,5 +1492,4 @@ return (
     </footer>
   </div>
 );
-
 }
