@@ -761,7 +761,7 @@ const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, tre
 
 // Optional: log or assign the difference from EMA70 for display
 const latestEMA70 = Array.isArray(ema70) ? ema70[ema70.length - 1] : ema70;
-const { percent, direction } = calculateDifferenceVsEMA70(inferredLevel, latestEMA70);
+const differenceVsEMA70 = calculateDifferenceVsEMA70(inferredLevel, latestEma70);
       
       let divergenceFromLevel = false;
 let divergenceFromLevelType: 'bullish' | 'bearish' | null = null;
