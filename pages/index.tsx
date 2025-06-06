@@ -907,7 +907,7 @@ const scrollToTop = () => {
       } else {
         const topValidPairs = sortedPairs
           .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 5);
+          .slice(0, limit);
         setSelectedPairs(topValidPairs);
       }
     } catch (error) {
