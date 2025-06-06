@@ -1345,7 +1345,7 @@ return (
 </div>
           
 {/* 📉 RSI Divergence Evidence */}
-{data.divergenceFromLevel && (
+{data.nearOrAtEMA70Divergence && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -1363,7 +1363,7 @@ return (
 )}
 
 {/* 🔍 Momentum Shift (RSI) */}
-{(data.divergence || data.nearOrAtEMA70Divergence) && (
+{(data.divergence || data.divergenceFromLevel) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
     <div className="text-purple-400 space-y-2">
@@ -1414,7 +1414,6 @@ return (
     </div>
 )}
 
-
 {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
@@ -1422,38 +1421,32 @@ return (
       🔄 Recent EMA Crossings
     </p>
     <ul className="space-y-1">
-      {data.recentCrossings.map((cross, idx) => {
-        const formattedTime =
-          typeof cross.timestamp === 'number'
-            ? new Date(cross.timestamp).toLocaleString()
-            : cross.timestamp;
-
-        return (
-          <li
-            key={idx}
-            className={`flex flex-col md:flex-row md:items-center gap-1 md:gap-3 px-3 py-2 rounded-lg ${
-              cross.type === 'bullish'
-                ? 'bg-green-900 text-green-300'
-                : 'bg-red-900 text-red-300'
-            }`}
-          >
+      {data.recentCrossings.map((cross, idx) => (
+        <li
+          key={idx}
+          className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg ${
+            cross.type === 'bullish'
+              ? 'bg-green-900 text-green-300'
+              : 'bg-red-900 text-red-300'
+          }`}
+        >
+          <div>
             <span>
-              {cross.type === 'bullish'
-                ? '🟢 Bullish Cross'
-                : '🔴 Bearish Cross'}
+              {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
             </span>
-            <span className="ml-auto font-mono text-sm">
-              @ ${cross.price.toFixed(2)}
-            </span>
-            <span className="text-xs font-mono text-gray-300">
-              {formattedTime}
-            </span>
-          </li>
-        );
-      })}
+            <div className="text-xs text-gray-300 mt-1">
+              {new Date(cross.timestamp).toLocaleString()}
+            </div>
+          </div>
+          <span className="ml-auto font-mono text-sm">
+            @ ${cross.price.toFixed(9)}
+          </span>
+        </li>
+      ))}
     </ul>
   </div>
 )}
+
           
           
         {/* Trade Link */}
