@@ -1235,7 +1235,7 @@ return (
                 {data.differenceVsEMA70 !== null && (
   <p>
     📉 <span className="font-medium text-white/70">
-      Difference vs EMA70:
+      Ema70 & Inferred - Gap %:
     </span>{' '}
     <span className="text-yellow-300">
   {data.differenceVsEMA70.percent.toFixed(2)}% ({data.differenceVsEMA70.direction})
