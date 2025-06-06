@@ -1002,7 +1002,7 @@ const scrollToTop = () => {
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
-      if (activeFilter === 'ema14&70Bounce') return { data.ema70Bounce, data.ema14Bounce };
+      if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       return true;  
     });
   		
