@@ -70,6 +70,27 @@ interface Candle {
   timestamp: number; 
 }
 
+async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
+  const limit = interval === '1d' ? 2 : 500;
+  const response = await fetch(
+    `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+  );
+
+  const data = await response.json();
+
+  if (!Array.isArray(data)) throw new Error('Invalid candle data');
+
+  return data
+    .map((d: any[]) => ({
+      timestamp: +d[0],
+      open: +d[1],
+      high: +d[2],
+      low: +d[3],
+      close: +d[4],
+      volume: +d[5],
+    }))
+    .reverse();
+}
 
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -595,15 +616,15 @@ function detectBullishContinuationWithEnd(
 // logic in getServerSideProps:
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
     const data = await response.json();
 
-    const sorted = data.data
-      .filter((ticker: any) => ticker.instId.endsWith('USDT')) // ✅ Only USDT pairs
-      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+    const sorted = data
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // ✅ Only USDT pairs
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // ✅ Sort by 24h quote volume
       .slice(0, limit);
 
-    return sorted.map((ticker: any) => ticker.instId);
+    return sorted.map((ticker: any) => ticker.symbol);
   }
 
 const symbols = await fetchTopPairs(100);
@@ -901,40 +922,37 @@ const scrollToTop = () => {
 
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-    setIsLoadingPairs(true);
-    try {
-      const response = await fetch(
-        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
-      );
-      const data = await response.json();
-      const sortedPairs = data.data
-        .sort(
-          (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
-        )
-        .map((item: any) => item.instId);
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+    const data = await response.json();
 
-      setPairs(sortedPairs);
+    const sortedPairs = data
+      .filter((item: any) => item.symbol.endsWith('USDT')) // Only USDT pairs
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .map((item: any) => item.symbol);
 
-      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-      const validSaved = savedPairs.filter(
-        (pair: string) => signals?.[pair]?.currentPrice !== undefined
-      );
+    setPairs(sortedPairs);
 
-      if (validSaved.length > 0) {
-        setSelectedPairs(validSaved);
-      } else {
-        const topValidPairs = sortedPairs
-          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 100);
-        setSelectedPairs(topValidPairs);
-      }
-    } catch (error) {
-      console.error('Error fetching trading pairs:', error);
-    } finally {
-      setIsLoadingPairs(false);
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter(
+      (pair: string) => signals?.[pair]?.currentPrice !== undefined
+    );
+
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 100);
+      setSelectedPairs(topValidPairs);
     }
-  }, [signals]);
-
+  } catch (error) {
+    console.error('Error fetching trading pairs:', error);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+}, [signals]);
  
   const handleRefresh = async () => {
   setIsRefreshing(true);
