@@ -1431,7 +1431,7 @@ return (
     </p>
     <ul className="space-y-1">
       {data.recentCrossings.map((cross, idx) => {
-        const formattedDate = new Date(cross.timestamp).toLocaleString();
+        const formattedDate = new Date(cross.timestamp[i]).toLocaleString();
         return (
           <li
             key={idx}
