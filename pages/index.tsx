@@ -579,7 +579,7 @@ function findRecentCrossings(
   ema14: number[],
   ema70: number[],
   closes: number[],
-  timestamps: number[] // Ensure these are Unix timestamps in milliseconds
+  timestamps: number[] // Ensure Unix timestamps in milliseconds
 ): {
   type: 'bullish' | 'bearish';
   price: number;
@@ -593,34 +593,40 @@ function findRecentCrossings(
     timestamp: number;
   }[] = [];
 
+  // Iterate backwards to find the 3 most recent crossings
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
+    const prevEMA14 = ema14[i - 1];
+    const prevEMA70 = ema70[i - 1];
+    const currEMA14 = ema14[i];
+    const currEMA70 = ema70[i];
 
-    if (prev14 < prev70 && curr14 >= curr70) {
+    const price = closes[i];
+    const timestamp = timestamps[i];
+
+    // Detect bullish crossover
+    if (prevEMA14 < prevEMA70 && currEMA14 >= currEMA70) {
       crossings.push({
         type: 'bullish',
-        price: closes[i],
+        price,
         index: i,
-        timestamp: Number(timestamps[i]), // enforce number
+        timestamp: Number(timestamp),
       });
     }
 
-    if (prev14 > prev70 && curr14 <= curr70) {
+    // Detect bearish crossover
+    if (prevEMA14 > prevEMA70 && currEMA14 <= currEMA70) {
       crossings.push({
         type: 'bearish',
-        price: closes[i],
+        price,
         index: i,
-        timestamp: Number(timestamps[i]), // enforce number
+        timestamp: Number(timestamp),
       });
     }
   }
 
-  return crossings.reverse(); // Oldest to newest
-    }
-
+  // Return crossings from oldest to most recent
+  return crossings.reverse();
+}
 
 
 // logic in getServerSideProps:
@@ -1384,10 +1390,10 @@ return (
         <p className="text-sm text-white/70 ml-4 mt-1">
           • Type:{" "}
           <span className="capitalize text-white">
-            {data.divergenceFromLevelType === "bearish"
-              ? "Reversal warning (sell)"
-              : data.divergenceFromLevelType === "bullish"
+            {data.divergenceFromLevelType === "bullish"
               ? "Reversal warning (buy)"
+              : data.divergenceFromLevelType === "bearish"
+              ? "Reversal warning (sell)"
               : "Confirmed"}
           </span><br />
           • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
