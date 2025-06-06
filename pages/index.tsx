@@ -951,12 +951,6 @@ const scrollToTop = () => {
     }
   }, [signals]);
 
-
-  const filtered = signals.filter(d => d.differenceVsEMA70 !== null);
-  const sorted = filtered.sort(
-  (a, b) => (b.differenceVsEMA70!.percent) - (a.differenceVsEMA70!.percent)
-);
-  const topN = sorted.slice(0, 100);
  
   const handleRefresh = async () => {
   setIsRefreshing(true);
@@ -1249,16 +1243,6 @@ return (
   {data.differenceVsEMA70.percent.toFixed(2)}% ({data.differenceVsEMA70.direction})
 </span>
   </p>
-{filteredData.map((data, idx) => (
-  <p key={idx}>
-    📉 <span className="font-medium text-white/70">
-      Ema70 & Inferred - Gap %:
-    </span>{' '}
-    <span className="text-yellow-300">
-      {data.differenceVsEMA70!.percent.toFixed(2)}% ({data.differenceVsEMA70!.direction})
-    </span>
-  </p>
-))}
                 
           <p>
             📈 <span className="font-medium text-white/70">Trend:</span>{' '}
