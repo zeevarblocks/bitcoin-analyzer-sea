@@ -76,7 +76,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 
   try {
     const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+      `https://fapi.binance.com/fapi/v1/ticker/24hr`
     );
 
     if (!response.ok) {
@@ -652,7 +652,7 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
     let sorted: any[] = [];
 
 try {
-  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+  const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
   if (!res.ok) throw new Error(`Status ${res.status}`);
   const data = await res.json();
 
@@ -947,7 +947,7 @@ const scrollToTop = () => {
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
     try {
-      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+      const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
       const data = await response.json();
       console.log('Fetched Binance data:', data);
 
