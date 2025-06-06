@@ -1433,6 +1433,8 @@ return (
     <ul className="space-y-1">
       {data.recentCrossings.map((cross, idx) => {
         const formattedDate = new Date(cross.timestamp).toLocaleString();
+  console.log("Example:", new Date(1717661700000).toLocaleString());
+// Should print: something like "6/6/2025, 10:15:00 AM"
         return (
           <li
             key={idx}
