@@ -1384,10 +1384,10 @@ return (
         <p className="text-sm text-white/70 ml-4 mt-1">
           • Type:{" "}
           <span className="capitalize text-white">
-            {data.divergenceFromLevelType === "bullish"
-              ? "Bullish Trend"
-              : data.divergenceFromLevelType === "bearish"
-              ? "Bearish Trend"
+            {data.divergenceFromLevelType === "bearish"
+              ? "Reversal warning (sell)"
+              : data.divergenceFromLevelType === "bullish"
+              ? "Reversal warning (buy)"
               : "Confirmed"}
           </span><br />
           • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
