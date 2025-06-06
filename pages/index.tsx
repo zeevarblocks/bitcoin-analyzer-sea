@@ -952,7 +952,7 @@ const scrollToTop = () => {
   }, [signals]);
 
 
-  const filtered = pairs.filter(d => d.differenceVsEMA70 !== null);
+  const filtered = differenceVsEMA70.filter(d => d.differenceVsEMA70 !== null);
   const sorted = filtered.sort(
   (a, b) => (b.differenceVsEMA70!.percent) - (a.differenceVsEMA70!.percent)
 );
