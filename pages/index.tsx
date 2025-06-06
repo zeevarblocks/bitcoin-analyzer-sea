@@ -1424,7 +1424,6 @@ return (
 )}
 
 {/* 🔄 Recent EMA Crossings */}
-{/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
     <p className="text-base font-semibold text-blue-400 mb-2">
@@ -1432,9 +1431,11 @@ return (
     </p>
     <ul className="space-y-1">
       {data.recentCrossings.map((cross, idx) => {
-        const formattedDate = new Date(cross.timestamp).toLocaleString();
-  console.log("Example:", new Date(1717661700000).toLocaleString());
-// Should print: something like "6/6/2025, 10:15:00 AM"
+        // Format timestamp safely
+        const formattedDate = cross.timestamp
+          ? new Date(cross.timestamp).toLocaleString()
+          : 'Invalid timestamp';
+
         return (
           <li
             key={idx}
@@ -1446,14 +1447,16 @@ return (
           >
             <div>
               <span>
-                {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+                {cross.type === 'bullish'
+                  ? '🟢 Bullish Cross'
+                  : '🔴 Bearish Cross'}
               </span>
               <div className="text-xs text-gray-300 mt-1">
                 {formattedDate}
               </div>
             </div>
             <span className="ml-auto font-mono text-sm">
-              @ ${cross.price.toFixed(9)}
+              @ ${cross.price.toFixed(2)}
             </span>
           </li>
         );
@@ -1461,6 +1464,7 @@ return (
     </ul>
   </div>
 )}
+
           
           
         {/* Trade Link */}
