@@ -81,16 +81,19 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   if (!Array.isArray(data)) throw new Error('Invalid candle data');
 
   return data
-    .map((d: any[]) => ({
-      timestamp: +d[0],
+  .map((d: any[]) => {
+    const ts = +d[0];
+    return {
+      timestamp: ts,
+      time: ts, // ✅ required by the interface
       open: +d[1],
       high: +d[2],
       low: +d[3],
       close: +d[4],
       volume: +d[5],
-    }))
-    .reverse();
-}
+    };
+  })
+  .reverse();
 
 
 function calculateEMA(data: number[], period: number): number[] {
