@@ -883,7 +883,6 @@ export default function SignalChecker({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [filteredData, setFilteredData] = useState(SignalData);
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
@@ -952,14 +951,13 @@ const scrollToTop = () => {
     }
   }, [signals]);
 
-const sortByHighestEMA = () => {
-  const sorted = [...filteredData].sort(
-    (a, b) => b.differenceVsEMA70.percent - a.differenceVsEMA70.percent
-  );
-  setFilteredData(sorted);
-};
 
-  
+  const filtered = dataset.filter(d => d.differenceVsEMA70 !== null);
+  const sorted = filtered.sort(
+  (a, b) => (b.differenceVsEMA70!.percent) - (a.differenceVsEMA70!.percent)
+);
+  const topN = sorted.slice(0, 100);
+ 
   const handleRefresh = async () => {
   setIsRefreshing(true);
   await Promise.all([fetchPairs()]);
@@ -1116,13 +1114,6 @@ return (
     Reset All Toggles
   </button>
     
-<button
-  onClick={sortByHighestEMA}
-  className="p-2 bg-purple-600 text-white rounded mb-4"
->
-  Sort by Highest EMA Difference
-</button>
-    
 </div>
   </div>
 
@@ -1258,13 +1249,15 @@ return (
   {data.differenceVsEMA70.percent.toFixed(2)}% ({data.differenceVsEMA70.direction})
 </span>
   </p>
-)}
-{filteredData.map((signal, idx) => (
-  <div key={idx} className="border p-4 mb-2">
-    <p>Symbol: {signal.symbol}</p>
-    <p>EMA Difference: {signal.differenceVsEMA70.percent.toFixed(2)}%</p>
-    <p>Direction: {signal.differenceVsEMA70.direction}</p>
-  </div>
+{filteredData.map((data, idx) => (
+  <p key={idx}>
+    📉 <span className="font-medium text-white/70">
+      Ema70 & Inferred - Gap %:
+    </span>{' '}
+    <span className="text-yellow-300">
+      {data.differenceVsEMA70!.percent.toFixed(2)}% ({data.differenceVsEMA70!.direction})
+    </span>
+  </p>
 ))}
                 
           <p>
