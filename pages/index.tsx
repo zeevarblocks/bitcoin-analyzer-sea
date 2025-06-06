@@ -647,27 +647,6 @@ async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
   }
 }
 
-// The rest of getServerSideProps logic follows...
-async function fetchTopPairs(limit = 100): Promise<string[]> {
-    let sorted: any[] = [];
-
-try {
-  const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-  if (!res.ok) throw new Error(`Status ${res.status}`);
-  const data = await res.json();
-
-  sorted = data
-    .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
-    .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-    .slice(0, 100); // or however many you need
-} catch (err) {
-  console.error("❌ Failed to fetch Binance data on Vercel:", err);
-}
-
-// ✅ This is now safe — sorted is always defined
-return sorted.map((ticker: any) => ticker.symbol);
-                                         }
-
 export async function getServerSideProps() {
     try {
         const symbols = await fetchTopPairs(100);
