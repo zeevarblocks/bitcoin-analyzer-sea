@@ -94,7 +94,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
     };
   })
   .reverse();
-
+      }
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
