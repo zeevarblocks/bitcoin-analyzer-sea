@@ -858,7 +858,7 @@ type FilterType =
   | 'bearishContinuation'
   | 'ema14Bounce'
   | 'ema70Bounce'
-  | 'emaBounce' // Combined EMA14 & EMA70 bounce filter
+  | 'ema14&70Bounce' // Combined EMA14 & EMA70 bounce filter
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
@@ -1002,6 +1002,7 @@ const scrollToTop = () => {
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
       if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
+      if (activeFilter === 'ema14&70Bounce') return { data.ema70Bounce, data.ema14Bounce };
       return true;  
     });
   		
@@ -1177,6 +1178,13 @@ return (
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
   <span>ema14Bounce</span>
+</button>
+          <button
+  onClick={() => setActiveFilter('ema14&70Bounce')}
+  className="bg-gray-800 hover:bg-orange-600 text-cyan-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>ema14&70Bounce</span>
 </button>
                
 </div>
