@@ -858,7 +858,7 @@ if (type && level !== null) {
 
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp } from 'lucide-react'; // or your preferred icon
+
 
 type FilterType =
   | null
@@ -1453,15 +1453,7 @@ return (
       </div>
     ))}
 
-    {showScrollButton && (
-  <button
-    onClick={scrollToTop}
-    className="fixed bottom-5 right-5 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur shadow-lg transition duration-300"
-    aria-label="Scroll to top"
-  >
-    <ArrowUp size={20} />
-  </button>
-)}
+
 
     {/* Footer */}
     <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
