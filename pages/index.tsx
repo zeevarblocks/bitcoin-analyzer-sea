@@ -653,7 +653,11 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
-      const timestamps = candles.map(c => c.time * 1000);
+      const timestamps = candles.map(c => 
+  typeof c.time === 'number' && c.time.toString().length === 13
+    ? c.time // already in ms
+    : c.time * 1000 // convert from seconds to ms
+);
 
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
@@ -1053,6 +1057,29 @@ return (
     )}
     {/* Dropdown for Trading Pairs */}
       {/* Searchable input */}
+  <div className="flex gap-2 flex-wrap mt-4">
+  {/* Select All */}
+  <button
+    onClick={() =>
+      setSelectedPairs(
+        pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+      )
+    }
+    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+  >
+    Select All
+  </button>
+
+  {/* Reset Toggles */}
+  <button
+    onClick={() => resetToggles()}
+    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
+  >
+    Reset All Toggles
+  </button>
+    
+</div>
+    
   <div
   ref={containerRef}
   className="relative w-full md:w-auto flex flex-col md:flex-row gap-4"
@@ -1107,30 +1134,6 @@ return (
       </ul>
     )}
   </div>
-
-
-  <div className="flex gap-2 flex-wrap mt-4">
-  {/* Select All */}
-  <button
-    onClick={() =>
-      setSelectedPairs(
-        pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-      )
-    }
-    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
-  >
-    Select All
-  </button>
-
-  {/* Reset Toggles */}
-  <button
-    onClick={() => resetToggles()}
-    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
-  >
-    Reset All Toggles
-  </button>
-    
-</div>
   </div>
 
     
@@ -1426,14 +1429,7 @@ return (
 {/* 🔄 Recent EMA Crossings */}
 <ul className="space-y-1">
   {data.recentCrossings.map((cross, idx) => {
-    const formattedDate = new Date(cross.timestamp).toLocaleString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    const formattedDate = new Date(cross.timestamp).toLocaleString();
 
     return (
       <li
@@ -1457,7 +1453,6 @@ return (
     );
   })}
 </ul>
-
           
           
         {/* Trade Link */}
