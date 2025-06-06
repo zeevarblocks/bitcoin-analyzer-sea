@@ -628,6 +628,11 @@ function findRecentCrossings(
   return crossings.reverse();
 }
 
+function formatTimestamp(ts: number | string): string {
+  const num = Number(ts);
+  const millis = num < 1e12 ? num * 1000 : num; // convert if in seconds
+  return new Date(millis).toLocaleString();
+}
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
@@ -658,6 +663,9 @@ const symbols = await fetchTopPairs(100);
     ? c.time // already in ms
     : c.time * 1000 // convert from seconds to ms
 );
+      formatTimestamp(1717670000); // From seconds
+formatTimestamp(1717670000000); // From ms
+      
 
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
@@ -1427,32 +1435,41 @@ return (
 )}
 
 {/* 🔄 Recent EMA Crossings */}
-<ul className="space-y-1">
-  {data.recentCrossings.map((cross, idx) => {
-    const formattedDate = new Date(cross.timestamp).toLocaleString();
-
-    return (
-      <li
-        key={idx}
-        className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg ${
-          cross.type === 'bullish'
-            ? 'bg-green-900 text-green-300'
-            : 'bg-red-900 text-red-300'
-        }`}
-      >
-        <div>
-          <span>
-            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
-          </span>
-          <div className="text-xs text-gray-300 mt-1">{formattedDate}</div>
-        </div>
-        <span className="ml-auto font-mono text-sm">
-          @ ${cross.price.toFixed(9)} — {formattedDate}
-        </span>
-      </li>
-    );
-  })}
-</ul>
+{/* 🔄 Recent EMA Crossings */}
+{data.recentCrossings?.length > 0 && (
+  <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
+    <p className="text-base font-semibold text-blue-400 mb-2">
+      🔄 Recent EMA Crossings
+    </p>
+    <ul className="space-y-1">
+      {data.recentCrossings.map((cross, idx) => {
+        const formattedDate = new Date(cross.timestamp).toLocaleString();
+        return (
+          <li
+            key={idx}
+            className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg ${
+              cross.type === 'bullish'
+                ? 'bg-green-900 text-green-300'
+                : 'bg-red-900 text-red-300'
+            }`}
+          >
+            <div>
+              <span>
+                {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+              </span>
+              <div className="text-xs text-gray-300 mt-1">
+                {formattedDate}
+              </div>
+            </div>
+            <span className="ml-auto font-mono text-sm">
+              @ ${cross.price.toFixed(9)}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+)}
           
           
         {/* Trade Link */}
