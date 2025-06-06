@@ -1332,7 +1332,7 @@ return (
 
 {/* 🔁 EMA14 Bounce */}
         <div className="text-yellow-400 space-y-2">
-      🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
+        <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
 {data?.ema14Bounce && (
   <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
     🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
