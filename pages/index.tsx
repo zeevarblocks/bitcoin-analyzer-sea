@@ -575,59 +575,6 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
                                        }
 
-function findRecentCrossings(
-  ema14: number[],
-  ema70: number[],
-  closes: number[],
-  timestamps: number[] // Ensure Unix timestamps in milliseconds
-): {
-  type: 'bullish' | 'bearish';
-  price: number;
-  index: number;
-  timestamp: number;
-}[] {
-  const crossings: {
-    type: 'bullish' | 'bearish';
-    price: number;
-    index: number;
-    timestamp: number;
-  }[] = [];
-
-  // Iterate backwards to find the 3 most recent crossings
-  for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
-    const prevEMA14 = ema14[i - 1];
-    const prevEMA70 = ema70[i - 1];
-    const currEMA14 = ema14[i];
-    const currEMA70 = ema70[i];
-
-    const price = closes[i];
-    const timestamp = timestamps[i];
-
-    // Detect bullish crossover
-    if (prevEMA14 < prevEMA70 && currEMA14 >= currEMA70) {
-      crossings.push({
-        type: 'bullish',
-        price,
-        index: i,
-        timestamp: Number(timestamp),
-      });
-    }
-
-    // Detect bearish crossover
-    if (prevEMA14 > prevEMA70 && currEMA14 <= currEMA70) {
-      crossings.push({
-        type: 'bearish',
-        price,
-        index: i,
-        timestamp: Number(timestamp),
-      });
-    }
-  }
-
-  // Return crossings from oldest to most recent
-  return crossings.reverse();
-}
-
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
@@ -653,7 +600,7 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
-      const timestamps = candles.map(c => new Date(c.time).getTime());
+      
       
       
       const ema14 = calculateEMA(closes, 14);
@@ -806,9 +753,6 @@ if (type && level !== null) {
       const touchedEMA70Today =
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
-
-      
-const recentCrossings = findRecentCrossings(ema14, ema70, closes, timestamps);
 
 
       signals[symbol] = {
@@ -1425,45 +1369,32 @@ return (
 
 {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
-  <div className="bg-gray-800 p-4 rounded-xl shadow-inner mt-4">
-    <p className="text-base font-semibold text-blue-400 mb-2">
+  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
+    <p className="text-sm font-medium text-blue-300 mb-2">
       🔄 Recent EMA Crossings
     </p>
     <ul className="space-y-1">
-      {data.recentCrossings.map((cross, idx) => {
-        // Format timestamp safely
-        const formattedDate = cross.timestamp
-          ? new Date(cross.timestamp).toLocaleString()
-          : 'Invalid timestamp';
-
-        return (
-          <li
-            key={idx}
-            className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg ${
-              cross.type === 'bullish'
-                ? 'bg-green-900 text-green-300'
-                : 'bg-red-900 text-red-300'
-            }`}
-          >
-            <div>
-              <span>
-                {cross.type === 'bullish'
-                  ? '🟢 Bullish Cross'
-                  : '🔴 Bearish Cross'}
-              </span>
-              <div className="text-xs text-gray-300 mt-1">
-                {formattedDate}
-              </div>
-            </div>
-            <span className="ml-auto font-mono text-sm">
-              @ ${cross.price.toFixed(2)}
-            </span>
-          </li>
-        );
-      })}
+      {data.recentCrossings.map((cross, idx) => (
+        <li
+          key={idx}
+          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+            cross.type === 'bullish'
+              ? 'bg-green-800 text-green-200'
+              : 'bg-red-800 text-red-200'
+          }`}
+        >
+          <span className="text-sm">
+            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+          </span>
+          <span className="ml-auto font-mono text-xs">
+            @ ${cross.price.toFixed(2)}
+          </span>
+        </li>
+      ))}
     </ul>
   </div>
 )}
+
 
           
           
