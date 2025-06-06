@@ -854,6 +854,7 @@ if (type && level !== null) {
       defaultSymbol,
     },
   };
+  }
 }
         
 
