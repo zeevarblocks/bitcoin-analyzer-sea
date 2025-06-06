@@ -624,12 +624,21 @@ function detectBullishContinuationWithEnd(
   }
 
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
-                            }
+}
 
 
 
 // getServerSideProps.ts
-import { calculateEMA, calculateRSI, findRelevantLevel, calculateDifferenceVsEMA70, detectBearishContinuationWithEnd, detectBullishContinuationWithEnd, findRecentCrossings } from './signalAnalyzer';
+import {
+  calculateEMA,
+  calculateRSI,
+  findRelevantLevel,
+  calculateDifferenceVsEMA70,
+  detectBearishContinuationWithEnd,
+  detectBullishContinuationWithEnd,
+  findRecentCrossings,
+  fetchCandles // ✅ FIXED: now imported from signalAnalyzer.ts
+} from './signalAnalyzer';
 
 async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
   try {
@@ -649,39 +658,7 @@ async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
   }
 }
 
-async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;
-
-  try {
-    const response = await fetch(
-      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    );
-
-    if (!response.ok) {
-      throw new Error(\`Binance futures candle fetch failed: \${response.status} \${response.statusText}\`);
-    }
-
-    const data = await response.json();
-
-    return data.map((d: any[]) => {
-      const ts = +d[0];
-      return {
-        timestamp: ts,
-        time: ts,
-        open: +d[1],
-        high: +d[2],
-        low: +d[3],
-        close: +d[4],
-        volume: +d[5],
-      };
-    }).reverse();
-  } catch (error) {
-    console.error(\`❌ Error fetching candles for \${symbol} (\${interval}):\`, error);
-    return [];
-  }
-}
-
-// ...the rest of getServerSideProps logic remains unchanged (from uploaded file)
+// The rest of getServerSideProps logic follows...
 async function fetchTopPairs(limit = 100): Promise<string[]> {
     let sorted: any[] = [];
 
@@ -909,9 +886,7 @@ export async function getServerSideProps() {
         };
     }
   }
-
-
-// SignalChecker.tsx
+      // SignalChecker.tsx
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
 
@@ -1527,4 +1502,4 @@ return (
   </div>
 );
 
-}
+            }
