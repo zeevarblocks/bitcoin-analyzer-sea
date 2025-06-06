@@ -50,6 +50,7 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
+    timestamp: number;
   }[];
 
   // === Metadata ===
@@ -797,7 +798,7 @@ if (type && level !== null) {
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       
-const recentCrosses = findRecentCrossings(ema14, ema70, closes, timestamps);
+const recentCrossings = findRecentCrossings(ema14, ema70, closes, timestamps);
 
 
       signals[symbol] = {
