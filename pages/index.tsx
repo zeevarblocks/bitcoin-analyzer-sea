@@ -1064,17 +1064,20 @@ return (
 >
   <div className="relative w-full md:w-64">
     <input
-      ref={searchInputRef}
-      type="text"
-      placeholder="Search trading pair..."
-      value={searchTerm}
-      onChange={(e) => {
-        setSearchTerm(e.target.value);
-        setDropdownVisible(true);
-      }}
-      onFocus={() => setDropdownVisible(true)} // This handles opening on focus
-      className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
+  ref={searchInputRef}
+  type="text"
+  placeholder="Search trading pair..."
+  value={searchTerm}
+  onChange={(e) => {
+    setSearchTerm(e.target.value);
+    setDropdownVisible(true);
+  }}
+  onFocus={() => {
+    setDropdownVisible(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // 🔼 Scrolls to top
+  }}
+  className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>
 
     {/* Clear button */}
     {searchTerm && (
