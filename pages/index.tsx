@@ -1,3 +1,4 @@
+// signalAnalyzer.ts
 import React from 'react';
 
 interface SignalData {
@@ -623,10 +624,10 @@ function detectBullishContinuationWithEnd(
   }
 
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
-                                       }
+                            }
 
 
-// logic in getServerSideProps:
+// getServerSideProps.ts
 async function fetchTopPairs(limit = 100): Promise<string[]> {
     let sorted: any[] = [];
 
@@ -853,14 +854,10 @@ export async function getServerSideProps() {
             },
         };
     }
-                                                      }
+  }
 
 
-
-
-        
-
-
+// SignalChecker.tsx
 // In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
 
@@ -1476,4 +1473,4 @@ return (
   </div>
 );
 
-        }
+               }
