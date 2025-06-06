@@ -643,7 +643,7 @@ const data = await response.json();
 
 export async function getServerSideProps() {
     try {
-        const symbols = (await fetchTopPairs(100)).slice(0, 20);
+        const symbols = await fetchTopPairs(100);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
