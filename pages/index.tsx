@@ -1243,7 +1243,7 @@ return (
   {data.differenceVsEMA70.percent.toFixed(2)}% ({data.differenceVsEMA70.direction})
 </span>
   </p>
-                
+  )}              
           <p>
             📈 <span className="font-medium text-white/70">Trend:</span>{' '}
             <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
