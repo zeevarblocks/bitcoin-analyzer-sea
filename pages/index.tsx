@@ -1232,16 +1232,9 @@ return (
               {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
             </span>
           </p>
-                {data.differenceVsEMA70 !== null && (
-  <p>
-    📉 <span className="font-medium text-white/70">
-      Difference vs EMA70:
-    </span>{' '}
-    <span className="text-yellow-300">
-      {data.differenceVsEMA70.toFixed(2)}%
-    </span>
-  </p>
-)}
+                <span className="text-yellow-300">
+  {data.differenceVsEMA70.percent.toFixed(2)}% ({data.differenceVsEMA70.direction})
+</span>
           <p>
             📈 <span className="font-medium text-white/70">Trend:</span>{' '}
             <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
