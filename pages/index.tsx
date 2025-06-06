@@ -32,6 +32,7 @@ interface SignalData {
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
   inferredLevelWithinRange: boolean;
+    levelVsEMA70DifferencePct: number | null;
 
   // === Price + Intraday Movement ===
   currentPrice: number;
@@ -153,7 +154,14 @@ function findRelevantLevel(
   highs: number[],
   lows: number[],
   trend: 'bullish' | 'bearish'
-): { level: number | null; type: 'support' | 'resistance' | null } {
+): {
+  level: number | null;
+  type: 'support' | 'resistance' | null;
+  differencePct: number | null;
+} {
+  let level: number | null = null;
+  let type: 'support' | 'resistance' | null = null;
+
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -161,17 +169,34 @@ function findRelevantLevel(
     const curr70 = ema70[i];
 
     if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
-      return { level: closes[i], type: 'support' };
+      level = closes[i];
+      type = 'support';
+      break;
     }
 
     if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
-      return { level: closes[i], type: 'resistance' };
+      level = closes[i];
+      type = 'resistance';
+      break;
     }
   }
 
-  const level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
-  const type = trend === 'bullish' ? 'resistance' : 'support';
-  return { level, type };
+  // If no crossover found, use high/low as fallback
+  if (level === null) {
+    level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
+    type = trend === 'bullish' ? 'resistance' : 'support';
+  }
+
+  const latestEma70 = ema70[ema70.length - 1];
+  const differencePct = level && latestEma70
+    ? ((level - latestEma70) / latestEma70) * 100
+    : null;
+
+  return {
+    level,
+    type,
+    differencePct: differencePct !== null ? parseFloat(differencePct.toFixed(2)) : null,
+  };
 }
 
 // === Trendline Helpers ===
@@ -724,13 +749,26 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-      const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
-      const highestHigh = Math.max(...highs);
-      const lowestLow = Math.min(...lows);
-      const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
-      const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-      const inferredLevelWithinRange = inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
+const {
+  level,
+  type,
+  differencePct
+} = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
 
+const highestHigh = Math.max(...highs);
+const lowestLow = Math.min(...lows);
+
+const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
+const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
+
+const inferredLevelWithinRange =
+  inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
+
+// Optional: log or assign the difference from EMA70 for display
+const levelDifferenceText = differencePct !== null
+  ? `${differencePct > 0 ? '+' : ''}${differencePct.toFixed(2)}% ${level! > ema70[ema70.length - 1] ? 'above' : 'below'} EMA70`
+  : null;
+      
       let divergenceFromLevel = false;
 let divergenceFromLevelType: 'bullish' | 'bearish' | null = null;
 
@@ -778,6 +816,7 @@ if (type && level !== null) {
   inferredLevel,
   inferredLevelType,
   inferredLevelWithinRange,
+  levelVsEMA70DifferencePct: differencePct,
   todaysLowestLow,
   todaysHighestHigh,
   intradayHigherHighBreak,
@@ -1199,6 +1238,16 @@ return (
               {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
             </span>
           </p>
+                {data.levelVsEMA70DifferencePct !== null && (
+  <p>
+    📉 <span className="font-medium text-white/70">
+      Difference vs EMA70:
+    </span>{' '}
+    <span className="text-yellow-300">
+      {data.levelVsEMA70DifferencePct.toFixed(2)}%
+    </span>
+  </p>
+)}
           <p>
             📈 <span className="font-medium text-white/70">Trend:</span>{' '}
             <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
