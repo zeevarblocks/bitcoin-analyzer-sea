@@ -883,6 +883,7 @@ export default function SignalChecker({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [filteredData, setFilteredData] = useState(signalData);
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
@@ -895,6 +896,7 @@ export default function SignalChecker({
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  
   // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
     pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
@@ -950,7 +952,14 @@ const scrollToTop = () => {
     }
   }, [signals]);
 
+const sortByHighestEMA = () => {
+  const sorted = [...filteredData].sort(
+    (a, b) => b.differenceVsEMA70.percent - a.differenceVsEMA70.percent
+  );
+  setFilteredData(sorted);
+};
 
+  
   const handleRefresh = async () => {
   setIsRefreshing(true);
   await Promise.all([fetchPairs()]);
@@ -1106,6 +1115,14 @@ return (
   >
     Reset All Toggles
   </button>
+    
+<button
+  onClick={sortByHighestEMA}
+  className="p-2 bg-purple-600 text-white rounded mb-4"
+>
+  Sort by Highest EMA Difference
+</button>
+    
 </div>
   </div>
 
@@ -1242,6 +1259,14 @@ return (
 </span>
   </p>
 )}
+{filteredData.map((signal, idx) => (
+  <div key={idx} className="border p-4 mb-2">
+    <p>Symbol: {signal.symbol}</p>
+    <p>EMA Difference: {signal.differenceVsEMA70.percent.toFixed(2)}%</p>
+    <p>Direction: {signal.differenceVsEMA70.direction}</p>
+  </div>
+))}
+                
           <p>
             📈 <span className="font-medium text-white/70">Trend:</span>{' '}
             <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
