@@ -435,7 +435,43 @@ function detectBearishContinuationWithEnd(closes, lows, highs, ema70, rsi, ema14
     reason: 'No valid bearish continuation structure or RSI rejection found',
   };
                         }
-                
+
+function findRecentCrossings(
+  ema14: number[],
+  ema70: number[],
+  closes: number[]
+): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
+  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+
+  for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    // Bullish crossover
+    if (prev14 < prev70 && curr14 >= curr70) {
+      crossings.push({
+        type: 'bullish',
+        price: closes[i],
+        index: i,
+      });
+    }
+
+    // Bearish crossover
+    if (prev14 > prev70 && curr14 <= curr70) {
+      crossings.push({
+        type: 'bearish',
+        price: closes[i],
+        index: i,
+      });
+    }
+  }
+
+  return crossings.reverse(); // So it's ordered from oldest to newest
+}
+
+
 
 // Detect if there's a valid bullish trend first
 function isInBullishTrend(closes: number[], ema70: number[], rsi: number[]): boolean {
@@ -752,6 +788,8 @@ if (type && level !== null) {
       const touchedEMA70Today =
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
 
       signals[symbol] = {
