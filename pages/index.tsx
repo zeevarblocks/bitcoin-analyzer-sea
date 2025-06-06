@@ -50,7 +50,6 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
-    timestamp: number; 
   }[];
 
   // === Metadata ===
@@ -67,8 +66,8 @@ interface Candle {
   volume: number;
   ema14?: number;
   ema70?: number;
-  time: number; // or string depending on your source
-  timestamp: number; // ✅ Add this if timestamp exists
+  time: number; 
+  timestamp: number; 
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
