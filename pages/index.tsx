@@ -573,12 +573,19 @@ function detectBullishContinuationWithEnd(
 
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
                                        }
+
 function findRecentCrossings(
   ema14: number[],
   ema70: number[],
-  closes: number[]
-): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
-  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+  closes: number[],
+  timestamps: (number | string)[]
+): { type: 'bullish' | 'bearish'; price: number; index: number; timestamp: number | string }[] {
+  const crossings: {
+    type: 'bullish' | 'bearish';
+    price: number;
+    index: number;
+    timestamp: number | string;
+  }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
@@ -592,6 +599,7 @@ function findRecentCrossings(
         type: 'bullish',
         price: closes[i],
         index: i,
+        timestamp: timestamps[i],
       });
     }
 
@@ -601,12 +609,13 @@ function findRecentCrossings(
         type: 'bearish',
         price: closes[i],
         index: i,
+        timestamp: timestamps[i],
       });
     }
   }
 
-  return crossings.reverse(); // So it's ordered from oldest to newest
-}
+  return crossings.reverse(); // Oldest to newest
+  }
 
 
 
@@ -634,6 +643,7 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
+      const timestamps = candles.map(c => c.time);
 
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
@@ -786,7 +796,8 @@ if (type && level !== null) {
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+      
+const recentCrosses = findRecentCrossings(ema14, ema70, closes, timestamps);
 
 
       signals[symbol] = {
@@ -1408,27 +1419,38 @@ return (
       🔄 Recent EMA Crossings
     </p>
     <ul className="space-y-1">
-      {data.recentCrossings.map((cross, idx) => (
-        <li
-          key={idx}
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            cross.type === 'bullish'
-              ? 'bg-green-900 text-green-300'
-              : 'bg-red-900 text-red-300'
-          }`}
-        >
-          <span>
-            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
-          </span>
-          <span className="ml-auto font-mono text-sm">
-            @ ${cross.price.toFixed(9)}
-          </span>
-        </li>
-      ))}
+      {data.recentCrossings.map((cross, idx) => {
+        const formattedTime =
+          typeof cross.timestamp === 'number'
+            ? new Date(cross.timestamp).toLocaleString()
+            : cross.timestamp;
+
+        return (
+          <li
+            key={idx}
+            className={`flex flex-col md:flex-row md:items-center gap-1 md:gap-3 px-3 py-2 rounded-lg ${
+              cross.type === 'bullish'
+                ? 'bg-green-900 text-green-300'
+                : 'bg-red-900 text-red-300'
+            }`}
+          >
+            <span>
+              {cross.type === 'bullish'
+                ? '🟢 Bullish Cross'
+                : '🔴 Bearish Cross'}
+            </span>
+            <span className="ml-auto font-mono text-sm">
+              @ ${cross.price.toFixed(2)}
+            </span>
+            <span className="text-xs font-mono text-gray-300">
+              {formattedTime}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   </div>
 )}
-
           
           
         {/* Trade Link */}
