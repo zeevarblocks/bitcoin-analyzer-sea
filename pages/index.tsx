@@ -618,6 +618,7 @@ function detectBullishContinuationWithEnd(
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
+  try {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
     const data = await response.json();
@@ -630,13 +631,14 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.symbol);
   }
 
-const symbols = await fetchTopPairs(100);
+const symbols = (await fetchTopPairs(100)).slice(0, 20);
 
   const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
+       if (!candles || candles.length === 0) continue; 
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
@@ -839,11 +841,11 @@ if (type && level !== null) {
 };
 
     } catch (err) {
-      console.error(`Error fetching signal for ${symbol}:`, err);
+       console.error('❌ Server Error in getServerSideProps:', error);
     }
   }
 
-  const defaultSymbol = symbols[0];
+  const defaultSymbol = symbols.length > 0 ? symbols[0] : null;
 
   return {
     props: {
