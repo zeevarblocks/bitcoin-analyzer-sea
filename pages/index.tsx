@@ -72,29 +72,39 @@ interface Candle {
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
-  const response = await fetch(
-    `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-  );
 
-  const data = await response.json();
+  try {
+    const response = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    );
 
-  if (!Array.isArray(data)) throw new Error('Invalid candle data');
+    if (!response.ok) {
+      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
+    }
 
-  return data
-  .map((d: any[]) => {
-    const ts = +d[0];
-    return {
-      timestamp: ts,
-      time: ts, // ✅ required by the interface
-      open: +d[1],
-      high: +d[2],
-      low: +d[3],
-      close: +d[4],
-      volume: +d[5],
-    };
-  })
-  .reverse();
-      }
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid candle data format');
+    }
+
+    return data.map((d: any[]) => {
+      const ts = +d[0];
+      return {
+        timestamp: ts,
+        time: ts,
+        open: +d[1],
+        high: +d[2],
+        low: +d[3],
+        close: +d[4],
+        volume: +d[5],
+      };
+    }).reverse();
+  } catch (error) {
+    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
+    return []; // Return empty so main app doesn’t crash
+  }
+}
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
@@ -914,38 +924,45 @@ const scrollToTop = () => {
 
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-  setIsLoadingPairs(true);
-  try {
-    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-    const data = await response.json();
+    setIsLoadingPairs(true);
+    try {
+      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+      const data = await response.json();
+      console.log('Fetched Binance data:', data);
 
-    const sortedPairs = data
-      .filter((item: any) => item.symbol.endsWith('USDT')) // Only USDT pairs
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .map((item: any) => item.symbol);
+      const sortedPairs = data
+        .filter((item: any) => item.symbol.endsWith('USDT'))
+        .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+        .map((item: any) => item.symbol);
 
-    setPairs(sortedPairs);
+      setPairs(sortedPairs);
 
-    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-    const validSaved = savedPairs.filter(
-      (pair: string) => signals?.[pair]?.currentPrice !== undefined
-    );
+      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+      const validSaved = savedPairs.filter(
+        (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      );
 
-    if (validSaved.length > 0) {
-      setSelectedPairs(validSaved);
-    } else {
-      const topValidPairs = sortedPairs
-        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-        .slice(0, 100);
-      setSelectedPairs(topValidPairs);
+      if (validSaved.length > 0) {
+        setSelectedPairs(validSaved);
+      } else {
+        const topValidPairs = sortedPairs
+          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          .slice(0, 100);
+        setSelectedPairs(topValidPairs);
+      }
+    } catch (error) {
+      console.error('Error fetching trading pairs:', error);
+    } finally {
+      setIsLoadingPairs(false);
     }
-  } catch (error) {
-    console.error('Error fetching trading pairs:', error);
-  } finally {
-    setIsLoadingPairs(false);
-  }
-}, [signals]);
- 
+  }, [signals]);
+
+  useEffect(() => {
+    if (Object.keys(signals).length > 0) {
+      fetchPairs();
+    }
+  }, [signals]);
+
   const handleRefresh = async () => {
   setIsRefreshing(true);
   await Promise.all([fetchPairs()]);
