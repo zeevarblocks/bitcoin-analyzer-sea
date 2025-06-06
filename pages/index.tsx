@@ -638,7 +638,7 @@ async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
     const sorted = data
       .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
       .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, limit);
+      .slice(0, 100);
 
     return sorted.map((t) => t.symbol);
   } catch (err) {
