@@ -841,7 +841,7 @@ if (type && level !== null) {
 };
 
     } catch (err) {
-       console.error('❌ Server Error in getServerSideProps:', error);
+       console.error('❌ Server Error in getServerSideProps:', err);
     }
   }
 
