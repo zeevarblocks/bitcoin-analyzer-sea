@@ -629,17 +629,6 @@ function detectBullishContinuationWithEnd(
 
 
 // getServerSideProps.ts
-import {
-  calculateEMA,
-  calculateRSI,
-  findRelevantLevel,
-  calculateDifferenceVsEMA70,
-  detectBearishContinuationWithEnd,
-  detectBullishContinuationWithEnd,
-  findRecentCrossings,
-  fetchCandles // ✅ FIXED: now imported from signalAnalyzer.ts
-} from './signalAnalyzer';
-
 async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
   try {
     const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
