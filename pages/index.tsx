@@ -617,8 +617,6 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-export async function getServerSideProps() {
-  try {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
     const data = await response.json();
@@ -631,6 +629,8 @@ export async function getServerSideProps() {
     return sorted.map((ticker: any) => ticker.symbol);
   }
 
+export async function getServerSideProps() {
+  try {
 const symbols = (await fetchTopPairs(100)).slice(0, 20);
 
   const signals: Record<string, SignalData> = {};
