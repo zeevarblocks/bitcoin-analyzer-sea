@@ -645,6 +645,8 @@ try {
 
 // ✅ This is now safe — sorted is always defined
 return sorted.map((ticker: any) => ticker.symbol);
+                                         }
+
 export async function getServerSideProps() {
     try {
         const symbols = await fetchTopPairs(100);
