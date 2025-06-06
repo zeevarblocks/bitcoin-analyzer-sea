@@ -50,7 +50,7 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
-    timestamp: string | number; 
+    timestamp: number; 
   }[];
 
   // === Metadata ===
@@ -579,13 +579,18 @@ function findRecentCrossings(
   ema14: number[],
   ema70: number[],
   closes: number[],
-  timestamps: (number | string)[]
-): { type: 'bullish' | 'bearish'; price: number; index: number; timestamp: number | string }[] {
+  timestamps: number[] // Ensure these are Unix timestamps in milliseconds
+): {
+  type: 'bullish' | 'bearish';
+  price: number;
+  index: number;
+  timestamp: number;
+}[] {
   const crossings: {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
-    timestamp: number | string;
+    timestamp: number;
   }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
@@ -594,29 +599,27 @@ function findRecentCrossings(
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
-    // Bullish crossover
     if (prev14 < prev70 && curr14 >= curr70) {
       crossings.push({
         type: 'bullish',
         price: closes[i],
         index: i,
-        timestamp: timestamps[i],
+        timestamp: Number(timestamps[i]), // enforce number
       });
     }
 
-    // Bearish crossover
     if (prev14 > prev70 && curr14 <= curr70) {
       crossings.push({
         type: 'bearish',
         price: closes[i],
         index: i,
-        timestamp: timestamps[i],
+        timestamp: Number(timestamps[i]), // enforce number
       });
     }
   }
 
   return crossings.reverse(); // Oldest to newest
-  }
+    }
 
 
 
@@ -1439,8 +1442,8 @@ return (
             </div>
           </div>
           <span className="ml-auto font-mono text-sm">
-            @ ${cross.price.toFixed(9)}
-          </span>
+  @ ${cross.price.toFixed(9)} — {new Date(cross.timestamp).toLocaleString()}
+</span>
         </li>
       ))}
     </ul>
