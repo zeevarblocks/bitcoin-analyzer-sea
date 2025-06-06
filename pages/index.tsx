@@ -628,11 +628,14 @@ function detectBullishContinuationWithEnd(
 
 // logic in getServerSideProps:
 async function fetchTopPairs(limit = 100): Promise<string[]> {
-    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-if (!response.ok) {
-  throw new Error(`Binance API failed: ${response.status} ${response.statusText}`);
-}
-const data = await response.json();
+    try {
+  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+  if (!res.ok) throw new Error(`Status ${res.status}`);
+  const data = await res.json();
+  console.log("✅ Binance API response length:", data.length);
+} catch (err) {
+  console.error("❌ Failed to fetch Binance data on Vercel:", err);
+    }
     const sorted = data
         .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
         .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
