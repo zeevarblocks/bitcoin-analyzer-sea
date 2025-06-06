@@ -653,7 +653,7 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
-      const timestamps = candles.map(c => c.time);
+      const timestamps = candles.map(c => c.time * 1000);
 
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
