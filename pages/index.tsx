@@ -627,7 +627,61 @@ function detectBullishContinuationWithEnd(
                             }
 
 
+
 // getServerSideProps.ts
+import { calculateEMA, calculateRSI, findRelevantLevel, calculateDifferenceVsEMA70, detectBearishContinuationWithEnd, detectBullishContinuationWithEnd, findRecentCrossings } from './signalAnalyzer';
+
+async function fetchTopPerpetualPairs(limit = 100): Promise<string[]> {
+  try {
+    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const data = await res.json();
+
+    const sorted = data
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .slice(0, limit);
+
+    return sorted.map((t) => t.symbol);
+  } catch (err) {
+    console.error('❌ Failed to fetch Binance perpetual futures:', err);
+    return [];
+  }
+}
+
+async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
+  const limit = interval === '1d' ? 2 : 500;
+
+  try {
+    const response = await fetch(
+      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    );
+
+    if (!response.ok) {
+      throw new Error(\`Binance futures candle fetch failed: \${response.status} \${response.statusText}\`);
+    }
+
+    const data = await response.json();
+
+    return data.map((d: any[]) => {
+      const ts = +d[0];
+      return {
+        timestamp: ts,
+        time: ts,
+        open: +d[1],
+        high: +d[2],
+        low: +d[3],
+        close: +d[4],
+        volume: +d[5],
+      };
+    }).reverse();
+  } catch (error) {
+    console.error(\`❌ Error fetching candles for \${symbol} (\${interval}):\`, error);
+    return [];
+  }
+}
+
+// ...the rest of getServerSideProps logic remains unchanged (from uploaded file)
 async function fetchTopPairs(limit = 100): Promise<string[]> {
     let sorted: any[] = [];
 
@@ -1473,4 +1527,4 @@ return (
   </div>
 );
 
-               }
+}
