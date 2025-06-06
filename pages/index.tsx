@@ -628,11 +628,6 @@ function findRecentCrossings(
   return crossings.reverse();
 }
 
-function formatTimestamp(ts: number | string): string {
-  const num = Number(ts);
-  const millis = num < 1e12 ? num * 1000 : num; // convert if in seconds
-  return new Date(millis).toLocaleString();
-}
 
 // logic in getServerSideProps:
 export async function getServerSideProps() {
@@ -658,15 +653,8 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
-      const timestamps = candles.map(c => 
-  typeof c.time === 'number' && c.time.toString().length === 13
-    ? c.time // already in ms
-    : c.time * 1000 // convert from seconds to ms
-);
-      formatTimestamp(1717670000); // From seconds
-formatTimestamp(1717670000000); // From ms
       
-
+      
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
       const rsi14 = calculateRSI(closes, 14);
