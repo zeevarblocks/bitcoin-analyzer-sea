@@ -633,14 +633,17 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
   if (!res.ok) throw new Error(`Status ${res.status}`);
   const data = await res.json();
   console.log("✅ Binance API response length:", data.length);
+
+  const sorted = data
+    .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
+    .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, 100); // or whatever your limit is
+
+  // do something with sorted...
+
 } catch (err) {
   console.error("❌ Failed to fetch Binance data on Vercel:", err);
-    }
-    const sorted = data
-        .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
-        .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-        .slice(0, limit);
-
+}
     return sorted.map((ticker: any) => ticker.symbol);
 }
 
