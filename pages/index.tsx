@@ -1330,30 +1330,22 @@ return (
   </div>
 )}
 
-{/* 🔁 EMA14 Bounce */}
-        <div className="text-yellow-400 space-y-2">
-        <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>
-{data?.ema14Bounce && (
-  <div className="text-green-400 space-y-2 pt-4 border-t border-white/10">
-    🔁 <span className="font-semibold">EMA14: Bounce Detected</span>
-    <p className="text-sm text-white/70 ml-4 mt-1">
-      • Price recently bounced off the 14 EMA<br />
-      • Suggests short-term support and trend continuation
-    </p>
-  </div>
+{(data?.ema14Bounce || data?.ema70Bounce) && (
+
+  <div className="pt-4 border-t border-white/10 space-y-4">  
+    <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>  
+    <p className="text-sm text-white/80">  
+      Recent candles have bounced above the 14 and/or 70 EMA. This often indicates a consolidation zone where price is stabilizing between short- and medium-term averages.  
+    </p>  <div className="space-y-1">  
+  {data?.ema14Bounce && (  
+    <p className="text-green-400 text-lg font-semibold">🔁 EMA14: Yes</p>  
+  )}  
+  {data?.ema70Bounce && (  
+    <p className="text-green-400 text-lg font-semibold">🟡 EMA70: Yes</p>  
+  )}  
+</div> 
 )}
 
-{/* 🟡 EMA70 Bounce */}
-          {data?.ema70Bounce && (
-  <div className="text-yellow-400 space-y-2 pt-4 border-t border-white/10">
-    🟡 <span className="font-semibold">EMA70: Bounce Detected</span>
-    <p className="text-sm text-white/70 ml-4 mt-1">
-      • Price recently bounced off the 70 EMA<br />
-      • Indicates mid-term support or consolidation near trend baseline
-    </p>
-  </div>
-)}
-</div>             
 
 {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
