@@ -883,7 +883,7 @@ export default function SignalChecker({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [filteredData, setFilteredData] = useState(signalData);
+  const [filteredData, setFilteredData] = useState(SignalData);
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
