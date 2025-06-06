@@ -689,42 +689,6 @@ export async function getServerSideProps() {
                 const lastEMA70 = ema70.at(-1)!;
 
                 const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
-
-  const signal: SignalData = {
-    trend,
-    breakout: false,
-    bullishBreakout: false,
-    bearishBreakout: false,
-
-    divergence: false,
-    divergenceType: null,
-    divergenceFromLevel: false,
-    divergenceFromLevelType: null,
-    nearOrAtEMA70Divergence: false,
-
-    ema14Bounce: false,
-    ema70Bounce: false,
-
-    bullishContinuation: false,
-    bearishContinuation: false,
-    cleanTrendContinuation: false,
-    continuationEnded: false,
-
-    level: null,
-    levelType: null,
-    inferredLevel: 0,
-    inferredLevelType: 'resistance',
-    inferredLevelWithinRange: false,
-
-    currentPrice: closes[closes.length - 1],
-    touchedEMA70Today: false,
-    intradayHigherHighBreak: false,
-    intradayLowerLowBreak: false,
-    todaysLowestLow: Math.min(...lows),
-    todaysHighestHigh: Math.max(...highs),
-
-    recentCrossings: [],
-    url: `https://www.binance.com/en/futures/${symbol}`,
   
 
                 const now = new Date();
