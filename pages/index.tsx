@@ -32,7 +32,10 @@ interface SignalData {
   inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
   inferredLevelWithinRange: boolean;
-    levelVsEMA70DifferencePct: number | null;
+     differenceVsEMA70?: {
+    percent: number;
+    direction: 'above' | 'below' | 'equal';
+  };
 
   // === Price + Intraday Movement ===
   currentPrice: number;
@@ -154,14 +157,7 @@ function findRelevantLevel(
   highs: number[],
   lows: number[],
   trend: 'bullish' | 'bearish'
-): {
-  level: number | null;
-  type: 'support' | 'resistance' | null;
-  differencePct: number | null;
-} {
-  let level: number | null = null;
-  let type: 'support' | 'resistance' | null = null;
-
+): { level: number | null; type: 'support' | 'resistance' | null } {
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -169,35 +165,42 @@ function findRelevantLevel(
     const curr70 = ema70[i];
 
     if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
-      level = closes[i];
-      type = 'support';
-      break;
+      return { level: closes[i], type: 'support' };
     }
 
     if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
-      level = closes[i];
-      type = 'resistance';
-      break;
+      return { level: closes[i], type: 'resistance' };
     }
   }
 
-  // If no crossover found, use high/low as fallback
-  if (level === null) {
-    level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
-    type = trend === 'bullish' ? 'resistance' : 'support';
+  const level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
+  const type = trend === 'bullish' ? 'resistance' : 'support';
+  return { level, type };
   }
 
-  const latestEma70 = ema70[ema70.length - 1];
-  const differencePct = level && latestEma70
-    ? ((level - latestEma70) / latestEma70) * 100
-    : null;
+
+function calculateDifferenceVsEMA70(
+  inferredLevel: number,
+  ema70: number
+): { percent: number; direction: 'above' | 'below' | 'equal' } {
+  const raw = ((inferredLevel - ema70) / ema70) * 100;
+  const rounded = parseFloat(raw.toFixed(2));
+
+  let direction: 'above' | 'below' | 'equal' = 'equal';
+  if (rounded > 0) direction = 'above';
+  else if (rounded < 0) direction = 'below';
 
   return {
-    level,
-    type,
-    differencePct: differencePct !== null ? parseFloat(differencePct.toFixed(2)) : null,
+    percent: Math.abs(rounded),
+    direction
   };
-}
+        }
+
+
+
+
+
+
 
 // === Trendline Helpers ===
 function getLowestLowIndex(lows: number[]): number {
@@ -749,25 +752,15 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const {
-  level,
-  type,
-  differencePct
-} = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
-
-const highestHigh = Math.max(...highs);
-const lowestLow = Math.min(...lows);
-
-const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
-const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-
-const inferredLevelWithinRange =
-  inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
+const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
+      const highestHigh = Math.max(...highs);
+      const lowestLow = Math.min(...lows);
+      const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
+      const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
+      const inferredLevelWithinRange = inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
 
 // Optional: log or assign the difference from EMA70 for display
-const levelDifferenceText = differencePct !== null
-  ? `${differencePct > 0 ? '+' : ''}${differencePct.toFixed(2)}% ${level! > ema70[ema70.length - 1] ? 'above' : 'below'} EMA70`
-  : null;
+const { percent, direction } = calculateDifferenceVsEMA70(inferredLevel, ema70);
       
       let divergenceFromLevel = false;
 let divergenceFromLevelType: 'bullish' | 'bearish' | null = null;
@@ -816,7 +809,7 @@ if (type && level !== null) {
   inferredLevel,
   inferredLevelType,
   inferredLevelWithinRange,
-  levelVsEMA70DifferencePct: differencePct,
+  differenceVsEMA70,
   todaysLowestLow,
   todaysHighestHigh,
   intradayHigherHighBreak,
@@ -1238,13 +1231,13 @@ return (
               {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
             </span>
           </p>
-                {data.levelVsEMA70DifferencePct !== null && (
+                {data.differenceVsEMA70 !== null && (
   <p>
     📉 <span className="font-medium text-white/70">
       Difference vs EMA70:
     </span>{' '}
     <span className="text-yellow-300">
-      {data.levelVsEMA70DifferencePct.toFixed(2)}%
+      {data.differenceVsEMA70.toFixed(2)}%
     </span>
   </p>
 )}
