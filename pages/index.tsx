@@ -995,5 +995,4 @@ const SignalChecker: React.FC<Props> = ({ signals }) => {
     </div>
   );
 };
-
-export default SignalChecker;                  
+     
