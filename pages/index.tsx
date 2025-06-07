@@ -52,8 +52,11 @@ interface SignalData {
     index: number;
   }[];
 
+  timestamp: number;
+  
   // === Metadata ===
   url: string;
+  
 }
 
 // fetchCandles, calculateEMA, etc.,.
