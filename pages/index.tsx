@@ -1018,7 +1018,7 @@ for (let i = 20; i < closes.length; i++) {
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array of { type, price, index }
-     timestamp: number;
+     timestamp: Date.now(), 
 
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
