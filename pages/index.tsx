@@ -876,15 +876,7 @@ const shouldTrade =
   momentumShift === divergenceType;      // confluence with divergence
 
 /* ---------- 5) EXPORT / RETURN ---------- */
-return {
-  momentumShift,
-  macdShift,
-  rsiShift,
-  divergence,
-  divergenceType,
-  shouldTrade,
-  // …any other fields you need
-};
+
       
 
 
