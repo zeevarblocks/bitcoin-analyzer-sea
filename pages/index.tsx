@@ -1632,42 +1632,79 @@ return (
     </div>
 )}
 
- <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Signal Dashboard</h1>
+   <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6 text-white">📈 Signal Results</h1>
 
-      <Tabs defaultValue="all" onValueChange={setSelectedTrend}>
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="bullish">Bullish</TabsTrigger>
-          <TabsTrigger value="bearish">Bearish</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {results.length === 0 ? (
+        <p className="text-white/70">No significant signals detected.</p>
+      ) : (
+        <div className="space-y-6">
+          {results.map((result, idx) => (
+            <div
+              key={idx}
+              className="bg-gray-900 p-5 rounded-xl shadow border border-white/10 space-y-4"
+            >
+              <h2 className="text-xl font-semibold text-white">
+                🔢 Index: {result.index}
+              </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-        {filteredSignals.map(([symbol, data]) => (
-          <Card key={symbol} className="shadow-md border border-gray-200">
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold mb-2">{symbol}</h2>
-
-              <p className="text-sm mb-1">Current Price: ${data.currentPrice.toFixed(2)}</p>
-              <p className="text-sm mb-1">Trend: <Badge variant="outline">{data.trend}</Badge></p>
-              <p className="text-sm mb-1">Divergence: {data.divergence ? <Badge variant="destructive">{data.divergenceType}</Badge> : 'None'}</p>
-              <p className="text-sm mb-1">Breakout: {data.breakout ? 'Yes' : 'No'}</p>
-
-              {data.level && (
-                <p className="text-sm mb-1">
-                  Level: <span className="font-medium">{data.levelType} @ {data.level.toFixed(2)}</span>
+              <div className="text-white/80 text-sm space-y-1">
+                <p>
+                  📊 <span className="font-medium">Trend:</span>{' '}
+                  <span
+                    className={`font-semibold ${
+                      result.trend === 'bullish'
+                        ? 'text-green-400'
+                        : 'text-red-400'
+                    }`}
+                  >
+                    {result.trend}
+                  </span>
                 </p>
+                <p>
+                  🧠 <span className="font-medium">Reason:</span>{' '}
+                  {result.reason}
+                </p>
+              </div>
+
+              {result.divergence && (
+                <div className="pt-4 border-t border-white/10 space-y-2">
+                  <h3 className="text-lg font-semibold text-white">
+                    🔍 Divergence Signal
+                  </h3>
+                  <p className="text-purple-400 font-semibold">
+                    ⚠️ {result.divergenceType?.toUpperCase()} Divergence (RSI)
+                  </p>
+                  <p className="text-sm text-white/70 ml-4">
+                    • RSI moving opposite to price<br />
+                    • Suggests{' '}
+                    {result.divergenceType === 'bullish'
+                      ? 'bullish reversal'
+                      : 'bearish reversal'}{' '}
+                    possibility
+                  </p>
+                </div>
               )}
 
-              <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm mt-2 inline-block">
-                View on Exchange
-              </a>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div
+              {result.level !== undefined && (
+                <div className="pt-4 border-t border-white/10 space-y-2">
+                  <h3 className="text-lg font-semibold text-white">
+                    🏁 Level Identified
+                  </h3>
+                  <p className="text-sm text-white/80">
+                    {result.type === 'support' ? '🟩 Support' : '🟥 Resistance'}{' '}
+                    level at{' '}
+                    <span className="font-mono font-bold">
+                      {result.level.toFixed(9)}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
 
 
           
