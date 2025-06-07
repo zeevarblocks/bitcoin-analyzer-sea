@@ -1508,11 +1508,9 @@ return (
     </div>
      )}    
           
-
 {/* 🔍 Momentum Shift & Divergence */}
 {(data.divergence || data.momentumShift) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-
     {/* section header only once */}
     <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
 
@@ -1530,7 +1528,8 @@ return (
             ? 'bullish momentum despite lower lows'
             : 'bearish momentum despite higher highs'}
           <br />
-          • Watch for volume spikes, candlestick confirmation, or trendline breaks
+          • Watch for volume spikes, candlestick confirmation, or trendline breaks<br />
+          • Currently testing {data.levelType} level at <span className="text-white">{data.level}</span>
         </p>
       </div>
     )}
@@ -1548,13 +1547,15 @@ return (
             : 'MACD crossed downward / RSI crossed below 50'}
           <br />
           • Confirms fresh {data.momentumShift === 'bullish' ? 'buy' : 'sell'} pressure<br />
-          • Increases probability of follow-through toward next{' '}
-          {data.momentumShift === 'bullish' ? 'resistance' : 'support'} zone
+          • Watch for follow-through toward next{' '}
+          {data.momentumShift === 'bullish' ? 'resistance' : 'support'} zone<br />
+          • Key level: {data.levelType} at <span className="text-white">{data.level}</span>
         </p>
       </div>
     )}
   </div>
 )}
+
           
           
 
