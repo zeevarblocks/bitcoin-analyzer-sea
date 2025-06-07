@@ -998,6 +998,8 @@ const scrollToTop = () => {
     .filter(([symbol]) => selectedPairs.includes(symbol))
     .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
     .filter(([_, data]) => {
+      if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
+      if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
       if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
       if (activeFilter === 'bearishBreakout') return data.bearishBreakout;
       if (activeFilter === 'divergence') return data.divergence;
@@ -1191,6 +1193,21 @@ return (
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
   <span>ema14&70Bounce</span>
 </button>
+          <button
+    onClick={() => setActiveFilter('bullishContinuation')}
+    className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📈</span>
+    <span>bullishContinuation</span>
+  </button>
+
+  <button
+    onClick={() => setActiveFilter('bearishContinuation')}
+    className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>bearishContinuation</span>
+  </button>
                
 </div>
 
