@@ -1035,6 +1035,7 @@ return (
      {isLoadingPairs && (
       <div className="text-white font-medium animate-pulse">
         Loading trading pairs...
+        <div>
         <button
   onClick={() => {
     fetchPairs();
@@ -1044,6 +1045,7 @@ return (
 >
   {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
 </button>
+          </div>
         
       </div>
     )}
@@ -1057,7 +1059,7 @@ return (
         pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
       )
     }
-    className="bg-blue-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-yellow-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Select All
   </button>
@@ -1065,7 +1067,7 @@ return (
   {/* Reset Toggles */}
   <button
     onClick={() => resetToggles()}
-    className="bg-purple-600 hover:bg-yellow-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-orange-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Reset All Toggles
   </button>   
