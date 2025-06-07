@@ -1369,8 +1369,6 @@ return (
         </p>
       </div>
     )}
-  </div>
-)}
 
           {data.divergenceFromLevel && (
       <div className="text-pink-400 space-y-2">
