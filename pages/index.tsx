@@ -902,18 +902,7 @@ export default function SignalChecker({
   // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
     pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
-  );
-
-// ✅ First: declare this
-const filteredDisplaySignals = Object.entries(signals || {})
-  .filter(([symbol]) => selectedPairs.includes(symbol))
-  .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
-  .filter(([_, data]) => matchesFilter(data, activeFilter));
-
-// ✅ Then: use it here
-const filteredCount = filteredDisplaySignals.length;
-
-  
+  );  
 
 useEffect(() => {
   const handleScroll = () => {
@@ -1020,7 +1009,10 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       return true;  
     });
-  		
+
+// ✅ Then: use it here
+const filteredCount = filteredDisplaySignals.length;
+  
 
   // Close dropdown when clicking outside
   useEffect(() => {
