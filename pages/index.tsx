@@ -64,7 +64,7 @@ interface SignalData {
   }[];
 
   // === Meta ===
-  timestamp: string;      // ISO time for when this signal snapshot was captured
+  timestamp: number;      // ISO time for when this signal snapshot was captured
   url: string;               // Reference to the chart or source
   }
 
@@ -84,7 +84,7 @@ interface Candle {
 
   // === Time Information ===
   time: number;             // UNIX or bar index (exchange-dependent)
-  timestamp: string;        // ISO timestamp or milliseconds
+  timestamp: number;        // ISO timestamp or milliseconds
 
   // === Price Movement Flags (Optional but useful for signal marking) ===
   isHigherHigh?: boolean;   // true if current high is greater than previous significant high
@@ -1018,7 +1018,7 @@ for (let i = 20; i < closes.length; i++) {
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array of { type, price, index }
-     timestamp: Date.now().toString(),
+     timestamp: number;
 
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
