@@ -56,12 +56,12 @@ interface SignalData {
   }[];
 
   // === Historical Divergence Events (Optional) ===
-  historicalDivergences?: {
-    index: number;
-    type: 'bullish' | 'bearish';
-    confirmed: boolean;
-    priceAtSignal: number;
-  }[];
+   index: number;
+  level: number | null;
+  type: 'support' | 'resistance' | null;
+  divergence: boolean;
+  reason: string;
+   results: BarAnalysis[];
 
   // === Meta ===
   timestamp: number;      // ISO time for when this signal snapshot was captured
@@ -941,37 +941,9 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
 
-      const results = [];
-
-for (let i = 20; i < closes.length; i++) {
-  // === Determine Current Trend ===
-  const trend = ema14[i] > ema70[i] ? 'bullish' : 'bearish';
-
-  // === Analyze Current Candle ===
-  const result = analyzeBar(
-    i,
-    ema14,
-    ema70,
-    closes,
-    highs,
-    lows,
-    volumes,
-    trend
-  );
-
-  // === Log + Store if Significant Signal Found ===
-  const hasSignal = result.divergence || result.level;
-
-  if (hasSignal) {
-    results.push(result);
-
-    console.log(
-      `[${i}] ${trend.toUpperCase()} | Reason: ${result.reason} | ` +
-      `Divergence: ${result.divergence ? 'yes' : 'none'} | ` +
-      `Level: ${result.level ?? '-'} (${result.type ?? '-'})`
-    );
-  }
-}
+      const results = closes.map((_, index) =>
+  analyzeBar(index, ema14, ema70, closes, highs, lows, volumes, trend)
+);
       
    signals[symbol] = {
   // === Trend & Breakout ===
@@ -1632,79 +1604,34 @@ return (
     </div>
 )}
 
-   <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-white">📈 Signal Results</h1>
-
-      {results.length === 0 ? (
-        <p className="text-white/70">No significant signals detected.</p>
-      ) : (
-        <div className="space-y-6">
-          {results.map((result, idx) => (
-            <div
-              key={idx}
-              className="bg-gray-900 p-5 rounded-xl shadow border border-white/10 space-y-4"
-            >
-              <h2 className="text-xl font-semibold text-white">
-                🔢 Index: {result.index}
-              </h2>
-
-              <div className="text-white/80 text-sm space-y-1">
-                <p>
-                  📊 <span className="font-medium">Trend:</span>{' '}
-                  <span
-                    className={`font-semibold ${
-                      result.trend === 'bullish'
-                        ? 'text-green-400'
-                        : 'text-red-400'
-                    }`}
-                  >
-                    {result.trend}
-                  </span>
-                </p>
-                <p>
-                  🧠 <span className="font-medium">Reason:</span>{' '}
-                  {result.reason}
-                </p>
-              </div>
-
-              {result.divergence && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    🔍 Divergence Signal
-                  </h3>
-                  <p className="text-purple-400 font-semibold">
-                    ⚠️ {result.divergenceType?.toUpperCase()} Divergence (RSI)
-                  </p>
-                  <p className="text-sm text-white/70 ml-4">
-                    • RSI moving opposite to price<br />
-                    • Suggests{' '}
-                    {result.divergenceType === 'bullish'
-                      ? 'bullish reversal'
-                      : 'bearish reversal'}{' '}
-                    possibility
-                  </p>
-                </div>
-              )}
-
-              {result.level !== undefined && (
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <h3 className="text-lg font-semibold text-white">
-                    🏁 Level Identified
-                  </h3>
-                  <p className="text-sm text-white/80">
-                    {result.type === 'support' ? '🟩 Support' : '🟥 Resistance'}{' '}
-                    level at{' '}
-                    <span className="font-mono font-bold">
-                      {result.level.toFixed(9)}
-                    </span>
-                  </p>
-                </div>
-              )}
-            </div>
+     <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Divergence & EMA Signal Report</h2>
+      <table className="min-w-full bg-white border rounded shadow">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="py-2 px-4 border">Index</th>
+            <th className="py-2 px-4 border">Level</th>
+            <th className="py-2 px-4 border">Type</th>
+            <th className="py-2 px-4 border">Divergence</th>
+            <th className="py-2 px-4 border">Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          {results.map((r) => (
+            <tr key={r.index} className="text-center hover:bg-gray-50">
+              <td className="py-2 px-4 border">{r.index}</td>
+              <td className="py-2 px-4 border">{r.level ?? '—'}</td>
+              <td className="py-2 px-4 border">{r.type ?? '—'}</td>
+              <td className={`py-2 px-4 border ${r.divergence ? 'text-red-500 font-bold' : 'text-green-600'}`}>
+                {r.divergence ? 'Yes' : 'No'}
+              </td>
+              <td className="py-2 px-4 border text-left">{r.reason}</td>
+            </tr>
           ))}
-        </div>
-      )}
+        </tbody>
+      </table>
     </div>
+   
 
 
           
