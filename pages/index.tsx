@@ -1,116 +1,73 @@
 import React from 'react';
 
 interface SignalData {
-  // === Primary Trend Information ===
+  // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
-  currentPrice: number;
 
-  // === Breakout Detection ===
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
 
-  // === Divergence Detection ===
+  // === Divergence Signals ===
   divergence: boolean;
   divergenceType: 'bullish' | 'bearish' | null;
-  divergenceFromLevel: boolean; // is divergence forming at/near a key support/resistance level?
+  divergenceFromLevel: boolean;
   divergenceFromLevelType: 'bullish' | 'bearish' | null;
   nearOrAtEMA70Divergence: boolean;
 
-  // === EMA Bounce Detection ===
+  // === Bounce Events ===
   ema14Bounce: boolean;
   ema70Bounce: boolean;
 
-  // === Trend Continuation Logic ===
-  bullishContinuation: boolean;        // price forming higher highs in bullish trend
-  bearishContinuation: boolean;        // price forming lower lows in bearish trend
-  cleanTrendContinuation: boolean;     // continuation confirmed without conflicting signals
-  continuationEnded: boolean;          // indicates trend exhaustion or loss of momentum
-  continuationReason?: string;         // why trend continuation failed
+  // === Continuation Logic ===
+  bullishContinuation: boolean;  // true if bullish trend is continuing with higher highs
+  bearishContinuation: boolean;  // true if bearish trend is continuing with lower lows
+  cleanTrendContinuation: boolean; // if trend continuation is confirmed without contradictions
+  continuationEnded: boolean;      // true if the trend continuation has stopped (trend exhaustion)
+  continuationReason?: string;     // explanation for why continuation ended, e.g. "price failed higher highs"
 
-  // === Support / Resistance Zone ===
-  level: number | null;                // last confirmed support/resistance level
+  // === Support/Resistance Zones ===
+  level: number | null;
   levelType: 'support' | 'resistance' | null;
-  inferredLevel: number;              // dynamically inferred level based on recent price behavior
+  inferredLevel: number;
   inferredLevelType: 'support' | 'resistance';
-  inferredLevelWithinRange: boolean;  // whether inferred level is close enough to price
-
-  // === Relative Position to EMA70 ===
-  differenceVsEMA70?: {
-    percent: number;                  // price % gap from EMA70
+  inferredLevelWithinRange: boolean;
+     differenceVsEMA70?: {
+    percent: number;
     direction: 'above' | 'below' | 'equal';
   };
 
-  // === Intraday Movement / Volatility ===
+  // === Price + Intraday Movement ===
+  currentPrice: number;
   touchedEMA70Today: boolean;
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
 
-  // === Recent Crosses (Trend Reversal Markers) ===
+  // === Trend History ===
   recentCrossings?: {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
   }[];
 
-  // === Historical Divergence Events (Optional) ===
-   index: number;
-  level: number | null;
-  type: 'support' | 'resistance' | null;
-  reason: string;
-   results: BarAnalysis[];
-
-  // === Meta ===
-  timestamp: number;      // ISO time for when this signal snapshot was captured
-  url: string;               // Reference to the chart or source
-  }
+  // === Metadata ===
+  url: string;
+}
 
 // fetchCandles, calculateEMA, etc.,.
 // Somewhere in your types.ts or in the component file
 interface Candle {
-  // === Basic OHLC Data ===
   open: number;
   high: number;
   low: number;
   close: number;
   volume: number;
-
-  // === EMA Data ===
   ema14?: number;
   ema70?: number;
-
-  // === Time Information ===
-  time: number;             // UNIX or bar index (exchange-dependent)
-  timestamp: number;        // ISO timestamp or milliseconds
-
-  // === Price Movement Flags (Optional but useful for signal marking) ===
-  isHigherHigh?: boolean;   // true if current high is greater than previous significant high
-  isLowerLow?: boolean;     // true if current low is lower than previous significant low
-  isPullbackBar?: boolean;  // optional: true if this candle is part of a pullback move
-
-  // === Volume Analysis (Optional Fields) ===
-  avgVolume14?: number;     // 14-bar average volume for divergence context
-  volumeSpike?: boolean;    // true if volume is significantly higher than recent average
-  lowVolumeDip?: boolean;   // true if volume is significantly lower than recent average
-
-  // === Divergence Tracking (Optional) ===
-  divergenceSignal?: {
-    type: 'bullish' | 'bearish';
-    confirmed: boolean;
-    comparedToIndex: number; // index of previous high/low used in divergence
-  };
-
-  // === Bounce or Signal Marker ===
-  touchedEMA14?: boolean;
-  touchedEMA70?: boolean;
-  bouncedFromEMA14?: boolean;
-  bouncedFromEMA70?: boolean;
-
-  // === Meta (Optional) ===
-  label?: string; // human-readable label (e.g., "Breakout Bar", "Divergence Confirmed")
-  note?: string;  // optional developer/debugging note
+  time: number; 
+  timestamp: number; 
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
@@ -940,9 +897,14 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
 
-      const results = closes.map((_, index) =>
-  analyzeBar(index, ema14, ema70, closes, highs, lows, volumes, trend)
-);
+      const results = [];
+
+  for (let i = 3; i < closes.length; i++) {
+    const result = analyzeBar(i, ema14, ema70, closes, highs, lows, volumes, trend);
+    results.push(result);
+  }
+      
+      
       
    signals[symbol] = {
   // === Trend & Breakout ===
@@ -1603,32 +1565,21 @@ return (
     </div>
 )}
 
-     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Divergence & EMA Signal Report</h2>
-      <table className="min-w-full bg-white border rounded shadow">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="py-2 px-4 border">Index</th>
-            <th className="py-2 px-4 border">Level</th>
-            <th className="py-2 px-4 border">Type</th>
-            <th className="py-2 px-4 border">Divergence</th>
-            <th className="py-2 px-4 border">Reason</th>
-          </tr>
-        </thead>
-        <tbody>
-          {results.map((r) => (
-            <tr key={r.index} className="text-center hover:bg-gray-50">
-              <td className="py-2 px-4 border">{r.index}</td>
-              <td className="py-2 px-4 border">{r.level ?? '—'}</td>
-              <td className="py-2 px-4 border">{r.type ?? '—'}</td>
-              <td className={`py-2 px-4 border ${r.divergence ? 'text-red-500 font-bold' : 'text-green-600'}`}>
-                {r.divergence ? 'Yes' : 'No'}
-              </td>
-              <td className="py-2 px-4 border text-left">{r.reason}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+ <div className="min-h-screen p-6 bg-gray-100">
+      <h1 className="text-2xl font-bold mb-4">Market Signal Results</h1>
+      {results.map((res) => (
+        <div
+          key={res.index}
+          className="bg-white shadow p-4 rounded mb-2 border-l-4"
+          style={{ borderColor: res.type === 'support' ? 'green' : 'red' }}
+        >
+          <p><strong>Index:</strong> {res.index}</p>
+          <p><strong>Type:</strong> {res.type}</p>
+          <p><strong>Level:</strong> {res.level}</p>
+          <p><strong>Divergence:</strong> {res.divergence ? 'Yes' : 'No'}</p>
+          <p><strong>Reason:</strong> {res.reason}</p>
+        </div>
+      ))}
     </div>
    
 
