@@ -1355,7 +1355,7 @@ return (
 </div>
           
 {/* 📉 RSI Divergence Evidence */}
-{data.nearOrAtEMA70Divergence && (
+{data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -1372,20 +1372,7 @@ return (
   </div>
 )}
 
-{/* 🔍 Momentum Shift (RSI) */}
-{(data.divergence || data.divergenceFromLevel) && (
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
-    <div className="text-purple-400 space-y-2">
-      ⚠️ <span className="font-semibold">Momentum Shift {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI)</span>
-      <p className="text-sm text-white/70 ml-4 mt-1">
-        • RSI is moving opposite to price direction<br />
-        • Indicates possible {data.divergenceType === 'bullish' ? 'bullish momentum despite lower lows' : 'bearish momentum despite higher highs'}<br />
-        • Watch for volume spikes, candlestick confirmation, or trendline breaks
-      </p>
-    </div>
-    
-{data.divergenceFromLevel && (
+          {data.divergenceFromLevel && (
       <div className="text-pink-400 space-y-2">
         🔍 <span className="font-semibold">Divergence vs Key Level</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1402,6 +1389,21 @@ return (
         </p>
       </div>
     )}
+    </div>
+     )}     
+          
+
+{/* 🔍 Momentum Shift (RSI) */}
+{(data.divergence  && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
+    <div className="text-purple-400 space-y-2">
+      ⚠️ <span className="font-semibold">Momentum Shift {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI)</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • RSI is moving opposite to price direction<br />
+        • Indicates possible {data.divergenceType === 'bullish' ? 'bullish momentum despite lower lows' : 'bearish momentum despite higher highs'}<br />
+        • Watch for volume spikes, candlestick confirmation, or trendline breaks
+      </p>
     </div>
 )}
           
