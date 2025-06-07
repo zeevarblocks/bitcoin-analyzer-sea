@@ -56,6 +56,7 @@ interface SignalData {
   }[];
 
    momentumShift: 'bullish' | 'bearish' | null;
+     shouldTrade: boolean;
 
   // === Metadata ===
   url: string; // chart or signal reference URL
@@ -828,31 +829,63 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
 
-
-      const rsiPrev = rsi14.at(-2)!;
+/* ---------- 1) PRE-REQS ---------- */
+const rsiPrev = rsi14.at(-2)!;
 const rsiCurr = rsi14.at(-1)!;
-if (rsiPrev < 50 && rsiCurr > 50) momentumShift = 'bullish';
-if (rsiPrev > 50 && rsiCurr < 50) momentumShift = 'bearish';
 
-      // call once after you already have `closes`
 const { macdLine, signalLine } = macd(closes);
-
-// Look at the last two candles → simple but reliable
 const macdPrev = macdLine.at(-2)! - signalLine.at(-2)!;
 const macdCurr = macdLine.at(-1)! - signalLine.at(-1)!;
 
+/* ---------- 2) INDIVIDUAL MOMENTUM CUES ---------- */
+const macdShift: 'bullish' | 'bearish' | null =
+  macdPrev <= 0 && macdCurr > 0
+    ? 'bullish'
+    : macdPrev >= 0 && macdCurr < 0
+    ? 'bearish'
+    : null;
+
+const rsiShift: 'bullish' | 'bearish' | null =
+  rsiPrev < 50 && rsiCurr > 50
+    ? 'bullish'
+    : rsiPrev > 50 && rsiCurr < 50
+    ? 'bearish'
+    : null;
+
+/* ---------- 3) FINAL momentumShift ---------- */
+/**
+ *  Rule-of-thumb:
+ *  - If both indicators agree → use that side.
+ *  - If only one fires → use that one.
+ *  - If they disagree or neither fires → null.
+ */
 let momentumShift: 'bullish' | 'bearish' | null = null;
-if (macdPrev <= 0 && macdCurr > 0) {
-  momentumShift = 'bullish';   // MACD just crossed UP through signal
-} else if (macdPrev >= 0 && macdCurr < 0) {
-  momentumShift = 'bearish';   // MACD just crossed DOWN
+
+if (macdShift && rsiShift && macdShift === rsiShift) {
+  momentumShift = macdShift;                // confluence ✔
+} else if (macdShift && !rsiShift) {
+  momentumShift = macdShift;                // MACD only
+} else if (rsiShift && !macdShift) {
+  momentumShift = rsiShift;                 // RSI-50 only
 }
 
-
-// example filter: fire only if BOTH divergence *and* momentum support the same side
+/* ---------- 4) TRADE FILTER ---------- */
 const shouldTrade =
-  (momentumShift === 'bullish' && divergenceType === 'bullish') ||
-  (momentumShift === 'bearish' && divergenceType === 'bearish');
+  divergence &&                          // you already have this bool
+  momentumShift !== null &&
+  momentumShift === divergenceType;      // confluence with divergence
+
+/* ---------- 5) EXPORT / RETURN ---------- */
+return {
+  momentumShift,
+  macdShift,
+  rsiShift,
+  divergence,
+  divergenceType,
+  shouldTrade,
+  // …any other fields you need
+};
+      
 
 
     signals[symbol] = {
@@ -902,6 +935,10 @@ const shouldTrade =
   recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
 
       momentumShift,
+        shouldTrade:
+    divergence &&
+    momentumShift !== null &&
+    momentumShift === divergenceType,  
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
