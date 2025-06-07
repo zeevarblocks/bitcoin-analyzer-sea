@@ -897,13 +897,23 @@ export default function SignalChecker({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-const filteredCount = filteredDisplaySignals.length;
+
   
   // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
     pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
   );
 
+// ✅ First: declare this
+const filteredDisplaySignals = Object.entries(signals || {})
+  .filter(([symbol]) => selectedPairs.includes(symbol))
+  .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
+  .filter(([_, data]) => matchesFilter(data, activeFilter));
+
+// ✅ Then: use it here
+const filteredCount = filteredDisplaySignals.length;
+
+  
 
 useEffect(() => {
   const handleScroll = () => {
