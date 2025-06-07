@@ -1392,7 +1392,7 @@ return (
           
 
 {/* 🔍 Momentum Shift (RSI) */}
-{(data.divergence  && (
+{data.divergence  && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
     <div className="text-purple-400 space-y-2">
