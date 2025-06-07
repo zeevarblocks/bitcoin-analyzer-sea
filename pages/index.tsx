@@ -1035,6 +1035,16 @@ return (
      {isLoadingPairs && (
       <div className="text-white font-medium animate-pulse">
         Loading trading pairs...
+        <button
+  onClick={() => {
+    fetchPairs();
+  }}
+  disabled={isLoadingPairs}
+  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
+>
+  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
+</button>
+        
       </div>
     )}
     {/* Dropdown for Trading Pairs */}
@@ -1047,7 +1057,7 @@ return (
         pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
       )
     }
-    className="bg-gray-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-blue-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Select All
   </button>
@@ -1055,20 +1065,10 @@ return (
   {/* Reset Toggles */}
   <button
     onClick={() => resetToggles()}
-    className="bg-gray-600 hover:bg-yellow-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-purple-600 hover:bg-yellow-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Reset All Toggles
-  </button>
-
-    <button
-  onClick={() => {
-    fetchPairs();
-  }}
-  disabled={isLoadingPairs}
-  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
->
-  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
-</button>
+  </button>   
     
 </div>
 
