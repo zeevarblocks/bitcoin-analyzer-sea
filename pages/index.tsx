@@ -886,6 +886,7 @@ export default function SignalChecker({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [liveSignals, setLiveSignals] = useState<Record<string, SignalData>>(signals || {});
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
@@ -917,42 +918,76 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+const fetchSignals = async (symbols: string[]) => {
+  const results: Record<string, SignalData> = {};
+
+  for (const symbol of symbols) {
+    try {
+      const candles15m = await fetchCandles(symbol, '15m');
+      const candles1d = await fetchCandles(symbol, '1d');
+
+      const signal = computeSignalData(
+        candles15m,
+        candles1d,
+        `https://www.tradingview.com/symbols/${symbol.replace('-', '')}`
+      );
+
+      results[symbol] = signal;
+    } catch (err) {
+      console.error(`Error fetching signal for ${symbol}:`, err);
+    }
+  }
+
+  setLiveSignals(results);
+};
+
+
+  
+
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-    setIsLoadingPairs(true);
-    try {
-      const response = await fetch(
-        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
-      );
-      const data = await response.json();
-      const sortedPairs = data.data
-        .sort(
-          (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
-        )
-        .map((item: any) => item.instId);
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch(
+      'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+    );
+    const data = await response.json();
 
-      setPairs(sortedPairs);
+    const sortedPairs = data.data
+      .filter((item: any) => item.instId.endsWith('USDT'))
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .map((item: any) => item.instId);
 
-      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-      const validSaved = savedPairs.filter(
-        (pair: string) => signals?.[pair]?.currentPrice !== undefined
-      );
+    setPairs(sortedPairs);
 
-      if (validSaved.length > 0) {
-        setSelectedPairs(validSaved);
-      } else {
-        const topValidPairs = sortedPairs
-          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 100);
-        setSelectedPairs(topValidPairs);
-      }
-    } catch (error) {
-      console.error('Error fetching trading pairs:', error);
-    } finally {
-      setIsLoadingPairs(false);
+    // ✅ Fetch signals for those pairs
+    await fetchSignals(sortedPairs);
+
+    // ✅ Restore or pick top valid pairs
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter(
+      (pair: string) => liveSignals?.[pair]?.currentPrice !== undefined
+    );
+
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => liveSignals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 100);
+      setSelectedPairs(topValidPairs);
     }
-  }, [signals]);
+  } catch (err) {
+    console.error('Error fetching pairs:', err);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+}, []);
 
+  useEffect(() => {
+  fetchPairs();
+}, []);
+  
  
   const handleRefresh = async () => {
   setIsRefreshing(true);
