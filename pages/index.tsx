@@ -832,8 +832,8 @@ if (type && level !== null) {
 
   // Metadata
   url: `https://okx.com/join/96631749`,
-  candles15m,
-  candles1d,
+  candles15m: candles,
+  candles1d: candles1d,
 };
 
     } catch (err) {
