@@ -926,7 +926,7 @@ const fetchSignals = async (symbols: string[]) => {
       const candles15m = await fetchCandles(symbol, '15m');
       const candles1d = await fetchCandles(symbol, '1d');
 
-      const signal = SignalData(
+      const signal = liveSignalData(
         candles15m,
         candles1d,
         `https://www.okx.com/api/v5/market/tickers?instType=SPOT('-', '')}`
