@@ -3,6 +3,7 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
+  
 
   breakout: boolean;
   bullishBreakout: boolean;
@@ -53,7 +54,8 @@ interface SignalData {
     price: number;
     index: number;
   }[];
-  
+
+   momentumShift: 'bullish' | 'bearish' | null;
 
   // === Metadata ===
   url: string; // chart or signal reference URL
@@ -126,6 +128,31 @@ function calculateEMA(data: number[], period: number): number[] {
 
   return ema;
 }
+
+// reuse this everywhere so results stay consistent
+function ema(values: number[], period: number): number[] {
+  const k = 2 / (period + 1);
+  const out: number[] = [];
+  values.forEach((price, i) => {
+    if (i === 0) {
+      out.push(price);                // seed with first value
+    } else {
+      out.push(price * k + out[i - 1] * (1 - k));
+    }
+  });
+  return out;
+}
+
+function macd(values: number[]) {
+  const fast = ema(values, 12);
+  const slow = ema(values, 26);
+  const macdLine   = fast.map((v, i) => v - slow[i]);
+  const signalLine = ema(macdLine, 9);
+  const hist       = macdLine.map((v, i) => v - signalLine[i]);
+  return { macdLine, signalLine, hist };
+}
+
+
 
 function calculateRSI(closes: number[], period = 14): number[] {
   const rsi: number[] = [];
@@ -799,7 +826,33 @@ if (type && level !== null) {
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
+
+
+      const rsiPrev = rsi14.at(-2)!;
+const rsiCurr = rsi14.at(-1)!;
+if (rsiPrev < 50 && rsiCurr > 50) momentumShift = 'bullish';
+if (rsiPrev > 50 && rsiCurr < 50) momentumShift = 'bearish';
+
+      // call once after you already have `closes`
+const { macdLine, signalLine } = macd(closes);
+
+// Look at the last two candles → simple but reliable
+const macdPrev = macdLine.at(-2)! - signalLine.at(-2)!;
+const macdCurr = macdLine.at(-1)! - signalLine.at(-1)!;
+
+let momentumShift: 'bullish' | 'bearish' | null = null;
+if (macdPrev <= 0 && macdCurr > 0) {
+  momentumShift = 'bullish';   // MACD just crossed UP through signal
+} else if (macdPrev >= 0 && macdCurr < 0) {
+  momentumShift = 'bearish';   // MACD just crossed DOWN
+}
+
+
+// example filter: fire only if BOTH divergence *and* momentum support the same side
+const shouldTrade =
+  (momentumShift === 'bullish' && divergenceType === 'bullish') ||
+  (momentumShift === 'bearish' && divergenceType === 'bearish');
 
 
     signals[symbol] = {
@@ -847,6 +900,8 @@ if (type && level !== null) {
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
+
+      momentumShift,
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
@@ -1425,19 +1480,51 @@ return (
      )}    
           
 
-{/* 🔍 Momentum Shift (RSI) */}
-{data.divergence  && (
+{/* 🔍 Momentum Shift & Divergence */}
+{(data.divergence || data.momentumShift) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
+
+    {/* section header only once */}
     <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
-    <div className="text-purple-400 space-y-2">
-      ⚠️ <span className="font-semibold">Momentum Shift {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI)</span>
-      <p className="text-sm text-white/70 ml-4 mt-1">
-        • RSI is moving opposite to price direction<br />
-        • Indicates possible {data.divergenceType === 'bullish' ? 'bullish momentum despite lower lows' : 'bearish momentum despite higher highs'}<br />
-        • Watch for volume spikes, candlestick confirmation, or trendline breaks
-      </p>
-    </div>
-    </div>
+
+    {/* ▶️  RSI Divergence  */}
+    {data.divergence && (
+      <div className="text-purple-400 space-y-2">
+        ⚠️{' '}
+        <span className="font-semibold">
+          Momentum Shift {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI Divergence)
+        </span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • RSI is moving opposite to price direction<br />
+          • Indicates possible{' '}
+          {data.divergenceType === 'bullish'
+            ? 'bullish momentum despite lower lows'
+            : 'bearish momentum despite higher highs'}
+          <br />
+          • Watch for volume spikes, candlestick confirmation, or trendline breaks
+        </p>
+      </div>
+    )}
+
+    {/* ▶️  MACD / RSI-50 Momentum-Shift  */}
+    {data.momentumShift && (
+      <div className="text-amber-400 space-y-2">
+        ⚡{' '}
+        <span className="font-semibold">
+          {data.momentumShift === 'bullish' ? 'Bullish' : 'Bearish'} Momentum Shift Confirmed
+        </span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • {data.momentumShift === 'bullish'
+            ? 'MACD crossed upward / RSI crossed above 50'
+            : 'MACD crossed downward / RSI crossed below 50'}
+          <br />
+          • Confirms fresh {data.momentumShift === 'bullish' ? 'buy' : 'sell'} pressure<br />
+          • Increases probability of follow-through toward next{' '}
+          {data.momentumShift === 'bullish' ? 'resistance' : 'support'} zone
+        </p>
+      </div>
+    )}
+  </div>
 )}
           
           
