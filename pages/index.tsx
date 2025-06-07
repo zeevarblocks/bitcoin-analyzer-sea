@@ -53,7 +53,7 @@ interface SignalData {
     price: number;
     index: number;
   }[];
-  filteredResults: boolean;
+  
 
   // === Metadata ===
   url: string; // chart or signal reference URL
@@ -960,8 +960,7 @@ if (type && level !== null) {
   continuationReason,
 
   // === Historical Signals (Optional) ===
-  recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: number }
-filteredResults,
+  recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
