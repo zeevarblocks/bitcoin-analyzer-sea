@@ -50,9 +50,8 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
+    timestamp: number;
   }[];
-
-  timestamp: number;
   
   // === Metadata ===
   url: string;
