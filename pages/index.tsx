@@ -1355,7 +1355,7 @@ return (
 </div>
           
 {/* 📉 RSI Divergence Evidence */}
-{data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && (
+{(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -1388,7 +1388,7 @@ return (
       </div>
     )}
     </div>
-     )}     
+     )}    
           
 
 {/* 🔍 Momentum Shift (RSI) */}
@@ -1402,6 +1402,7 @@ return (
         • Indicates possible {data.divergenceType === 'bullish' ? 'bullish momentum despite lower lows' : 'bearish momentum despite higher highs'}<br />
         • Watch for volume spikes, candlestick confirmation, or trendline breaks
       </p>
+    </div>
     </div>
 )}
           
