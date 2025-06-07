@@ -897,7 +897,7 @@ export default function SignalChecker({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
+const filteredCount = filteredDisplaySignals.length;
   
   // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
@@ -1210,7 +1210,20 @@ return (
   </button>
                
 </div>
+<div>
+    <h2 className="text-white text-xl font-bold mb-2">
+  🔎 Showing {filteredCount} result{filteredCount !== 1 ? 's' : ''} 
+  {activeFilter && ` for ${activeFilter}`}
+</h2>
 
+<ul className="space-y-2">
+  {filteredDisplaySignals.map(([symbol, data]) => (
+    <li key={symbol} className="text-white/80">
+      • {symbol} — {activeFilter}
+    </li>
+  ))}
+</ul>
+</div>
       {filteredDisplaySignals.map(([symbol, data]) => (
         <div
           key={symbol}
