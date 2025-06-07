@@ -54,6 +54,8 @@ interface SignalData {
 
   // === Metadata ===
   url: string;
+    candles15m: Candle[],
+  candles1d: Candle[],
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -632,6 +634,7 @@ const symbols = await fetchTopPairs(100);
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
+      const candles1d = await fetchCandles(symbol, '1d');
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
@@ -831,6 +834,8 @@ if (type && level !== null) {
 
   // Metadata
   url: `https://okx.com/join/96631749`,
+  candles15m,
+  candles1d,
 };
 
     } catch (err) {
