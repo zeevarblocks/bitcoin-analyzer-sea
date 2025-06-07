@@ -1,6 +1,5 @@
-// In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
-
+import { ArrowUp } from 'lucide-react'; // or your preferred icon
 
 type FilterType =
   | null
@@ -33,6 +32,7 @@ export default function SignalChecker({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [liveSignals, setLiveSignals] = useState<Record<string, SignalData>>(signals || {});
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
@@ -49,8 +49,7 @@ export default function SignalChecker({
   // Filter pairs by search term
   const filteredPairs = pairs.filter((pair) =>
     pair.toLowerCase().includes(searchTerm.toLowerCase())                                   
-  );
-
+  );  
 
 useEffect(() => {
   const handleScroll = () => {
@@ -65,47 +64,77 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-  // Fetch pairs with stable callback reference
-  const fetchPairs = useCallback(async () => {
-    setIsLoadingPairs(true);
+const fetchSignals = async (symbols: string[]) => {
+  const results: Record<string, SignalData> = {};
+
+  for (const symbol of symbols) {
     try {
-      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-      const data = await response.json();
-      console.log('Fetched Binance data:', data);
+      const candles15m = await fetchCandles(symbol, '15m');
+      const candles1d = await fetchCandles(symbol, '1d');
 
-      const sortedPairs = data
-        .filter((item: any) => item.symbol.endsWith('USDT'))
-        .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-        .map((item: any) => item.symbol);
-
-      setPairs(sortedPairs);
-
-      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-      const validSaved = savedPairs.filter(
-        (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      const signal = computeSignalData(
+        candles15m,
+        candles1d,
+        `https://www.tradingview.com/symbols/${symbol.replace('-', '')}`
       );
 
-      if (validSaved.length > 0) {
-        setSelectedPairs(validSaved);
-      } else {
-        const topValidPairs = sortedPairs
-          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 100);
-        setSelectedPairs(topValidPairs);
-      }
-    } catch (error) {
-      console.error('Error fetching trading pairs:', error);
-    } finally {
-      setIsLoadingPairs(false);
+      results[symbol] = signal;
+    } catch (err) {
+      console.error(`Error fetching signal for ${symbol}:`, err);
     }
-  }, [signals]);
+  }
+
+  setLiveSignals(results);
+};
+
+
+  
+
+  // Fetch pairs with stable callback reference
+  const fetchPairs = useCallback(async () => {
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch(
+      'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+    );
+    const data = await response.json();
+
+    const sortedPairs = data.data
+      .filter((item: any) => item.instId.endsWith('USDT'))
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .map((item: any) => item.instId);
+
+    setPairs(sortedPairs);
+
+    // ✅ Fetch signals for those pairs
+    await fetchSignals(sortedPairs);
+
+    // ✅ Restore or pick top valid pairs
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter(
+      (pair: string) => liveSignals?.[pair]?.currentPrice !== undefined
+    );
+
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => liveSignals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 100);
+      setSelectedPairs(topValidPairs);
+    }
+  } catch (err) {
+    console.error('Error fetching pairs:', err);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+}, []);
 
   useEffect(() => {
-    if (Object.keys(signals).length > 0) {
-      fetchPairs();
-    }
-  }, [signals]);
-
+  fetchPairs();
+}, []);
+  
+ 
   const handleRefresh = async () => {
   setIsRefreshing(true);
   await Promise.all([fetchPairs()]);
@@ -149,6 +178,8 @@ const scrollToTop = () => {
     .filter(([symbol]) => selectedPairs.includes(symbol))
     .filter(([symbol]) => (showOnlyFavorites ? favorites.includes(symbol) : true))
     .filter(([_, data]) => {
+      if (activeFilter === 'bullishContinuation') return data.bullishContinuation;
+      if (activeFilter === 'bearishContinuation') return data.bearishContinuation;
       if (activeFilter === 'bullishBreakout') return data.bullishBreakout;
       if (activeFilter === 'bearishBreakout') return data.bearishBreakout;
       if (activeFilter === 'divergence') return data.divergence;
@@ -159,7 +190,10 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       return true;  
     });
-  		
+
+// ✅ Then: use it here
+const filteredCount = filteredDisplaySignals.length;
+  
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -178,12 +212,25 @@ const scrollToTop = () => {
 
   
 return (
-  <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
+  <div className="p-6 space-y-8 rounded-2xl bg-gradient-to-b from-gray-900 to-black min-h-screen">
      {isLoadingPairs && (
       <div className="text-white font-medium animate-pulse">
-        Loading trading pairs...
+        Loading trading pairs...        
       </div>
     )}
+
+    <div>
+        <button
+  onClick={() => {
+    fetchPairs();
+  }}
+  disabled={isLoadingPairs}
+  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
+>
+  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
+</button>
+          </div>
+    
     {/* Dropdown for Trading Pairs */}
       {/* Searchable input */}
   <div className="flex gap-2 flex-wrap mt-4">
@@ -194,7 +241,7 @@ return (
         pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
       )
     }
-    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-gray-600 hover:bg-yellow-700 text-purple px-3 py-1.5 text-sm rounded transition"
   >
     Select All
   </button>
@@ -202,12 +249,25 @@ return (
   {/* Reset Toggles */}
   <button
     onClick={() => resetToggles()}
-    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-gray-600 hover:bg-orange-700 text-purple px-3 py-1.5 text-sm rounded transition"
   >
     Reset All Toggles
-  </button>
+  </button>   
     
 </div>
+
+    <div className="flex items-center space-x-4">
+        <label className="text-white font-medium">
+          <input
+            type="checkbox"
+            checked={showOnlyFavorites}
+            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+            className="mr-2"
+          />
+          Show only favorites
+        </label>
+      </div>
+    
     
   <div
   ref={containerRef}
@@ -230,7 +290,6 @@ return (
   className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
 />
 
-    {/* Clear button */}
     {searchTerm && (
       <button
         onClick={(e) => {
@@ -267,21 +326,7 @@ return (
     )}
   </div>
   </div>
-
-    
-      <div className="flex items-center space-x-4">
-        <label className="text-white font-medium">
-          <input
-            type="checkbox"
-            checked={showOnlyFavorites}
-            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-            className="mr-2"
-          />
-          Show only favorites
-        </label>
-      </div>
         <div className="flex gap-2 flex-wrap">
-
 <button
   onClick={() => setActiveFilter('bullishBreakout')}
   className="bg-gray-800 hover:bg-emerald-600 text-green-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
@@ -303,7 +348,7 @@ return (
     className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>🧱</span>
-    <span>trendPullback</span>
+    <span>divergence</span>
   </button>
           
 <button
@@ -342,9 +387,37 @@ return (
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
   <span>ema14&70Bounce</span>
 </button>
+          <button
+    onClick={() => setActiveFilter('bullishContinuation')}
+    className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📈</span>
+    <span>bullishContinuation</span>
+  </button>
+
+  <button
+    onClick={() => setActiveFilter('bearishContinuation')}
+    className="bg-gray-800 hover:bg-red-700 text-red-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>bearishContinuation</span>
+  </button>
                
 </div>
-
+<div>
+<h2 className="text-gray-100 text-2xl font-semibold mb-4 flex items-center gap-2">
+  <span className="text-blue-400">🔎</span>
+  <span>
+    Showing <span className="font-bold text-white">{filteredCount}</span> 
+    {filteredCount !== 1 ? ' results' : ' result'}
+    {activeFilter && (
+      <span className="text-sm text-gray-400 ml-1 italic">
+        for <span className="text-blue-300">{activeFilter}</span>
+      </span>
+    )}
+  </span>
+</h2>
+</div>
       {filteredDisplaySignals.map(([symbol, data]) => (
         <div
           key={symbol}
@@ -364,15 +437,6 @@ return (
         >
           Unselect
         </button>
-                       <button
-  onClick={() => {
-    fetchPairs();
-  }}
-  disabled={isLoadingPairs}
-  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
->
-  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
-</button>
             </div>
            
               <div className="space-y-1">
@@ -489,7 +553,7 @@ return (
 </div>
           
 {/* 📉 RSI Divergence Evidence */}
-{data.nearOrAtEMA70Divergence && (
+{(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -503,11 +567,30 @@ return (
         </p>
       </div>
     )}
-  </div>
-)}
+
+          {data.divergenceFromLevel && (
+      <div className="text-pink-400 space-y-2">
+        🔍 <span className="font-semibold">Divergence vs Key Level</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Type:{" "}
+          <span className="capitalize text-white">
+            {data.divergenceFromLevelType === "bullish"
+              ? "Bullish (buy)"
+              : data.divergenceFromLevelType === "bearish"
+              ? "Bearish (sell)"
+              : "Confirmed"}
+          </span><br />
+          • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
+          • Suggests a potential trend continuation
+        </p>
+      </div>
+    )}
+    </div>
+     )}    
+          
 
 {/* 🔍 Momentum Shift (RSI) */}
-{(data.divergence || data.divergenceFromLevel) && (
+{data.divergence  && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
     <div className="text-purple-400 space-y-2">
@@ -518,24 +601,6 @@ return (
         • Watch for volume spikes, candlestick confirmation, or trendline breaks
       </p>
     </div>
-    
-{data.divergenceFromLevel && (
-      <div className="text-pink-400 space-y-2">
-        🔍 <span className="font-semibold">Divergence vs Key Level</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • Type:{" "}
-          <span className="capitalize text-white">
-            {data.divergenceFromLevelType === "bullish"
-              ? "Reversal warning (sell)"
-              : data.divergenceFromLevelType === "bearish"
-              ? "Reversal warning (buy)"
-              : "Confirmed"}
-          </span><br />
-          • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
-          • Suggests a potential trend continuation or a fakeout trap
-        </p>
-      </div>
-    )}
     </div>
 )}
           
@@ -602,7 +667,15 @@ return (
       </div>
     ))}
 
-
+    {showScrollButton && (
+  <button
+    onClick={scrollToTop}
+    className="fixed bottom-5 right-5 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur shadow-lg transition duration-300"
+    aria-label="Scroll to top"
+  >
+    <ArrowUp size={20} />
+  </button>
+)}
 
     {/* Footer */}
     <footer className="text-sm text-center text-gray-500 pt-6 border-t border-neutral-700 mt-10 px-4">
@@ -613,4 +686,4 @@ return (
   </div>
 );
 
-        }
+          }
