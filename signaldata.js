@@ -54,6 +54,8 @@ interface SignalData {
 
   // === Metadata ===
   url: string;
+    candles15m: Candle[],
+  candles1d: Candle[],
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -72,38 +74,23 @@ interface Candle {
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
+  const response = await fetch(
+    `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
+  );
+  const data = await response.json();
 
-  try {
-    const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    );
+  if (!data.data || !Array.isArray(data.data)) throw new Error('Invalid candle data');
 
-    if (!response.ok) {
-      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid candle data format');
-    }
-
-    return data.map((d: any[]) => {
-      const ts = +d[0];
-      return {
-        timestamp: ts,
-        time: ts,
-        open: +d[1],
-        high: +d[2],
-        low: +d[3],
-        close: +d[4],
-        volume: +d[5],
-      };
-    }).reverse();
-  } catch (error) {
-    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
-    return []; // Return empty so main app doesn’t crash
-  }
+  return data.data
+    .map((d: string[]) => ({
+      timestamp: +d[0],
+      open: +d[1],
+      high: +d[2],
+      low: +d[3],
+      close: +d[4],
+      volume: +d[5],
+    }))
+    .reverse();
 }
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -623,4 +610,4 @@ function detectBullishContinuationWithEnd(
   }
 
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
-                            }
+    }
