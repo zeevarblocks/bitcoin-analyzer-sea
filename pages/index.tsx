@@ -53,6 +53,7 @@ interface SignalData {
     price: number;
     index: number;
   }[];
+  filteredResults: boolean;
 
   // === Metadata ===
   url: string; // chart or signal reference URL
@@ -905,7 +906,7 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
 
-const filteredResults = results;
+
       
       for (let i = 3; i < closes.length; i++) {
   const result = analyzeBar(i, ema14, ema70, closes, highs, lows, volumes, 'bullish');
@@ -913,6 +914,7 @@ const filteredResults = results;
     console.log(`Index ${result.index}:`, result);
   }
       }
+      const filteredResults = results;
 
     signals[symbol] = {
   // === Trend & Breakout ===
@@ -959,6 +961,7 @@ const filteredResults = results;
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: number }
+filteredResults,
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
