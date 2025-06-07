@@ -610,10 +610,8 @@ function detectBullishContinuationWithEnd(
   }
 
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
-                                       }
+    }
 
-
-// logic in getServerSideProps:
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
@@ -853,10 +851,7 @@ if (type && level !== null) {
     },
   };
 }
-        
 
-
-// In the component SignalChecker, just render the two new fields like this:
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowUp } from 'lucide-react'; // or your preferred icon
 
@@ -1545,4 +1540,4 @@ return (
   </div>
 );
 
-          }
+}
