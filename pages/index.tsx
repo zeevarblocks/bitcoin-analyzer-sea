@@ -620,111 +620,6 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
     }
 
-function detectDivergence(
-  closes: number[],
-  highs: number[],
-  lows: number[],
-  ema14: number[],
-  volumes: number[],
-  trend: 'bullish' | 'bearish'
-): { divergence: boolean; reason: string } {
-  const len = closes.length;
-
-  for (let i = len - 2; i >= 3; i--) {
-    if (trend === 'bullish') {
-      const priceHH = highs[i] > highs[i - 2];
-      const emaLH = ema14[i] < ema14[i - 2];
-      const volDecreasing = volumes[i] < volumes[i - 2];
-
-      if (priceHH && emaLH && volDecreasing) {
-        return {
-          divergence: true,
-          reason: `Bearish divergence at index ${i}: Price HH, EMA14 LH, Volume Decreasing`,
-        };
-      }
-    }
-
-    if (trend === 'bearish') {
-      const priceLL = lows[i] < lows[i - 2];
-      const emaHL = ema14[i] > ema14[i - 2];
-      const volDecreasing = volumes[i] < volumes[i - 2];
-
-      if (priceLL && emaHL && volDecreasing) {
-        return {
-          divergence: true,
-          reason: `Bullish divergence at index ${i}: Price LL, EMA14 HL, Volume Decreasing`,
-        };
-      }
-    }
-  }
-
-  return { divergence: false, reason: 'No divergence found' };
-}
-
-function analyzeBar(
-  index: number,
-  ema14: number[],
-  ema70: number[],
-  closes: number[],
-  highs: number[],
-  lows: number[],
-  volumes: number[],
-  trend: 'bullish' | 'bearish'
-): {
-  index: number;
-  level: number | null;
-  type: 'support' | 'resistance' | null;
-  divergence: boolean;
-  reason: string;
-} {
-  if (index < 3 || index >= closes.length) {
-    return {
-      index,
-      level: null,
-      type: null,
-      divergence: false,
-      reason: 'Index out of range',
-    };
-  }
-
-  // EMA crossover logic
-  const prev14 = ema14[index - 1];
-  const prev70 = ema70[index - 1];
-  const curr14 = ema14[index];
-  const curr70 = ema70[index];
-
-  let level: number | null = null;
-  let type: 'support' | 'resistance' | null = null;
-
-  if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
-    level = closes[index];
-    type = 'support';
-  }
-
-  if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
-    level = closes[index];
-    type = 'resistance';
-  }
-
-  // Slice data to look back
-  const closesSegment = closes.slice(index - 3, index + 1);
-  const highsSegment = highs.slice(index - 3, index + 1);
-  const lowsSegment = lows.slice(index - 3, index + 1);
-  const emaSegment = ema14.slice(index - 3, index + 1);
-  const volumeSegment = volumes.slice(index - 3, index + 1);
-
-  const div = detectDivergence(closesSegment, highsSegment, lowsSegment, emaSegment, volumeSegment, trend);
-
-  return {
-    index,
-    level,
-    type,
-    divergence: div.divergence,
-    reason: div.reason,
-  };
-        }
-
-
 
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
@@ -906,15 +801,6 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
 
-
-      
-      for (let i = 3; i < closes.length; i++) {
-  const result = analyzeBar(i, ema14, ema70, closes, highs, lows, volumes, 'bullish');
-  if (result.divergence || result.level) {
-    console.log(`Index ${result.index}:`, result);
-  }
-      }
-      const filteredResults = results;
 
     signals[symbol] = {
   // === Trend & Breakout ===
@@ -1442,7 +1328,7 @@ return (
 
           <div className="pt-4 border-t border-white/10 space-y-3">
   <h3 className="text-lg font-semibold text-white">📊 Signal Summary</h3>
-
+            
   {data.continuationEnded ? (
     <div className="text-yellow-400">
       ⚠️ <span className="font-semibold">Continuation Ended</span>: The clean trend structure was broken.
@@ -1572,40 +1458,6 @@ return (
 </div>
     </div>
 )}
-
- <div className="p-4">
-  <h1 className="text-2xl font-bold mb-4">Bullish Analysis Results</h1>
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {filteredResults.map((result, index) => (
-      <Card key={index} className="bg-white shadow rounded-2xl p-4">
-        <CardContent>
-          <h2 className="text-lg font-semibold mb-2">
-            Index {result.index}
-          </h2>
-          <ul className="text-sm text-gray-700 space-y-1">
-            {result.divergence && (
-              <li>
-                <strong>Divergence:</strong> {result.divergence}
-              </li>
-            )}
-            {result.level && (
-              <li>
-                <strong>Level:</strong> {result.level}
-              </li>
-            )}
-            {result.signal && (
-              <li>
-                <strong>Signal:</strong> {result.signal}
-              </li>
-            )}
-            {/* Add more fields as needed */}
-          </ul>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-</div>
-   
 
           
 
