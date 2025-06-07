@@ -1,73 +1,117 @@
 import React from 'react';
 
 interface SignalData {
-  // === Trend & Breakout ===
+  // === Primary Trend Information ===
   trend: 'bullish' | 'bearish' | 'neutral';
+  currentPrice: number;
 
+  // === Breakout Detection ===
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
 
-  // === Divergence Signals ===
+  // === Divergence Detection ===
   divergence: boolean;
   divergenceType: 'bullish' | 'bearish' | null;
-  divergenceFromLevel: boolean;
+  divergenceFromLevel: boolean; // is divergence forming at/near a key support/resistance level?
   divergenceFromLevelType: 'bullish' | 'bearish' | null;
   nearOrAtEMA70Divergence: boolean;
 
-  // === Bounce Events ===
+  // === EMA Bounce Detection ===
   ema14Bounce: boolean;
   ema70Bounce: boolean;
 
-  // === Continuation Logic ===
-  bullishContinuation: boolean;  // true if bullish trend is continuing with higher highs
-  bearishContinuation: boolean;  // true if bearish trend is continuing with lower lows
-  cleanTrendContinuation: boolean; // if trend continuation is confirmed without contradictions
-  continuationEnded: boolean;      // true if the trend continuation has stopped (trend exhaustion)
-  continuationReason?: string;     // explanation for why continuation ended, e.g. "price failed higher highs"
+  // === Trend Continuation Logic ===
+  bullishContinuation: boolean;        // price forming higher highs in bullish trend
+  bearishContinuation: boolean;        // price forming lower lows in bearish trend
+  cleanTrendContinuation: boolean;     // continuation confirmed without conflicting signals
+  continuationEnded: boolean;          // indicates trend exhaustion or loss of momentum
+  continuationReason?: string;         // why trend continuation failed
 
-  // === Support/Resistance Zones ===
-  level: number | null;
+  // === Support / Resistance Zone ===
+  level: number | null;                // last confirmed support/resistance level
   levelType: 'support' | 'resistance' | null;
-  inferredLevel: number;
+  inferredLevel: number;              // dynamically inferred level based on recent price behavior
   inferredLevelType: 'support' | 'resistance';
-  inferredLevelWithinRange: boolean;
-     differenceVsEMA70?: {
-    percent: number;
+  inferredLevelWithinRange: boolean;  // whether inferred level is close enough to price
+
+  // === Relative Position to EMA70 ===
+  differenceVsEMA70?: {
+    percent: number;                  // price % gap from EMA70
     direction: 'above' | 'below' | 'equal';
   };
 
-  // === Price + Intraday Movement ===
-  currentPrice: number;
+  // === Intraday Movement / Volatility ===
   touchedEMA70Today: boolean;
   intradayHigherHighBreak: boolean;
   intradayLowerLowBreak: boolean;
   todaysLowestLow: number;
   todaysHighestHigh: number;
 
-  // === Trend History ===
+  // === Recent Crosses (Trend Reversal Markers) ===
   recentCrossings?: {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
   }[];
 
-  // === Metadata ===
-  url: string;
-}
+  // === Historical Divergence Events (Optional) ===
+  historicalDivergences?: {
+    index: number;
+    type: 'bullish' | 'bearish';
+    confirmed: boolean;
+    priceAtSignal: number;
+  }[];
+
+  // === Meta ===
+  timestamp: string;         // ISO time for when this signal snapshot was captured
+  url: string;               // Reference to the chart or source
+  }
 
 // fetchCandles, calculateEMA, etc.,.
 // Somewhere in your types.ts or in the component file
 interface Candle {
+  // === Basic OHLC Data ===
   open: number;
   high: number;
   low: number;
   close: number;
   volume: number;
+
+  // === EMA Data ===
   ema14?: number;
   ema70?: number;
-  time: number; 
-  timestamp: number; 
+
+  // === Time Information ===
+  time: number;             // UNIX or bar index (exchange-dependent)
+  timestamp: number;        // ISO timestamp or milliseconds
+
+  // === Price Movement Flags (Optional but useful for signal marking) ===
+  isHigherHigh?: boolean;   // true if current high is greater than previous significant high
+  isLowerLow?: boolean;     // true if current low is lower than previous significant low
+  isPullbackBar?: boolean;  // optional: true if this candle is part of a pullback move
+
+  // === Volume Analysis (Optional Fields) ===
+  avgVolume14?: number;     // 14-bar average volume for divergence context
+  volumeSpike?: boolean;    // true if volume is significantly higher than recent average
+  lowVolumeDip?: boolean;   // true if volume is significantly lower than recent average
+
+  // === Divergence Tracking (Optional) ===
+  divergenceSignal?: {
+    type: 'bullish' | 'bearish';
+    confirmed: boolean;
+    comparedToIndex: number; // index of previous high/low used in divergence
+  };
+
+  // === Bounce or Signal Marker ===
+  touchedEMA14?: boolean;
+  touchedEMA70?: boolean;
+  bouncedFromEMA14?: boolean;
+  bouncedFromEMA70?: boolean;
+
+  // === Meta (Optional) ===
+  label?: string; // human-readable label (e.g., "Breakout Bar", "Divergence Confirmed")
+  note?: string;  // optional developer/debugging note
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
@@ -610,6 +654,112 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
     }
 
+function detectDivergence(
+  closes: number[],
+  highs: number[],
+  lows: number[],
+  ema14: number[],
+  volumes: number[],
+  trend: 'bullish' | 'bearish'
+): { divergence: boolean; reason: string } {
+  const len = closes.length;
+
+  for (let i = len - 2; i >= 3; i--) {
+    if (trend === 'bullish') {
+      const priceHH = highs[i] > highs[i - 2];
+      const emaLH = ema14[i] < ema14[i - 2];
+      const volDecreasing = volumes[i] < volumes[i - 2];
+
+      if (priceHH && emaLH && volDecreasing) {
+        return {
+          divergence: true,
+          reason: `Bearish divergence at index ${i}: Price HH, EMA14 LH, Volume Decreasing`,
+        };
+      }
+    }
+
+    if (trend === 'bearish') {
+      const priceLL = lows[i] < lows[i - 2];
+      const emaHL = ema14[i] > ema14[i - 2];
+      const volDecreasing = volumes[i] < volumes[i - 2];
+
+      if (priceLL && emaHL && volDecreasing) {
+        return {
+          divergence: true,
+          reason: `Bullish divergence at index ${i}: Price LL, EMA14 HL, Volume Decreasing`,
+        };
+      }
+    }
+  }
+
+  return { divergence: false, reason: 'No divergence found' };
+}
+
+function analyzeBar(
+  index: number,
+  ema14: number[],
+  ema70: number[],
+  closes: number[],
+  highs: number[],
+  lows: number[],
+  volumes: number[],
+  trend: 'bullish' | 'bearish'
+): {
+  index: number;
+  level: number | null;
+  type: 'support' | 'resistance' | null;
+  divergence: boolean;
+  reason: string;
+} {
+  if (index < 3 || index >= closes.length) {
+    return {
+      index,
+      level: null,
+      type: null,
+      divergence: false,
+      reason: 'Index out of range',
+    };
+  }
+
+  // EMA crossover logic
+  const prev14 = ema14[index - 1];
+  const prev70 = ema70[index - 1];
+  const curr14 = ema14[index];
+  const curr70 = ema70[index];
+
+  let level: number | null = null;
+  let type: 'support' | 'resistance' | null = null;
+
+  if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
+    level = closes[index];
+    type = 'support';
+  }
+
+  if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
+    level = closes[index];
+    type = 'resistance';
+  }
+
+  // Slice data to look back
+  const closesSegment = closes.slice(index - 3, index + 1);
+  const highsSegment = highs.slice(index - 3, index + 1);
+  const lowsSegment = lows.slice(index - 3, index + 1);
+  const emaSegment = ema14.slice(index - 3, index + 1);
+  const volumeSegment = volumes.slice(index - 3, index + 1);
+
+  const div = detectDivergence(closesSegment, highsSegment, lowsSegment, emaSegment, volumeSegment, trend);
+
+  return {
+    index,
+    level,
+    type,
+    divergence: div.divergence,
+    reason: div.reason,
+  };
+        }
+
+
+
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
@@ -764,6 +914,7 @@ const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, tre
 const latestEMA70 = Array.isArray(ema70) ? ema70[ema70.length - 1] : ema70;
 const differenceVsEMA70 = calculateDifferenceVsEMA70(inferredLevel, latestEMA70);
       
+      
       let divergenceFromLevel = false;
 let divergenceFromLevelType: 'bullish' | 'bearish' | null = null;
 
@@ -789,47 +940,89 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
+const results = [];
 
-      signals[symbol] = {
-  trend,
+for (let i = 20; i < closes.length; i++) {
+  // === Determine Current Trend ===
+  const trend = ema14[i] > ema70[i] ? 'bullish' : 'bearish';
+
+  // === Analyze Current Candle ===
+  const result = analyzeBar(
+    i,
+    ema14,
+    ema70,
+    closes,
+    highs,
+    lows,
+    volumes,
+    trend
+  );
+
+  // === Log + Store if Significant Signal Found ===
+  const hasSignal = result.divergence || result.level;
+
+  if (hasSignal) {
+    results.push(result);
+
+    console.log(
+      `[${i}] ${trend.toUpperCase()} | Reason: ${result.reason} | ` +
+      `Divergence: ${result.divergenceType || 'none'} | ` +
+      `Level: ${result.level ?? '-'} (${result.type ?? '-'})`
+    );
+  }
+}
+      
+   signals[symbol] = {
+  // === Trend & Breakout ===
+  trend,                      // 'bullish' | 'bearish' | 'neutral'
   breakout,
   bullishBreakout,
   bearishBreakout,
+
+  // === Divergence Detection ===
   divergence,
-  divergenceType,
+  divergenceType,             // 'bullish' | 'bearish' | null
   divergenceFromLevel,
-  divergenceFromLevelType,
+  divergenceFromLevelType,    // 'bullish' | 'bearish' | null
   nearOrAtEMA70Divergence,
+
+  // === EMA Bounce Detection ===
   ema14Bounce,
   ema70Bounce,
   touchedEMA70Today,
 
-  // Core price data
+  // === Core Price Metrics ===
   currentPrice: lastClose,
-  level,
-  levelType: type,
-  inferredLevel,
-  inferredLevelType,
-  inferredLevelWithinRange,
-  differenceVsEMA70,
   todaysLowestLow,
   todaysHighestHigh,
   intradayHigherHighBreak,
   intradayLowerLowBreak,
 
-  // Trend continuation logic
-  bearishContinuation,
+  // === Support / Resistance Zone Levels ===
+  level,                      // confirmed level
+  levelType: type,            // 'support' | 'resistance' | null
+  inferredLevel,              // dynamically calculated high/low
+  inferredLevelType,          // 'support' | 'resistance'
+  inferredLevelWithinRange,
+  differenceVsEMA70,          // { percent, direction }
+
+  // === Trend Continuation Logic ===
   bullishContinuation,
+  bearishContinuation,
   cleanTrendContinuation:
-    (trend === 'bearish' && bearishContinuation) ||
-    (trend === 'bullish' && bullishContinuation),
+    (trend === 'bullish' && bullishContinuation) ||
+    (trend === 'bearish' && bearishContinuation),
   continuationEnded,
   continuationReason,
-  recentCrossings,
 
-  // Metadata
+  // === Historical Signals (Optional) ===
+  recentCrossings,            // Array of { type, price, index }
+
+  // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
-};
+};   
+
+      
 
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
@@ -1436,6 +1629,46 @@ return (
 </div>
     </div>
 )}
+
+ <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Signal Dashboard</h1>
+
+      <Tabs defaultValue="all" onValueChange={setSelectedTrend}>
+        <TabsList>
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="bullish">Bullish</TabsTrigger>
+          <TabsTrigger value="bearish">Bearish</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        {filteredSignals.map(([symbol, data]) => (
+          <Card key={symbol} className="shadow-md border border-gray-200">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold mb-2">{symbol}</h2>
+
+              <p className="text-sm mb-1">Current Price: ${data.currentPrice.toFixed(2)}</p>
+              <p className="text-sm mb-1">Trend: <Badge variant="outline">{data.trend}</Badge></p>
+              <p className="text-sm mb-1">Divergence: {data.divergence ? <Badge variant="destructive">{data.divergenceType}</Badge> : 'None'}</p>
+              <p className="text-sm mb-1">Breakout: {data.breakout ? 'Yes' : 'No'}</p>
+
+              {data.level && (
+                <p className="text-sm mb-1">
+                  Level: <span className="font-medium">{data.levelType} @ {data.level.toFixed(2)}</span>
+                </p>
+              )}
+
+              <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm mt-2 inline-block">
+                View on Exchange
+              </a>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div
+
+
+          
 
 {/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
