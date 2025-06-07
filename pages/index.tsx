@@ -1213,18 +1213,12 @@ return (
                
 </div>
 <div>
-    <h2 className="text-white text-xl font-bold mb-2">
-  🔎 Showing {filteredCount} result{filteredCount !== 1 ? 's' : ''} 
-  {activeFilter && ` for ${activeFilter}`}
-</h2>
-
-<ul className="space-y-2">
-  {filteredDisplaySignals.map(([symbol, data]) => (
-    <li key={symbol} className="text-white/80">
-      • {symbol} — {activeFilter}
-    </li>
-  ))}
-</ul>
+    {filteredDisplaySignals.map(([symbol, data]) => (
+  <div key={symbol}>
+    {/* <div>{symbol}</div> */} {/* 🔕 Hidden */}
+    <div>{/* signal data here */}</div>
+  </div>
+))}
 </div>
       {filteredDisplaySignals.map(([symbol, data]) => (
         <div
