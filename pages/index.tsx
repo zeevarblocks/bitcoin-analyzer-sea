@@ -1154,7 +1154,7 @@ return (
     className="bg-gray-800 hover:bg-yellow-600 text-yellow-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>🧱</span>
-    <span>trendPullback</span>
+    <span>divergence</span>
   </button>
           
 <button
@@ -1377,13 +1377,13 @@ return (
           • Type:{" "}
           <span className="capitalize text-white">
             {data.divergenceFromLevelType === "bullish"
-              ? "Reversal warning (buy)"
+              ? "Bullish (buy)"
               : data.divergenceFromLevelType === "bearish"
-              ? "Reversal warning (sell)"
+              ? "Bearish (sell)"
               : "Confirmed"}
           </span><br />
           • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
-          • Suggests a potential trend continuation or a fakeout trap
+          • Suggests a potential trend continuation
         </p>
       </div>
     )}
