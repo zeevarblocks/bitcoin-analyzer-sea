@@ -967,7 +967,7 @@ for (let i = 20; i < closes.length; i++) {
 
     console.log(
       `[${i}] ${trend.toUpperCase()} | Reason: ${result.reason} | ` +
-      `Divergence: ${result.divergenceType || 'none'} | ` +
+      `Divergence: ${result.divergence ? 'yes' : 'none'} | ` +
       `Level: ${result.level ?? '-'} (${result.type ?? '-'})`
     );
   }
