@@ -1570,37 +1570,37 @@ return (
 )}
 
  <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Bullish Analysis Results</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredResults.map((result, index) => (
-          <Card key={index} className="bg-white shadow rounded-2xl p-4">
-            <CardContent>
-              <h2 className="text-lg font-semibold mb-2">
-                Index {result.index}
-              </h2>
-              <ul className="text-sm text-gray-700 space-y-1">
-                {result.divergence && (
-                  <li>
-                    <strong>Divergence:</strong> {result.divergence}
-                  </li>
-                )}
-                {result.level && (
-                  <li>
-                    <strong>Level:</strong> {result.level}
-                  </li>
-                )}
-                {result.signal && (
-                  <li>
-                    <strong>Signal:</strong> {result.signal}
-                  </li>
-                )}
-                {/* Add more fields as needed */}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+  <h1 className="text-2xl font-bold mb-4">Bullish Analysis Results</h1>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {data.map((result, index) => (
+      <Card key={index} className="bg-white shadow rounded-2xl p-4">
+        <CardContent>
+          <h2 className="text-lg font-semibold mb-2">
+            Index {result.index}
+          </h2>
+          <ul className="text-sm text-gray-700 space-y-1">
+            {result.divergence && (
+              <li>
+                <strong>Divergence:</strong> {result.divergence}
+              </li>
+            )}
+            {result.level && (
+              <li>
+                <strong>Level:</strong> {result.level}
+              </li>
+            )}
+            {result.signal && (
+              <li>
+                <strong>Signal:</strong> {result.signal}
+              </li>
+            )}
+            {/* Add more fields as needed */}
+          </ul>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+</div>
    
 
           
