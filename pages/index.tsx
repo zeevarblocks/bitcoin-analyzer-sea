@@ -1031,7 +1031,7 @@ const filteredCount = filteredDisplaySignals.length;
 
   
 return (
-  <div className="p-6 space-y-8 bg-gradient-to-b from-gray-900 to-black min-h-screen">
+  <div className="p-6 space-y-8 rounded-2xl bg-gradient-to-b from-gray-900 to-black min-h-screen">
      {isLoadingPairs && (
       <div className="text-white font-medium animate-pulse">
         Loading trading pairs...
@@ -1047,7 +1047,7 @@ return (
         pairs.filter((pair) => signals?.[pair]?.currentPrice !== undefined)
       )
     }
-    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-gray-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Select All
   </button>
@@ -1055,7 +1055,7 @@ return (
   {/* Reset Toggles */}
   <button
     onClick={() => resetToggles()}
-    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-sm rounded transition"
+    className="bg-gray-600 hover:bg-yellow-700 text-white px-3 py-1.5 text-sm rounded transition"
   >
     Reset All Toggles
   </button>
