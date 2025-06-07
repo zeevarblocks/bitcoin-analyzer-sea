@@ -9,39 +9,41 @@ interface SignalData {
   bearishBreakout: boolean;
 
   // === Divergence Signals ===
-  divergence: boolean;
-  divergenceType: 'bullish' | 'bearish' | null;
-  divergenceFromLevel: boolean;
-  divergenceFromLevelType: 'bullish' | 'bearish' | null;
-  nearOrAtEMA70Divergence: boolean;
+  divergence: boolean; // any divergence present
+  divergenceType: 'bullish' | 'bearish' | null; // primary divergence
+  divergenceFromLevel: boolean; // divergence specifically from a key level
+  divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
+  nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
 
   // === Bounce Events ===
   ema14Bounce: boolean;
   ema70Bounce: boolean;
 
   // === Continuation Logic ===
-  bullishContinuation: boolean;  // true if bullish trend is continuing with higher highs
-  bearishContinuation: boolean;  // true if bearish trend is continuing with lower lows
-  cleanTrendContinuation: boolean; // if trend continuation is confirmed without contradictions
-  continuationEnded: boolean;      // true if the trend continuation has stopped (trend exhaustion)
-  continuationReason?: string;     // explanation for why continuation ended, e.g. "price failed higher highs"
+  bullishContinuation: boolean;       // true if bullish trend is continuing
+  bearishContinuation: boolean;       // true if bearish trend is continuing
+  cleanTrendContinuation: boolean;    // trend is continuing without conflict
+  continuationEnded: boolean;         // trend continuation has stopped
+  continuationReason?: string;        // reason for exhaustion or end
 
   // === Support/Resistance Zones ===
-  level: number | null;
+  level: number | null;                     // confirmed key level
   levelType: 'support' | 'resistance' | null;
-  inferredLevel: number;
+
+  inferredLevel: number;                    // nearest detected level based on logic
   inferredLevelType: 'support' | 'resistance';
-  inferredLevelWithinRange: boolean;
-     differenceVsEMA70?: {
+  inferredLevelWithinRange: boolean;        // inferred level close to current price
+
+  differenceVsEMA70?: {
     percent: number;
     direction: 'above' | 'below' | 'equal';
   };
 
   // === Price + Intraday Movement ===
   currentPrice: number;
-  touchedEMA70Today: boolean;
-  intradayHigherHighBreak: boolean;
-  intradayLowerLowBreak: boolean;
+  touchedEMA70Today: boolean;         // price interacted with EMA70 today
+  intradayHigherHighBreak: boolean;   // broke today's high
+  intradayLowerLowBreak: boolean;     // broke today's low
   todaysLowestLow: number;
   todaysHighestHigh: number;
 
@@ -50,12 +52,11 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
-    timestamp: number;
   }[];
-  
+  results,
+
   // === Metadata ===
-  url: string;
-  
+  url: string; // chart or signal reference URL
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -66,10 +67,17 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
+
+  // === Calculated Indicators (optional) ===
   ema14?: number;
   ema70?: number;
-  time: number; 
-  timestamp: number; 
+  rsi?: number;
+  macd?: number;
+  signal?: number;
+
+  // === Time Information ===
+  time: number;       // readable timestamp (e.g. Unix in ms or UTC)
+  timestamp: number;  // same as `time` or used as a sortable numeric ID
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
@@ -741,8 +749,7 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
-      const volumes = candles.map(c => c.volume);
-      
+      const volumes = candles.map(c => c[5]);
       
       
       const ema14 = calculateEMA(closes, 14);
@@ -899,16 +906,14 @@ if (type && level !== null) {
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
 
-      const results = [];
-
-  for (let i = 3; i < closes.length; i++) {
-    const result = analyzeBar(i, ema14, ema70, closes, highs, lows, volumes, trend);
-    results.push(result);
+      for (let i = 3; i < closes.length; i++) {
+  const result = analyzeBar(i, ema14, ema70, closes, highs, lows, volumes, 'bullish');
+  if (result.divergence || result.level) {
+    console.log(`Index ${result.index}:`, result);
   }
-      
-      
-      
-   signals[symbol] = {
+      }
+
+    signals[symbol] = {
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
   breakout,
@@ -935,31 +940,30 @@ if (type && level !== null) {
   intradayLowerLowBreak,
 
   // === Support / Resistance Zone Levels ===
-  level,                      // confirmed level
+  level,                      // confirmed EMA-cross level
   levelType: type,            // 'support' | 'resistance' | null
-  inferredLevel,              // dynamically calculated high/low
+  inferredLevel,              // high/low pivot near current
   inferredLevelType,          // 'support' | 'resistance'
   inferredLevelWithinRange,
-  differenceVsEMA70,          // { percent, direction }
+  differenceVsEMA70,          // { percent: number, direction: 'above' | 'below' | 'equal' }
 
   // === Trend Continuation Logic ===
   bullishContinuation,
   bearishContinuation,
   cleanTrendContinuation:
-    (trend === 'bullish' && bullishContinuation) ||
-    (trend === 'bearish' && bearishContinuation),
+    (trend === 'bullish' && bullishContinuation && !bearishContinuation) ||
+    (trend === 'bearish' && bearishContinuation && !bullishContinuation),
   continuationEnded,
   continuationReason,
 
   // === Historical Signals (Optional) ===
-  recentCrossings,            // Array of { type, price, index }
-      timestamp: number;
-
+  recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: number }
+      result,
+      
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
-};   
-
-      
+};  
+   
 
     } catch (err) {
       console.error(`Error fetching signal for ${symbol}:`, err);
@@ -1567,24 +1571,39 @@ return (
     </div>
 )}
 
- <div className="min-h-screen p-6 bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">Market Signal Results</h1>
-      {results.map((res) => (
-        <div
-          key={res.index}
-          className="bg-white shadow p-4 rounded mb-2 border-l-4"
-          style={{ borderColor: res.type === 'support' ? 'green' : 'red' }}
-        >
-          <p><strong>Index:</strong> {res.index}</p>
-          <p><strong>Type:</strong> {res.type}</p>
-          <p><strong>Level:</strong> {res.level}</p>
-          <p><strong>Divergence:</strong> {res.divergence ? 'Yes' : 'No'}</p>
-          <p><strong>Reason:</strong> {res.reason}</p>
-        </div>
-      ))}
+ <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Bullish Analysis Results</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredResults.map((result, index) => (
+          <Card key={index} className="bg-white shadow rounded-2xl p-4">
+            <CardContent>
+              <h2 className="text-lg font-semibold mb-2">
+                Index {result.index}
+              </h2>
+              <ul className="text-sm text-gray-700 space-y-1">
+                {result.divergence && (
+                  <li>
+                    <strong>Divergence:</strong> {result.divergence}
+                  </li>
+                )}
+                {result.level && (
+                  <li>
+                    <strong>Level:</strong> {result.level}
+                  </li>
+                )}
+                {result.signal && (
+                  <li>
+                    <strong>Signal:</strong> {result.signal}
+                  </li>
+                )}
+                {/* Add more fields as needed */}
+              </ul>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
    
-
 
           
 
