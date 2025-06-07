@@ -783,6 +783,7 @@ const symbols = await fetchTopPairs(100);
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
+      const volumes = candles.map(c => c.volume);
       
       
       
@@ -938,9 +939,9 @@ if (type && level !== null) {
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);     
 
-const results = [];
+      const results = [];
 
 for (let i = 20; i < closes.length; i++) {
   // === Determine Current Trend ===
