@@ -59,7 +59,6 @@ interface SignalData {
    index: number;
   level: number | null;
   type: 'support' | 'resistance' | null;
-  divergence: boolean;
   reason: string;
    results: BarAnalysis[];
 
