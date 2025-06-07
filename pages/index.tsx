@@ -1059,8 +1059,31 @@ return (
   >
     Reset All Toggles
   </button>
+
+    <button
+  onClick={() => {
+    fetchPairs();
+  }}
+  disabled={isLoadingPairs}
+  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
+>
+  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
+</button>
     
 </div>
+
+    <div className="flex items-center space-x-4">
+        <label className="text-white font-medium">
+          <input
+            type="checkbox"
+            checked={showOnlyFavorites}
+            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+            className="mr-2"
+          />
+          Show only favorites
+        </label>
+      </div>
+    
     
   <div
   ref={containerRef}
@@ -1083,7 +1106,6 @@ return (
   className="w-full p-2 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
 />
 
-    {/* Clear button */}
     {searchTerm && (
       <button
         onClick={(e) => {
@@ -1120,21 +1142,7 @@ return (
     )}
   </div>
   </div>
-
-    
-      <div className="flex items-center space-x-4">
-        <label className="text-white font-medium">
-          <input
-            type="checkbox"
-            checked={showOnlyFavorites}
-            onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-            className="mr-2"
-          />
-          Show only favorites
-        </label>
-      </div>
         <div className="flex gap-2 flex-wrap">
-
 <button
   onClick={() => setActiveFilter('bullishBreakout')}
   className="bg-gray-800 hover:bg-emerald-600 text-green-400 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
@@ -1245,15 +1253,6 @@ return (
         >
           Unselect
         </button>
-                       <button
-  onClick={() => {
-    fetchPairs();
-  }}
-  disabled={isLoadingPairs}
-  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
->
-  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
-</button>
             </div>
            
               <div className="space-y-1">
