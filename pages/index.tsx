@@ -54,8 +54,6 @@ interface SignalData {
 
   // === Metadata ===
   url: string;
-    candles15m: Candle[],
-  candles1d: Candle[],
 }
 
 // fetchCandles, calculateEMA, etc.,.
@@ -632,7 +630,6 @@ const symbols = await fetchTopPairs(100);
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
-      const candles1d = await fetchCandles(symbol, '1d');
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
@@ -832,8 +829,6 @@ if (type && level !== null) {
 
   // Metadata
   url: `https://okx.com/join/96631749`,
-  candles15m: candles,
-  candles1d: candles1d,
 };
 
     } catch (err) {
@@ -886,7 +881,6 @@ export default function SignalChecker({
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [liveSignals, setLiveSignals] = useState<Record<string, SignalData>>(signals || {});
   const resetToggles = () => {
   setSelectedPairs([]);
   setFavorites([]);
@@ -918,75 +912,41 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-const fetchSignals = async (symbols: string[]) => {
-  const results: Record<string, SignalData> = {};
-
-  for (const symbol of symbols) {
-    try {
-      const candles15m = await fetchCandles(symbol, '15m');
-      const candles1d = await fetchCandles(symbol, '1d');
-
-      const signal = liveSignalData(
-        candles15m,
-        candles1d,
-        `https://www.okx.com/api/v5/market/tickers?instType=SPOT('-', '')}`
-      );
-
-      results[symbol] = signal;
-    } catch (err) {
-      console.error(`Error fetching signal for ${symbol}:`, err);
-    }
-  }
-
-  setLiveSignals(results);
-};
-
-
-  
-
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-  setIsLoadingPairs(true);
-  try {
-    const response = await fetch(
-      'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
-    );
-    const data = await response.json();
+    setIsLoadingPairs(true);
+    try {
+      const response = await fetch(
+        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+      );
+      const data = await response.json();
+      const sortedPairs = data.data
+        .sort(
+          (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
+        )
+        .map((item: any) => item.instId);
 
-    const sortedPairs = data.data
-      .filter((item: any) => item.instId.endsWith('USDT'))
-      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
-      .map((item: any) => item.instId);
+      setPairs(sortedPairs);
 
-    setPairs(sortedPairs);
+      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+      const validSaved = savedPairs.filter(
+        (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      );
 
-    // ✅ Fetch signals for those pairs
-    await fetchSignals(sortedPairs);
-
-    // ✅ Restore or pick top valid pairs
-    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-    const validSaved = savedPairs.filter(
-      (pair: string) => liveSignals?.[pair]?.currentPrice !== undefined
-    );
-
-    if (validSaved.length > 0) {
-      setSelectedPairs(validSaved);
-    } else {
-      const topValidPairs = sortedPairs
-        .filter((pair) => liveSignals?.[pair]?.currentPrice !== undefined)
-        .slice(0, 100);
-      setSelectedPairs(topValidPairs);
+      if (validSaved.length > 0) {
+        setSelectedPairs(validSaved);
+      } else {
+        const topValidPairs = sortedPairs
+          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          .slice(0, 100);
+        setSelectedPairs(topValidPairs);
+      }
+    } catch (error) {
+      console.error('Error fetching trading pairs:', error);
+    } finally {
+      setIsLoadingPairs(false);
     }
-  } catch (err) {
-    console.error('Error fetching pairs:', err);
-  } finally {
-    setIsLoadingPairs(false);
-  }
-}, []);
-
-  useEffect(() => {
-  fetchPairs();
-}, []);
+  }, [signals]);
   
  
   const handleRefresh = async () => {
