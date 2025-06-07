@@ -951,7 +951,7 @@ if (type && level !== null) {
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array of { type, price, index }
-     timestamp: Date.now(), 
+      timestamp: number;
 
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
