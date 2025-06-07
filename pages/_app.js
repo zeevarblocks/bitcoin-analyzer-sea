@@ -9,7 +9,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen p-10 flex justify-center items-start">
+      <main className="min-h-screen p-6 flex justify-center items-start">
         
           <Component {...pageProps} />
         
