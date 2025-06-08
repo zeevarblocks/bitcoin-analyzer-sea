@@ -851,7 +851,7 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const { level, type, crossSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend, rsi);
+const { level, type, crossSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend, rsiAtCross);
       const highestHigh = Math.max(...highs);
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
