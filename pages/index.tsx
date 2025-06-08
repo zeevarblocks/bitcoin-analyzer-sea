@@ -1489,22 +1489,22 @@ return (
     )}
 
           {data.divergenceFromLevel && (
-  <div className="text-pink-400 space-y-2">
-    🔍 <span className="font-semibold">Divergence vs Key Level</span>
-    <p className="text-sm text-white/70 ml-4 mt-1">
-      • Type:{" "}
-      <span className="capitalize text-white">
-        {data.divergenceFromLevelType === "bullish"
-          ? "Bearish Continuation"
-          : data.divergenceFromLevelType === "bearish"
-          ? "Bullish Continuation"
-          : "Confirmed"}
-      </span><br />
-      • RSI divergence detected at a key {data.levelType || "support/resistance"} level<br />
-      • Confirms momentum is continuing after level break — despite weakening RSI<br />
-      • Supports continuation in current trend direction past <span className="text-white">{data.level}</span>
-    </p>
-  </div>
+
+<div className="text-pink-400 space-y-2">  
+🔍 <span className="font-semibold">Divergence vs Key Level</span>  
+<p className="text-sm text-white/70 ml-4 mt-1">  
+• Type:{" "}  
+<span className="capitalize text-white">  
+{data.divergenceFromLevelType === "bullish"  
+? "Bearish (sell)"  
+: data.divergenceFromLevelType === "bearish"  
+? "Bullish (buy)"  
+: "Confirmed"}  
+</span><br />  
+• RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />  
+• Suggests a potential trend continuation  
+</p>  
+</div>  
     )}
     </div>
      )}    
