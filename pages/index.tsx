@@ -230,32 +230,29 @@ function findRelevantLevel(
    *    crossIdx later for stall & ABC detection)
    *────────────────────────────────────────────── */
   let crossIdx: number | null = null;
-  let rsiAtCross: number | null = null;
-  let crossSignal: 'buy' | 'sell' | null = null;
+let rsiAtCross: number | null = null;
+let crossSignal: 'buy' | 'sell' | null = null;
 
-for (let i = ema.length - 2; i >= 1; i--) {
-  const prev14 = ema[i - 1];
+for (let i = ema14.length - 2; i >= 1; i--) {
+  const prev14 = ema14[i - 1];
   const prev70 = ema70[i - 1];
-  const curr14 = ema[i];
+  const curr14 = ema14[i];
   const curr70 = ema70[i];
-  ...
-}
 
-
-    if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
-      crossIdx = i;
-      rsiAtCross = rsi14[i];
-      crossSignal = currentRSI < rsiAtCross ? 'buy' : null;
-      break;
-    }
-
-    if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
-      crossIdx = i;
-      rsiAtCross = rsi14[i];
-      crossSignal = currentRSI > rsiAtCross ? 'sell' : null;
-      break;
-    }
+  if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
+    crossIdx = i;
+    rsiAtCross = rsi14[i];
+    crossSignal = currentRSI < rsiAtCross ? 'buy' : null;
+    break;
   }
+
+  if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
+    crossIdx = i;
+    rsiAtCross = rsi14[i];
+    crossSignal = currentRSI > rsiAtCross ? 'sell' : null;
+    break;
+  }
+}
 
   /*───────────────────────────────────────────────
    * 2) Base level based on cross (or later fallback)
@@ -966,7 +963,7 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const { level, type, crossSignal, stallReversal,abcPattern, abcSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
+const { level, type, crossSignal, stallReversal, abcPattern, abcSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
       const highestHigh = Math.max(...highs);
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
