@@ -13,6 +13,7 @@ interface SignalData {
   divergence: boolean; // any divergence present
   divergenceType: 'bullish' | 'bearish' | null; // primary divergence
   divergenceFromLevel: boolean; // divergence specifically from a key level
+  crossSignal: bullish' | 'bearish' | null;
   divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
   nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
 
@@ -188,34 +189,92 @@ function calculateRSI(closes: number[], period = 14): number[] {
   return rsi;
 }
 
+/**
+ * Find the last relevant level and, if that level came from an EMA-14/EMA-70
+ * cross, decide whether the current RSI is giving a buy/sell cue.
+ *
+ * NEW FIELDS
+ * ──────────
+ * crossIdx          – index of the bar where the cross occurred (or null)
+ * rsiAtCross        – RSI value on that bar (or null)
+ * crossSignal       – 'buy' | 'sell' | null
+ */
 function findRelevantLevel(
   ema14: number[],
   ema70: number[],
   closes: number[],
   highs: number[],
   lows: number[],
+  rsi14: number[],
   trend: 'bullish' | 'bearish'
-): { level: number | null; type: 'support' | 'resistance' | null } {
+): {
+  level: number | null;
+  type: 'support' | 'resistance' | null;
+  crossIdx: number | null;
+  rsiAtCross: number | null;
+  crossSignal: 'buy' | 'sell' | null;
+} {
+  const currentRSI = rsi14.at(-1)!;
+
+  // ────────────────────────────────────────────────────────────
+  // 1) Scan backwards to locate the most recent EMA-cross bar
+  // ────────────────────────────────────────────────────────────
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
+    // ─── Bullish trend: golden-cross bar becomes support ───
     if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
-      return { level: closes[i], type: 'support' };
+      const rsiAtCross = rsi14[i];
+      const crossSignal =
+        currentRSI < rsiAtCross        // RSI now is lower ⇒ momentum cooled
+          ? 'buy'                      // …so we get a BUY cue
+          : null;
+
+      return {
+        level: closes[i],
+        type: 'support',
+        crossIdx: i,
+        rsiAtCross,
+        crossSignal,
+      };
     }
 
+    // ─── Bearish trend: death-cross bar becomes resistance ───
     if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
-      return { level: closes[i], type: 'resistance' };
+      const rsiAtCross = rsi14[i];
+      const crossSignal =
+        currentRSI > rsiAtCross        // RSI now is higher ⇒ momentum eased
+          ? 'sell'                     // …so we get a SELL cue
+          : null;
+
+      return {
+        level: closes[i],
+        type: 'resistance',
+        crossIdx: i,
+        rsiAtCross,
+        crossSignal,
+      };
     }
   }
 
-  const level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
-  const type = trend === 'bullish' ? 'resistance' : 'support';
-  return { level, type };
-  }
+  // ────────────────────────────────────────────────────────────
+  // 2)  No recent cross found → fall back to swing extreme
+  // ────────────────────────────────────────────────────────────
+  const fallbackLevel =
+    trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
+  const fallbackType = trend === 'bullish' ? 'resistance' : 'support';
 
+  return {
+    level: fallbackLevel,
+    type: fallbackType,
+    crossIdx: null,
+    rsiAtCross: null,
+    crossSignal: null,
+  };
+}
 
 function calculateDifferenceVsEMA70(
   inferredLevel: number,
@@ -792,7 +851,7 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
+const { level, type, crossSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
       const highestHigh = Math.max(...highs);
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
@@ -819,9 +878,16 @@ if (type && level !== null) {
     } else if (type === 'support' && lastClose < level && currentRSI > pastRSI) {
       divergenceFromLevel = true;
       divergenceFromLevelType = 'bullish';
-    }
+    } 
   }
 }
+      if (crossSignal === 'buy') {
+  // queue a long setup
+} else if (crossSignal === 'sell') {
+  // queue a short setup
+      }
+
+      
 
       const touchedEMA70Today =
         prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
@@ -891,6 +957,7 @@ const shouldTrade =
   divergence,
   divergenceType,             // 'bullish' | 'bearish' | null
   divergenceFromLevel,
+      crossSignal,
   divergenceFromLevelType,    // 'bullish' | 'bearish' | null
   nearOrAtEMA70Divergence,
 
@@ -931,6 +998,7 @@ const shouldTrade =
     divergence &&
     momentumSlowing !== null &&
     momentumSlowing === divergenceType,  
+
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
@@ -1507,7 +1575,43 @@ return (
 </div>  
     )}
     </div>
-     )}    
+  )}
+
+{(data.crossSignal === 'buy' || data.crossSignal === 'sell') && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">📊 EMA Cross + RSI Confirmation</h3>
+
+    {data.crossSignal === 'buy' && (
+      <div className="text-green-400 space-y-2">
+        ✅ <span className="font-semibold">Buy Continuation Signal</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • EMA14 crossed above EMA70 → Bullish crossover<br />
+          • RSI is currently lower than it was at the crossover<br />
+          • Indicates price pulled back but bullish momentum may resume<br />
+          • Suggests potential long setup near support
+        </p>
+      </div>
+    )}
+
+    {data.crossSignal === 'sell' && (
+      <div className="text-red-400 space-y-2">
+        ⚠️ <span className="font-semibold">Sell Continuation Signal</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • EMA14 crossed below EMA70 → Bearish crossover<br />
+          • RSI is currently higher than it was at the crossover<br />
+          • Indicates price bounced but bearish momentum may resume<br />
+          • Suggests potential short setup near resistance
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+
+
+
+
+          
           
 {/* 🔍 Momentum Slowing & Divergence */}
 {(data.divergence || data.momentumSlowing) && (
