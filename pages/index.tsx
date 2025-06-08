@@ -15,6 +15,8 @@ interface SignalData {
   divergenceFromLevel: boolean; // divergence specifically from a key level
   crossSignal: 'buy' | 'sell' | null;
   stallReversal: 'buy' | 'sell' | null;
+  abcSignal: 'buy' | 'sell' | null;             // NEW: A‑B‑C reversal signal
+  abcPattern: { aIdx: number; bIdx: number; cIdx: number } | null; // NEW: index map
   divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
   nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
 
@@ -200,6 +202,15 @@ function calculateRSI(closes: number[], period = 14): number[] {
  * rsiAtCross        – RSI value on that bar (or null)
  * crossSignal       – 'buy' | 'sell' | null
  */
+// Updated findRelevantLevel with ABC‑pattern (A‑B‑C reversal) detection
+// --------------------------------------------------------------------
+
+
+
+/**
+ * Detects meaningful price/RSI interactions around EMA14/EMA70 and now also the
+ * three‑leg A‑B‑C structure where C breaks A while B is the swing extreme.
+ */
 function findRelevantLevel(
   ema14: number[],
   ema70: number[],
@@ -208,21 +219,17 @@ function findRelevantLevel(
   lows: number[],
   rsi14: number[],
   trend: 'bullish' | 'bearish'
-): {
-  level: number | null;
-  type: 'support' | 'resistance' | null;
-  crossIdx: number | null;
-  rsiAtCross: number | null;
-  crossSignal: 'buy' | 'sell' | null;         // unchanged
-  stallReversal: 'buy' | 'sell' | null;       // NEW
-} {
+): RelevantLevelResult {
   const currentRSI = rsi14.at(-1)!;
 
   /*───────────────────────────────────────────────
-   * 1) ORIGINAL: EMA–cross logic (kept as–is)
+   * 1) EMA‑cross scan (no early return → we want
+   *    crossIdx later for stall & ABC detection)
    *────────────────────────────────────────────── */
   let crossIdx: number | null = null;
-  
+  let rsiAtCross: number | null = null;
+  let crossSignal: 'buy' | 'sell' | null = null;
+
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -230,87 +237,148 @@ function findRelevantLevel(
     const curr70 = ema70[i];
 
     if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
-      const rsiAtCross = rsi14[i];
-      const crossSignal =
-        currentRSI < rsiAtCross ? 'buy' : null;
-
-      return {
-        level: closes[i],
-        type: 'support',
-        crossIdx: i,
-        rsiAtCross,
-        crossSignal,
-        stallReversal: null,            // not checked here
-      };
+      crossIdx = i;
+      rsiAtCross = rsi14[i];
+      crossSignal = currentRSI < rsiAtCross ? 'buy' : null;
+      break;
     }
 
     if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
-      const rsiAtCross = rsi14[i];
-      const crossSignal =
-        currentRSI > rsiAtCross ? 'sell' : null;
-
-      return {
-        level: closes[i],
-        type: 'resistance',
-        crossIdx: i,
-        rsiAtCross,
-        crossSignal,
-        stallReversal: null,
-      };
+      crossIdx = i;
+      rsiAtCross = rsi14[i];
+      crossSignal = currentRSI > rsiAtCross ? 'sell' : null;
+      break;
     }
   }
 
   /*───────────────────────────────────────────────
-   * 2) NEW: Highest-high / Lowest-low RSI-stall logic
+   * 2) Base level based on cross (or later fallback)
+   *────────────────────────────────────────────── */
+  let level: number | null = null;
+  let type: 'support' | 'resistance' | null = null;
+
+  if (crossIdx !== null) {
+    level = closes[crossIdx];
+    type = trend === 'bullish' ? 'support' : 'resistance';
+  }
+
+  /*───────────────────────────────────────────────
+   * 3) Highest‑high / Lowest‑low RSI‑stall logic
    *────────────────────────────────────────────── */
   let stallReversal: 'buy' | 'sell' | null = null;
 
-if (crossIdx !== null) {
-  const highsSinceCross = highs.slice(crossIdx, -1); // inside trend (exclude current)
-  const lowsSinceCross  = lows.slice(crossIdx, -1);  // inside trend
-  const rsiSinceCross   = rsi14.slice(crossIdx, -1);
+  if (crossIdx !== null) {
+    const highsSinceCross = highs.slice(crossIdx, -1); // exclude current bar
+    const lowsSinceCross = lows.slice(crossIdx, -1);
 
-  const hiNow = highs.at(-1)!;
-  const loNow = lows.at(-1)!;
-  const rsiNow = rsi14.at(-1)!;
+    const hiNow = highs.at(-1)!;
+    const loNow = lows.at(-1)!;
+    const rsiNow = rsi14.at(-1)!;
 
-  if (trend === 'bullish' && highsSinceCross.length) {
-    const hh = Math.max(...highsSinceCross);
-    const hhIdx = crossIdx + highsSinceCross.lastIndexOf(hh);
-    const rsiAtHH = rsi14[hhIdx];
+    if (trend === 'bullish' && highsSinceCross.length) {
+      const hh = Math.max(...highsSinceCross);
+      const hhIdx = crossIdx + highsSinceCross.lastIndexOf(hh);
+      const rsiAtHH = rsi14[hhIdx];
 
-    if (hiNow < hh && rsiNow <= rsiAtHH) {
-      stallReversal = 'sell'; // price didn't break HH and momentum weakened
+      if (hiNow < hh && rsiNow <= rsiAtHH) {
+        stallReversal = 'sell'; // momentum stall below HH
+      }
     }
-  }
 
-  if (trend === 'bearish' && lowsSinceCross.length) {
-    const ll = Math.min(...lowsSinceCross);
-    const llIdx = crossIdx + lowsSinceCross.lastIndexOf(ll);
-    const rsiAtLL = rsi14[llIdx];
+    if (trend === 'bearish' && lowsSinceCross.length) {
+      const ll = Math.min(...lowsSinceCross);
+      const llIdx = crossIdx + lowsSinceCross.lastIndexOf(ll);
+      const rsiAtLL = rsi14[llIdx];
 
-    if (loNow > ll && rsiNow >= rsiAtLL) {
-      stallReversal = 'buy'; // price didn't break LL and bearish momentum weakened
+      if (loNow > ll && rsiNow >= rsiAtLL) {
+        stallReversal = 'buy'; // momentum stall above LL
+      }
     }
-  }
   }
 
   /*───────────────────────────────────────────────
-   * 3) Fallback return (no recent EMA cross found)
+   * 4) NEW – A‑B‑C reversal structure detection
    *────────────────────────────────────────────── */
-  const fallbackLevel =
-    trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
-  const fallbackType = trend === 'bullish' ? 'resistance' : 'support';
+  let abcPattern: { aIdx: number; bIdx: number; cIdx: number } | null = null;
+  let abcSignal: 'buy' | 'sell' | null = null;
 
+  if (crossIdx !== null) {
+    const aIdx = crossIdx; // Point‑A: first leg (EMA cross)
+
+    if (trend === 'bullish') {
+      let bIdx = aIdx; // Point‑B: highest high inside the trend
+      let cIdx: number | null = null; // Point‑C: break of A
+
+      for (let i = aIdx + 1; i < highs.length; i++) {
+        // Track highest high until the break happens
+        if (highs[i] > highs[bIdx]) bIdx = i;
+
+        // Break below Point‑A low → found C
+        if (lows[i] < lows[aIdx]) {
+          cIdx = i;
+          break;
+        }
+      }
+
+      if (cIdx !== null && cIdx > bIdx) {
+        abcPattern = { aIdx, bIdx, cIdx };
+        abcSignal = 'sell'; // long trend reversed → short bias
+      }
+    } else {
+      // bearish trend mirrored logic
+      let bIdx = aIdx; // lowest low inside down‑trend
+      let cIdx: number | null = null;
+
+      for (let i = aIdx + 1; i < lows.length; i++) {
+        if (lows[i] < lows[bIdx]) bIdx = i;
+
+        // Break above Point‑A high → found C
+        if (highs[i] > highs[aIdx]) {
+          cIdx = i;
+          break;
+        }
+      }
+
+      if (cIdx !== null && cIdx > bIdx) {
+        abcPattern = { aIdx, bIdx, cIdx };
+        abcSignal = 'buy'; // short trend reversed → long bias
+      }
+    }
+  }
+
+  /*───────────────────────────────────────────────
+   * 5) Fallback when no recent EMA cross
+   *────────────────────────────────────────────── */
+  if (crossIdx === null) {
+    level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
+    type = trend === 'bullish' ? 'resistance' : 'support';
+  }
+
+  /*───────────────────────────────────────────────
+   * 6) Consolidated result
+   *────────────────────────────────────────────── */
   return {
-    level: fallbackLevel,
-    type: fallbackType,
-    crossIdx: null,
-    rsiAtCross: null,
-    crossSignal: null,
-    stallReversal,                           // may be 'buy' | 'sell' | null
+    level,
+    type,
+    crossIdx,
+    rsiAtCross,
+    crossSignal,
+    stallReversal,
+    abcSignal,
+    abcPattern,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -892,7 +960,7 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const { level, type, crossSignal, stallReversal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
+const { level, type, crossSignal, stallReversal,abcPattern, abcSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
       const highestHigh = Math.max(...highs);
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
@@ -1009,6 +1077,8 @@ const shouldTrade =
   divergenceFromLevel,
       crossSignal,
       stallReversal,
+      abcPattern,
+        abcSignal,
   divergenceFromLevelType,    // 'bullish' | 'bearish' | null
   nearOrAtEMA70Divergence,
 
@@ -1657,6 +1727,43 @@ return (
     )}
   </div>
 )}
+
+{/* 🔄 A-B-C reversal pattern  */}
+{data.abcSignal && data.abcPattern && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    <h3 className="text-lg font-semibold text-white">🔄 A-B-C Reversal Pattern</h3>
+
+    {/* BULLISH reversal → long bias  */}
+    {data.abcSignal === 'buy' && (
+      <div className="text-green-400 space-y-2">
+        ✅ <span className="font-semibold">Bullish Reversal Signal</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • <strong>Point A</strong> (first leg) at index {data.abcPattern.aIdx}<br />
+          • <strong>Point B</strong> (lowest low inside trend) at index {data.abcPattern.bIdx}<br />
+          • <strong>Point C</strong> broke above Point A → structure shift<br />
+          • Suggests bears are trapped; momentum likely rotating up<br />
+          • Look for a long entry on a retest of the breakout zone
+        </p>
+      </div>
+    )}
+
+    {/* BEARISH reversal → short bias  */}
+    {data.abcSignal === 'sell' && (
+      <div className="text-red-400 space-y-2">
+        ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • <strong>Point A</strong> (first leg) at index {data.abcPattern.aIdx}<br />
+          • <strong>Point B</strong> (highest high inside trend) at index {data.abcPattern.bIdx}<br />
+          • <strong>Point C</strong> broke below Point A → structure shift<br />
+          • Suggests bulls are trapped; momentum turning down<br />
+          • Watch for a short entry on a retest of the breakdown zone
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+          
 
 
 {/* 🔍 Momentum Slowing, Divergence & RSI-Stall Reversal */}
