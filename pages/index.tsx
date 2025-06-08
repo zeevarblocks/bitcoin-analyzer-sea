@@ -229,7 +229,12 @@ function findRelevantLevel(
    * 1) EMA‑cross scan (no early return → we want
    *    crossIdx later for stall & ABC detection)
    *────────────────────────────────────────────── */
-  let crossIdx: number | null = null;
+  const ema = calculateEMA(closes, 14);
+const emaLong = calculateEMA(closes, 70);
+const rsi14 = calculateRSI(closes, 14);
+const currentRSI = rsi14[rsi14.length - 1];
+
+let crossIdx: number | null = null;
 let rsiAtCross: number | null = null;
 let crossSignal: 'buy' | 'sell' | null = null;
 
@@ -845,12 +850,11 @@ const symbols = await fetchTopPairs(100);
       const volumes = candles.map(c => c[5]);
       
 
-      const ema = calculateEMA(closes, 14);        // your 14-period EMA
-const emaLong = calculateEMA(closes, 70);    // your 70-period EMA
+      
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
-     const ema14 = ema;
-const ema70 = emaLong;
+     	const ema14 = ema;
+			const ema70 = emaLong;
       const rsi14 = calculateRSI(closes, 14);
 
       const lastClose = closes.at(-1)!;
