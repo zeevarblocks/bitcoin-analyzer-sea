@@ -844,7 +844,9 @@ const symbols = await fetchTopPairs(100);
       const lows = candles.map(c => c.low);
       const volumes = candles.map(c => c[5]);
       
-      
+
+      const ema = calculateEMA(closes, 14);        // your 14-period EMA
+const emaLong = calculateEMA(closes, 70);    // your 70-period EMA
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
      const ema14 = ema;
