@@ -221,6 +221,8 @@ function findRelevantLevel(
   /*───────────────────────────────────────────────
    * 1) ORIGINAL: EMA–cross logic (kept as–is)
    *────────────────────────────────────────────── */
+  let crossIdx: number | null = null;
+  
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
@@ -921,22 +923,6 @@ if (type && level !== null) {
   }
 }
 
-      let crossIdx: number | null = null;
-
-for (let i = 1; i < ema14.length; i++) {
-  const prev14 = ema14[i - 1];
-  const prev70 = ema70[i - 1];
-  const curr14 = ema14[i];
-  const curr70 = ema70[i];
-
-  if (trend === 'bullish' && prev14 < prev70 && curr14 >= curr70) {
-    crossIdx = i;
-  }
-
-  if (trend === 'bearish' && prev14 > prev70 && curr14 <= curr70) {
-    crossIdx = i;
-  }
-}
       
       if (crossSignal === 'buy') {
   // queue a long setup
