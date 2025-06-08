@@ -1496,9 +1496,9 @@ return (
 • Type:{" "}  
 <span className="capitalize text-white">  
 {data.divergenceFromLevelType === "bullish"  
-? "Bearish (sell)"  
+? "Bullish Continuation (buy)"  
 : data.divergenceFromLevelType === "bearish"  
-? "Bullish (buy)"  
+? "Bearish Continuation (sell)"  
 : "Confirmed"}  
 </span><br />  
 • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />  
