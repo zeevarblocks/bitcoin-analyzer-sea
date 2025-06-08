@@ -1505,7 +1505,6 @@ return (
       • Supports continuation in current trend direction past <span className="text-white">{data.level}</span>
     </p>
   </div>
-)}
     )}
     </div>
      )}    
