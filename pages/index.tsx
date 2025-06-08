@@ -263,37 +263,35 @@ function findRelevantLevel(
    *────────────────────────────────────────────── */
   let stallReversal: 'buy' | 'sell' | null = null;
 
-if (trend === 'bullish') {
-  const hh      = Math.max(...highs);
-  const hhIdx   = highs.lastIndexOf(hh);
-  const hiNow   = highs.at(-1)!;      // high of current candle
-  const rsiNow  = rsi14.at(-1)!;      // RSI of current candle
+if (crossIdx !== null) {
+  const highsSinceCross = highs.slice(crossIdx, -1); // inside trend (exclude current)
+  const lowsSinceCross  = lows.slice(crossIdx, -1);  // inside trend
+  const rsiSinceCross   = rsi14.slice(crossIdx, -1);
 
-  // Price has not broken the Highest High on this candle
-  if (hiNow < hh && hhIdx < highs.length - 1) {
+  const hiNow = highs.at(-1)!;
+  const loNow = lows.at(-1)!;
+  const rsiNow = rsi14.at(-1)!;
+
+  if (trend === 'bullish' && highsSinceCross.length) {
+    const hh = Math.max(...highsSinceCross);
+    const hhIdx = crossIdx + highsSinceCross.lastIndexOf(hh);
     const rsiAtHH = rsi14[hhIdx];
 
-    // RSI at HH is strictly higher than current RSI → clear loss of momentum
-    if (rsiAtHH > rsiNow) {
-      stallReversal = 'sell';         // potential bearish reversal
+    if (hiNow < hh && rsiNow <= rsiAtHH) {
+      stallReversal = 'sell'; // price didn't break HH and momentum weakened
     }
   }
-} else { /* trend === 'bearish' */
-  const ll      = Math.min(...lows);
-  const llIdx   = lows.lastIndexOf(ll);
-  const loNow   = lows.at(-1)!;       // low of current candle
-  const rsiNow  = rsi14.at(-1)!;      // RSI of current candle
 
-  // Price has not broken the Lowest Low on this candle
-  if (loNow > ll && llIdx < lows.length - 1) {
+  if (trend === 'bearish' && lowsSinceCross.length) {
+    const ll = Math.min(...lowsSinceCross);
+    const llIdx = crossIdx + lowsSinceCross.lastIndexOf(ll);
     const rsiAtLL = rsi14[llIdx];
 
-    // RSI at LL is strictly lower than current RSI → clear loss of bearish power
-    if (rsiAtLL < rsiNow) {
-      stallReversal = 'buy';          // potential bullish reversal
+    if (loNow > ll && rsiNow >= rsiAtLL) {
+      stallReversal = 'buy'; // price didn't break LL and bearish momentum weakened
     }
   }
-}
+  }
 
   /*───────────────────────────────────────────────
    * 3) Fallback return (no recent EMA cross found)
