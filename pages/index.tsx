@@ -779,7 +779,8 @@ const symbols = await fetchTopPairs(100);
       const lastClose = closes.at(-1)!;
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
-
+      
+let crossIdx: number | null = null;
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
       const now = new Date();
