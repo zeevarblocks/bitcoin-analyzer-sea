@@ -15,8 +15,8 @@ interface SignalData {
   divergenceFromLevel: boolean; // divergence specifically from a key level
   crossSignal: 'buy' | 'sell' | null;
   stallReversal: 'buy' | 'sell' | null;
-  abcSignal: 'buy' | 'sell' | null;             // NEW: A‑B‑C reversal signal
   abcPattern: { aIdx: number; bIdx: number; cIdx: number } | null; // NEW: index map
+  abcSignal: 'buy' | 'sell' | null;
   divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
   nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
 
@@ -219,8 +219,11 @@ function findRelevantLevel(
   lows: number[],
   rsi14: number[],
   trend: 'bullish' | 'bearish'
-): RelevantLevelResult {
+) {
   const currentRSI = rsi14.at(-1)!;
+
+  // Your logic continues...
+}
 
   /*───────────────────────────────────────────────
    * 1) EMA‑cross scan (no early return → we want
