@@ -13,7 +13,7 @@ interface SignalData {
   divergence: boolean; // any divergence present
   divergenceType: 'bullish' | 'bearish' | null; // primary divergence
   divergenceFromLevel: boolean; // divergence specifically from a key level
-  crossSignal: bullish' | 'bearish' | null;
+  crossSignal: 'bullish' | 'bearish' | null;
   divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
   nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
 
