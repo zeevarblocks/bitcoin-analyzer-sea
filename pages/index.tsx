@@ -1604,7 +1604,7 @@ return (
             {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
           </span>
           <span className="ml-auto font-mono text-xs">
-            @ ${cross.price.toFixed(2)}
+            @ ${cross.price.toFixed(9)}
           </span>
         </li>
       ))}
