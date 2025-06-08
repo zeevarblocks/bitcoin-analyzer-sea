@@ -991,19 +991,37 @@ if (type && level !== null) {
   }
 }
 
-      
       if (crossSignal === 'buy') {
-  // queue a long setup
+  // ✅ Queue a long setup
 } else if (crossSignal === 'sell') {
-  // queue a short setup
-      }
-      
-      if (stallReversal === 'buy') {
-  // ➡️  Potential bullish reversal after bearish trend stalls
+  // ✅ Queue a short setup
 }
+
+if (stallReversal === 'buy') {
+  // ➡️ Potential bullish reversal after bearish trend stalls
+}
+
 if (stallReversal === 'sell') {
-  // ⬅️  Potential bearish reversal after bullish trend stalls
-                                            }
+  // ⬅️ Potential bearish reversal after bullish trend stalls
+}
+
+if (abcSignal === 'buy' && abcPattern) {
+  // 🅰️🅱️🅲️ Detected Bullish ABC Pattern
+  // • A = first leg low at index abcPattern.aIdx
+  // • B = trend high at index abcPattern.bIdx
+  // • C = breakout above A after pullback, at index abcPattern.cIdx
+  // ✅ Suggests breakout continuation → Consider long setup
+}
+
+if (abcSignal === 'sell' && abcPattern) {
+  // 🅰️🅱️🅲️ Detected Bearish ABC Pattern
+  // • A = first leg high at index abcPattern.aIdx
+  // • B = trend low at index abcPattern.bIdx
+  // • C = breakout below A after pullback, at index abcPattern.cIdx
+  // ⚠️ Suggests breakdown continuation → Consider short setup
+  }
+      
+      
 
       
 
