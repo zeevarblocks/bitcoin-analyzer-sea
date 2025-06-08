@@ -219,32 +219,31 @@ function findRelevantLevel(
   lows: number[],
   rsi14: number[],
   trend: 'bullish' | 'bearish'
-) {
+): {
+  level: number | null;
+  type: 'support' | 'resistance' | null;
+  crossIdx: number | null;
+  rsiAtCross: number | null;
+  crossSignal: 'buy' | 'sell' | null;         // unchanged
+  stallReversal: 'buy' | 'sell' | null;       // NEW
+  abcPattern: { aIdx: number; bIdx: number; cIdx: number } | null; // NEW: index map
+  abcSignal: 'buy' | 'sell' | null;
+} {
   const currentRSI = rsi14.at(-1)!;
-
-  // Your logic continues...
-}
 
   /*───────────────────────────────────────────────
    * 1) EMA‑cross scan (no early return → we want
    *    crossIdx later for stall & ABC detection)
    *────────────────────────────────────────────── */
-const closes = candles.map(c => c.close);
-
-const emaR = calculateEMA(closes, 14);
-const emaLong = calculateEMA(closes, 70);
-const rsi14 = calculateRSI(closes, 14);
-const currentRSI = rsi14[rsi14.length - 1];
-
 let crossIdx: number | null = null;
 let rsiAtCross: number | null = null;
 let crossSignal: 'buy' | 'sell' | null = null;
 
-for (let i = emaR.length - 2; i >= 1; i--) {
-  const prev14 = emaR[i - 1];
-  const prev70 = emaLong[i - 1];
-  const curr14 = emaR[i];
-  const curr70 = emaLong[i];
+for (let i = ema14.length - 2; i >= 1; i--) {
+  const prev14 = ema14[i - 1];
+  const prev70 = ema70[i - 1];
+  const curr14 = ema14[i];
+  const curr70 = ema70[i];
 
   if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
     crossIdx = i;
@@ -855,8 +854,6 @@ const symbols = await fetchTopPairs(100);
       
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
-     const ema14 = emaR;
-const ema70 = emaLong;
       const rsi14 = calculateRSI(closes, 14);
 
       const lastClose = closes.at(-1)!;
