@@ -1756,35 +1756,72 @@ return (
   </div>
 )}
 
-{/* 🔄 A-B-C reversal pattern  */}
-{data.abcSignal && data.abcPattern && (
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">🔄 A-B-C Reversal Pattern</h3>
+{/* ───────────────────────────────────────────────
+    🔄  A-B-C Reversal Pattern + RSI-Stall Signal
+    (rendered only if at least one of them exists)
+─────────────────────────────────────────────── */}
+{(data.abcSignal || data.stallReversal) && (
+  <div className="pt-4 border-t border-white/10 space-y-6">
+    {/* ============================================
+       A-B-C REVERSAL CARD
+    ============================================ */}
+    {data.abcSignal && data.abcPattern && (
+      <div>
+        <h3 className="text-lg font-semibold text-white">
+          🔄 A-B-C Reversal Pattern
+        </h3>
 
-    {/* BULLISH reversal → long bias  */}
-    {data.abcSignal === 'buy' && (
-      <div className="text-green-400 space-y-2">
-        ✅ <span className="font-semibold">Bullish Reversal Signal</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • <strong>Point A</strong> (first leg) at index {data.abcPattern.aIdx}<br />
-          • <strong>Point B</strong> (lowest low inside trend) at index {data.abcPattern.bIdx}<br />
-          • <strong>Point C</strong> broke above Point A → structure shift<br />
-          • Suggests bears are trapped; momentum likely rotating up<br />
-          • Look for a long entry on a retest of the breakout zone
-        </p>
+        {/* BULLISH */}
+        {data.abcSignal === 'buy' && (
+          <div className="text-green-400 space-y-2">
+            ✅ <span className="font-semibold">Bullish Reversal Signal</span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • <strong>Point A</strong> price ${candles[data.abcPattern.aIdx]?.close?.toFixed(99)}<br />
+              • <strong>Point B</strong> price ${candles[data.abcPattern.bIdx]?.low?.toFixed(9)}<br />
+              • <strong>Point C</strong> broke above Point A → structure shift<br />
+              • Suggests bears are trapped; momentum likely rotating up<br />
+              • Look for a long entry on a retest of the breakout zone
+            </p>
+          </div>
+        )}
+
+        {/* BEARISH */}
+        {data.abcSignal === 'sell' && (
+          <div className="text-red-400 space-y-2">
+            ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • <strong>Point A</strong> price ${candles[data.abcPattern.aIdx]?.close?.toFixed(9)}<br />
+              • <strong>Point B</strong> price ${candles[data.abcPattern.bIdx]?.high?.toFixed(9)}<br />
+              • <strong>Point C</strong> broke below Point A → structure shift<br />
+              • Suggests bulls are trapped; momentum turning down<br />
+              • Watch for a short entry on a retest of the breakdown zone
+            </p>
+          </div>
+        )}
       </div>
     )}
 
-    {/* BEARISH reversal → short bias  */}
-    {data.abcSignal === 'sell' && (
-      <div className="text-red-400 space-y-2">
-        ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
+    {/* ============================================
+       RSI-STALL REVERSAL CARD
+    ============================================ */}
+    {data.stallReversal && (
+      <div
+        className={`space-y-2 ${
+          data.stallReversal === 'sell' ? 'text-red-400' : 'text-green-400'
+        }`}
+      >
+        🔄{' '}
+        <span className="font-semibold">
+          {data.stallReversal === 'sell'
+            ? 'Potential Bearish Reversal Detected (RSI-Stall after High)'
+            : 'Potential Bullish Reversal Detected (RSI-Stall after Low)'}
+        </span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • <strong>Point A</strong> (first leg) at index {data.abcPattern.aIdx}<br />
-          • <strong>Point B</strong> (highest high inside trend) at index {data.abcPattern.bIdx}<br />
-          • <strong>Point C</strong> broke below Point A → structure shift<br />
-          • Suggests bulls are trapped; momentum turning down<br />
-          • Watch for a short entry on a retest of the breakdown zone
+          • Price hit a {data.stallReversal === 'sell' ? 'higher high' : 'lower low'} but next candle failed to break it<br />
+          • RSI also failed to confirm — divergence in momentum<br />
+          • Indicates potential exhaustion of the current trend<br />
+          • Watching key {data.levelType} level near{' '}
+          <span className="text-white">${data.level?.toFixed(9)}</span>
         </p>
       </div>
     )}
@@ -1845,26 +1882,53 @@ return (
       </div>
     )}
 
-    {/* ▶️  RSI-Stall Reversal Signal  */}
-    {data.stallReversal && (
-      <div
-        className={`space-y-2 ${
-          data.stallReversal === 'sell' ? 'text-red-400' : 'text-green-400'
-        }`}
-      >
-        🔄{' '}
+    {/* 🔍 Momentum Slowing, Divergence */}
+{(data.divergence || data.momentumSlowing) && (
+  <div className="pt-4 border-t border-white/10 space-y-4">
+    {/* section header (only once) */}
+    <h3 className="text-lg font-semibold text-white">🔍 Momentum Slowing Down</h3>
+
+    {/* ▶️  RSI Divergence  */}
+    {data.divergence && (
+      <div className="text-purple-400 space-y-2">
+        ⚠️{' '}
         <span className="font-semibold">
-          {data.stallReversal === 'sell'
-            ? 'Potential Bearish Reversal Detected (RSI-Stall after High)'
-            : 'Potential Bullish Reversal Detected (RSI-Stall after Low)'}
+          Momentum Slowing Down{' '}
+          {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI Divergence)
         </span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • Price hit a {data.stallReversal === 'sell' ? 'higher high' : 'lower low'} but next candle failed to break it<br />
-          • RSI also failed to confirm — divergence in momentum<br />
-          • Indicates potential exhaustion of the current trend<br />
-          • Consider waiting for confirmation (e.g., volume shift, trend-line break)<br />
-          • Watching key {data.levelType} level near{' '}
-          <span className="text-white">{data.level}</span>
+          • RSI is moving opposite to price direction<br />
+          • Suggests{' '}
+          {data.divergenceType === 'bullish'
+            ? 'bearish momentum is fading despite lower lows'
+            : 'bullish momentum is fading despite higher highs'}
+          <br />
+          • Look for volume spikes, reversal candles, or trend-line breaks<br />
+          • Currently testing {data.levelType} level at{' '}
+          <span className="text-white">${data.level?.toFixed(9)}</span>
+        </p>
+      </div>
+    )}
+
+    {/* ▶️  MACD / RSI-50 Momentum-Slowing  */}
+    {data.momentumSlowing && (
+      <div className="text-amber-400 space-y-2">
+        🐢{' '}
+        <span className="font-semibold">
+          {data.momentumSlowing === 'bullish' ? 'Bullish' : 'Bearish'} Momentum Slowing Detected
+        </span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • {data.momentumSlowing === 'bullish'
+            ? 'MACD histogram is climbing toward zero & RSI has crossed up through 50, but price still lags'
+            : 'MACD histogram is dipping toward zero & RSI has slipped below 50, but price hasn’t broken down decisively'}
+          <br />
+          • Histogram bars are contracting — momentum is losing energy<br />
+          • RSI hovering near 50 shows indecision<br />
+          • Volume tapering off → fewer participants pushing the move<br />
+          • Watch for a push into next{' '}
+          {data.momentumSlowing === 'bullish' ? 'resistance' : 'support'} zone or a failed-break reversal<br />
+          • Key reference: {data.levelType} at{' '}
+          <span className="text-white">${data.level?.toFixed(9)}</span>
         </p>
       </div>
     )}
