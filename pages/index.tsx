@@ -263,31 +263,33 @@ function findRelevantLevel(
    *────────────────────────────────────────────── */
   let stallReversal: 'buy' | 'sell' | null = null;
 
-  if (trend === 'bullish') {
-    const hh = Math.max(...highs);
-    const hhIdx = highs.lastIndexOf(hh);
-    if (hhIdx !== -1 && hhIdx < highs.length - 1) {
-      const nextIdx = hhIdx + 1;
-      if (
-        highs[nextIdx] < hh &&                 // price failed to beat HH
-        rsi14[nextIdx] <= rsi14[hhIdx]         // RSI also stalled / lower
-      ) {
-        stallReversal = 'sell';                // bearish reversal cue
-      }
-    }
-  } else { // trend === 'bearish'
-    const ll = Math.min(...lows);
-    const llIdx = lows.lastIndexOf(ll);
-    if (llIdx !== -1 && llIdx < lows.length - 1) {
-      const nextIdx = llIdx + 1;
-      if (
-        lows[nextIdx] > ll &&                  // price failed to beat LL
-        rsi14[nextIdx] >= rsi14[llIdx]         // RSI stalled / higher
-      ) {
-        stallReversal = 'buy';                 // bullish reversal cue
-      }
+if (trend === 'bullish') {
+  const hh = Math.max(...highs);
+  const hhIdx = highs.lastIndexOf(hh);
+  const currentHigh = highs.at(-1)!;
+  const currentRSI = rsi14.at(-1)!;
+
+  // Only if current candle did NOT break the HH
+  if (currentHigh < hh && hhIdx < highs.length - 1) {
+    const rsiAtHH = rsi14[hhIdx];
+    if (currentRSI <= rsiAtHH) {
+      stallReversal = 'sell'; // Price failed to break HH, RSI is also weaker → potential reversal
     }
   }
+} else { // trend === 'bearish'
+  const ll = Math.min(...lows);
+  const llIdx = lows.lastIndexOf(ll);
+  const currentLow = lows.at(-1)!;
+  const currentRSI = rsi14.at(-1)!;
+
+  // Only if current candle did NOT break the LL
+  if (currentLow > ll && llIdx < lows.length - 1) {
+    const rsiAtLL = rsi14[llIdx];
+    if (currentRSI >= rsiAtLL) {
+      stallReversal = 'buy'; // Price failed to break LL, RSI is weaker → potential reversal
+    }
+  }
+}
 
   /*───────────────────────────────────────────────
    * 3) Fallback return (no recent EMA cross found)
