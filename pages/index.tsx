@@ -55,7 +55,7 @@ interface SignalData {
     index: number;
   }[];
 
-   momentumShift: 'bullish' | 'bearish' | null;
+   momentumSlowing: 'bullish' | 'bearish' | null;
      shouldTrade: boolean;
 
   // === Metadata ===
@@ -859,21 +859,21 @@ const rsiShift: 'bullish' | 'bearish' | null =
  *  - If only one fires → use that one.
  *  - If they disagree or neither fires → null.
  */
-let momentumShift: 'bullish' | 'bearish' | null = null;
+let momentumSlowing: 'bullish' | 'bearish' | null = null;
 
 if (macdShift && rsiShift && macdShift === rsiShift) {
-  momentumShift = macdShift;                // confluence ✔
+  momentumSlowing = macdShift;                // confluence ✔
 } else if (macdShift && !rsiShift) {
-  momentumShift = macdShift;                // MACD only
+  momentumSlowing = macdShift;                // MACD only
 } else if (rsiShift && !macdShift) {
-  momentumShift = rsiShift;                 // RSI-50 only
+  momentumSlowing = rsiShift;                 // RSI-50 only
 }
 
 /* ---------- 4) TRADE FILTER ---------- */
 const shouldTrade =
   divergence &&                          // you already have this bool
-  momentumShift !== null &&
-  momentumShift === divergenceType;      // confluence with divergence
+  momentumSlowing !== null &&
+  momentumSlowing === divergenceType;      // confluence with divergence
 
 /* ---------- 5) EXPORT / RETURN ---------- */
 
@@ -926,11 +926,11 @@ const shouldTrade =
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
 
-      momentumShift,
+      momentumSlowing,
         shouldTrade:
     divergence &&
-    momentumShift !== null &&
-    momentumShift === divergenceType,  
+    momentumSlowing !== null &&
+    momentumSlowing === divergenceType,  
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
@@ -1489,67 +1489,74 @@ return (
     )}
 
           {data.divergenceFromLevel && (
-      <div className="text-pink-400 space-y-2">
-        🔍 <span className="font-semibold">Divergence vs Key Level</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • Type:{" "}
-          <span className="capitalize text-white">
-            {data.divergenceFromLevelType === "bullish"
-              ? "Bullish (buy)"
-              : data.divergenceFromLevelType === "bearish"
-              ? "Bearish (sell)"
-              : "Confirmed"}
-          </span><br />
-          • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
-          • Suggests a potential trend continuation
-        </p>
-      </div>
+  <div className="text-pink-400 space-y-2">
+    🔍 <span className="font-semibold">Divergence vs Key Level</span>
+    <p className="text-sm text-white/70 ml-4 mt-1">
+      • Type:{" "}
+      <span className="capitalize text-white">
+        {data.divergenceFromLevelType === "bullish"
+          ? "Bearish Continuation"
+          : data.divergenceFromLevelType === "bearish"
+          ? "Bullish Continuation"
+          : "Confirmed"}
+      </span><br />
+      • RSI divergence detected at a key {data.levelType || "support/resistance"} level<br />
+      • Confirms momentum is continuing after level break — despite weakening RSI<br />
+      • Supports continuation in current trend direction past <span className="text-white">{data.level}</span>
+    </p>
+  </div>
+)}
     )}
     </div>
      )}    
           
-{/* 🔍 Momentum Shift & Divergence */}
-{(data.divergence || data.momentumShift) && (
+{/* 🔍 Momentum Slowing & Divergence */}
+{(data.divergence || data.momentumSlowing) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    {/* section header only once */}
-    <h3 className="text-lg font-semibold text-white">🔍 Trend Pullback</h3>
+    {/* section header (only once) */}
+    <h3 className="text-lg font-semibold text-white">🔍 Momentum Slowing Down</h3>
 
     {/* ▶️  RSI Divergence  */}
     {data.divergence && (
       <div className="text-purple-400 space-y-2">
         ⚠️{' '}
         <span className="font-semibold">
-          Momentum Shift {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI Divergence)
+          Momentum Slowing Down{' '}
+          {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI Divergence)
         </span>
         <p className="text-sm text-white/70 ml-4 mt-1">
           • RSI is moving opposite to price direction<br />
-          • Indicates possible{' '}
+          • Suggests{' '}
           {data.divergenceType === 'bullish'
-            ? 'bullish momentum despite lower lows'
-            : 'bearish momentum despite higher highs'}
+            ? 'bearish momentum is fading despite lower lows'
+            : 'bullish momentum is fading despite higher highs'}
           <br />
-          • Watch for volume spikes, candlestick confirmation, or trendline breaks<br />
-          • Currently testing {data.levelType} level at <span className="text-white">{data.level}</span>
+          • Look for volume spikes, reversal candles, or trend-line breaks<br />
+          • Currently testing {data.levelType} level at{' '}
+          <span className="text-white">{data.level}</span>
         </p>
       </div>
     )}
 
-    {/* ▶️  MACD / RSI-50 Momentum-Shift  */}
-    {data.momentumShift && (
+    {/* ▶️  MACD / RSI-50 Momentum-Slowing  */}
+    {data.momentumSlowing && (
       <div className="text-amber-400 space-y-2">
-        ⚡{' '}
+        🐢{' '}
         <span className="font-semibold">
-          {data.momentumShift === 'bullish' ? 'Bullish' : 'Bearish'} Momentum Shift Confirmed
+          {data.momentumSlowing === 'bullish' ? 'Bullish' : 'Bearish'} Momentum Slowing Detected
         </span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • {data.momentumShift === 'bullish'
-            ? 'MACD crossed upward / RSI crossed above 50'
-            : 'MACD crossed downward / RSI crossed below 50'}
+          • {data.momentumSlowing === 'bullish'
+            ? 'MACD histogram is climbing toward zero & RSI has crossed up through 50, but price still lags'
+            : 'MACD histogram is dipping toward zero & RSI has slipped below 50, but price hasn’t broken down decisively'}
           <br />
-          • Confirms fresh {data.momentumShift === 'bullish' ? 'buy' : 'sell'} pressure<br />
-          • Watch for follow-through toward next{' '}
-          {data.momentumShift === 'bullish' ? 'resistance' : 'support'} zone<br />
-          • Key level: {data.levelType} at <span className="text-white">{data.level}</span>
+          • Histogram bars are contracting — momentum is losing energy<br />
+          • RSI hovering near 50 shows indecision<br />
+          • Volume tapering off → fewer participants pushing the move<br />
+          • Watch for a push into next{' '}
+          {data.momentumSlowing === 'bullish' ? 'resistance' : 'support'} zone or a failed-break reversal<br />
+          • Key reference: {data.levelType} at{' '}
+          <span className="text-white">{data.level}</span>
         </p>
       </div>
     )}
