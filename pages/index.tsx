@@ -780,7 +780,7 @@ const symbols = await fetchTopPairs(100);
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
       
-let crossIdx: number | null = null;
+
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
       const now = new Date();
@@ -920,6 +920,24 @@ if (type && level !== null) {
     } 
   }
 }
+
+      let crossIdx: number | null = null;
+
+for (let i = 1; i < ema14.length; i++) {
+  const prev14 = ema14[i - 1];
+  const prev70 = ema70[i - 1];
+  const curr14 = ema14[i];
+  const curr70 = ema70[i];
+
+  if (trend === 'bullish' && prev14 < prev70 && curr14 >= curr70) {
+    crossIdx = i;
+  }
+
+  if (trend === 'bearish' && prev14 > prev70 && curr14 <= curr70) {
+    crossIdx = i;
+  }
+}
+      
       if (crossSignal === 'buy') {
   // queue a long setup
 } else if (crossSignal === 'sell') {
