@@ -1776,7 +1776,7 @@ return (
           <div className="text-green-400 space-y-2">
             ✅ <span className="font-semibold">Bullish Reversal Signal</span>
             <p className="text-sm text-white/70 ml-4 mt-1">
-              • <strong>Point A</strong> price ${candles[data.abcPattern.aIdx]?.close?.toFixed(99)}<br />
+              • <strong>Point A</strong> price ${candles[data.abcPattern.aIdx]?.close?.toFixed(9)}<br />
               • <strong>Point B</strong> price ${candles[data.abcPattern.bIdx]?.low?.toFixed(9)}<br />
               • <strong>Point C</strong> broke above Point A → structure shift<br />
               • Suggests bears are trapped; momentum likely rotating up<br />
