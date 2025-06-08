@@ -233,11 +233,11 @@ function findRelevantLevel(
 let rsiAtCross: number | null = null;
 let crossSignal: 'buy' | 'sell' | null = null;
 
-for (let i = ema14.length - 2; i >= 1; i--) {
-  const prev14 = ema14[i - 1];
-  const prev70 = ema70[i - 1];
-  const curr14 = ema14[i];
-  const curr70 = ema70[i];
+for (let i = ema.length - 2; i >= 1; i--) {
+  const prev14 = ema[i - 1];
+  const prev70 = emaLong[i - 1];
+  const curr14 = ema[i];
+  const curr70 = emaLong[i];
 
   if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
     crossIdx = i;
@@ -847,6 +847,8 @@ const symbols = await fetchTopPairs(100);
       
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
+     const ema14 = ema;
+const ema70 = emaLong;
       const rsi14 = calculateRSI(closes, 14);
 
       const lastClose = closes.at(-1)!;
