@@ -14,6 +14,7 @@ interface SignalData {
   divergenceType: 'bullish' | 'bearish' | null; // primary divergence
   divergenceFromLevel: boolean; // divergence specifically from a key level
   crossSignal: 'buy' | 'sell' | null;
+  stallReversal: 'buy' | 'sell' | null;
   divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
   nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
 
@@ -212,26 +213,24 @@ function findRelevantLevel(
   type: 'support' | 'resistance' | null;
   crossIdx: number | null;
   rsiAtCross: number | null;
-  crossSignal: 'buy' | 'sell' | null;
+  crossSignal: 'buy' | 'sell' | null;         // unchanged
+  stallReversal: 'buy' | 'sell' | null;       // NEW
 } {
   const currentRSI = rsi14.at(-1)!;
 
-  // ────────────────────────────────────────────────────────────
-  // 1) Scan backwards to locate the most recent EMA-cross bar
-  // ────────────────────────────────────────────────────────────
+  /*───────────────────────────────────────────────
+   * 1) ORIGINAL: EMA–cross logic (kept as–is)
+   *────────────────────────────────────────────── */
   for (let i = ema14.length - 2; i >= 1; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
-    // ─── Bullish trend: golden-cross bar becomes support ───
     if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
       const rsiAtCross = rsi14[i];
       const crossSignal =
-        currentRSI < rsiAtCross        // RSI now is lower ⇒ momentum cooled
-          ? 'buy'                      // …so we get a BUY cue
-          : null;
+        currentRSI < rsiAtCross ? 'buy' : null;
 
       return {
         level: closes[i],
@@ -239,16 +238,14 @@ function findRelevantLevel(
         crossIdx: i,
         rsiAtCross,
         crossSignal,
+        stallReversal: null,            // not checked here
       };
     }
 
-    // ─── Bearish trend: death-cross bar becomes resistance ───
     if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
       const rsiAtCross = rsi14[i];
       const crossSignal =
-        currentRSI > rsiAtCross        // RSI now is higher ⇒ momentum eased
-          ? 'sell'                     // …so we get a SELL cue
-          : null;
+        currentRSI > rsiAtCross ? 'sell' : null;
 
       return {
         level: closes[i],
@@ -256,13 +253,45 @@ function findRelevantLevel(
         crossIdx: i,
         rsiAtCross,
         crossSignal,
+        stallReversal: null,
       };
     }
   }
 
-  // ────────────────────────────────────────────────────────────
-  // 2)  No recent cross found → fall back to swing extreme
-  // ────────────────────────────────────────────────────────────
+  /*───────────────────────────────────────────────
+   * 2) NEW: Highest-high / Lowest-low RSI-stall logic
+   *────────────────────────────────────────────── */
+  let stallReversal: 'buy' | 'sell' | null = null;
+
+  if (trend === 'bullish') {
+    const hh = Math.max(...highs);
+    const hhIdx = highs.lastIndexOf(hh);
+    if (hhIdx !== -1 && hhIdx < highs.length - 1) {
+      const nextIdx = hhIdx + 1;
+      if (
+        highs[nextIdx] < hh &&                 // price failed to beat HH
+        rsi14[nextIdx] <= rsi14[hhIdx]         // RSI also stalled / lower
+      ) {
+        stallReversal = 'sell';                // bearish reversal cue
+      }
+    }
+  } else { // trend === 'bearish'
+    const ll = Math.min(...lows);
+    const llIdx = lows.lastIndexOf(ll);
+    if (llIdx !== -1 && llIdx < lows.length - 1) {
+      const nextIdx = llIdx + 1;
+      if (
+        lows[nextIdx] > ll &&                  // price failed to beat LL
+        rsi14[nextIdx] >= rsi14[llIdx]         // RSI stalled / higher
+      ) {
+        stallReversal = 'buy';                 // bullish reversal cue
+      }
+    }
+  }
+
+  /*───────────────────────────────────────────────
+   * 3) Fallback return (no recent EMA cross found)
+   *────────────────────────────────────────────── */
   const fallbackLevel =
     trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
   const fallbackType = trend === 'bullish' ? 'resistance' : 'support';
@@ -273,8 +302,13 @@ function findRelevantLevel(
     crossIdx: null,
     rsiAtCross: null,
     crossSignal: null,
+    stallReversal,                           // may be 'buy' | 'sell' | null
   };
 }
+
+
+
+
 
 function calculateDifferenceVsEMA70(
   inferredLevel: number,
@@ -851,7 +885,7 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const { level, type, crossSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
+const { level, type, crossSignal, stallReversal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
       const highestHigh = Math.max(...highs);
       const lowestLow = Math.min(...lows);
       const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
@@ -886,6 +920,13 @@ if (type && level !== null) {
 } else if (crossSignal === 'sell') {
   // queue a short setup
       }
+      
+      if (stallReversal === 'buy') {
+  // ➡️  Potential bullish reversal after bearish trend stalls
+}
+if (stallReversal === 'sell') {
+  // ⬅️  Potential bearish reversal after bullish trend stalls
+                                            }
 
       
 
@@ -958,6 +999,7 @@ const shouldTrade =
   divergenceType,             // 'bullish' | 'bearish' | null
   divergenceFromLevel,
       crossSignal,
+      stallReversal,
   divergenceFromLevelType,    // 'bullish' | 'bearish' | null
   nearOrAtEMA70Divergence,
 
@@ -1577,7 +1619,7 @@ return (
     </div>
   )}
 
-{(data.crossSignal === 'buy' || data.crossSignal === 'sell') && (
+{(data.crossSignal === 'buy' || data.crossSignal === 'sell') && !data.stallReversal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Cross + RSI Confirmation</h3>
 
@@ -1608,13 +1650,8 @@ return (
 )}
 
 
-
-
-
-          
-          
-{/* 🔍 Momentum Slowing & Divergence */}
-{(data.divergence || data.momentumSlowing) && (
+{/* 🔍 Momentum Slowing, Divergence & RSI-Stall Reversal */}
+{(data.divergence || data.momentumSlowing || data.stallReversal) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     {/* section header (only once) */}
     <h3 className="text-lg font-semibold text-white">🔍 Momentum Slowing Down</h3>
@@ -1663,8 +1700,37 @@ return (
         </p>
       </div>
     )}
+
+    {/* ▶️  RSI-Stall Reversal Signal  */}
+    {data.stallReversal && (
+      <div
+        className={`space-y-2 ${
+          data.stallReversal === 'sell' ? 'text-red-400' : 'text-green-400'
+        }`}
+      >
+        🔄{' '}
+        <span className="font-semibold">
+          {data.stallReversal === 'sell'
+            ? 'Potential Bearish Reversal Detected (RSI-Stall after High)'
+            : 'Potential Bullish Reversal Detected (RSI-Stall after Low)'}
+        </span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Price hit a {data.stallReversal === 'sell' ? 'higher high' : 'lower low'} but next candle failed to break it<br />
+          • RSI also failed to confirm — divergence in momentum<br />
+          • Indicates potential exhaustion of the current trend<br />
+          • Consider waiting for confirmation (e.g., volume shift, trend-line break)<br />
+          • Watching key {data.levelType} level near{' '}
+          <span className="text-white">{data.level}</span>
+        </p>
+      </div>
+    )}
   </div>
 )}
+
+
+          
+          
+
 
           
           
