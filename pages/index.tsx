@@ -849,7 +849,7 @@ const symbols = await fetchTopPairs(100);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
       const volumes = candles.map(c => c[5]);
-      const candles = data.candles;
+      
       
 
       
