@@ -229,7 +229,9 @@ function findRelevantLevel(
    * 1) EMA‑cross scan (no early return → we want
    *    crossIdx later for stall & ABC detection)
    *────────────────────────────────────────────── */
-  const emaR = calculateEMA(closes, 14);
+const closes = candles.map(c => c.close);
+
+const emaR = calculateEMA(closes, 14);
 const emaLong = calculateEMA(closes, 70);
 const rsi14 = calculateRSI(closes, 14);
 const currentRSI = rsi14[rsi14.length - 1];
