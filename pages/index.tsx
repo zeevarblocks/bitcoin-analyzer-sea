@@ -264,29 +264,33 @@ function findRelevantLevel(
   let stallReversal: 'buy' | 'sell' | null = null;
 
 if (trend === 'bullish') {
-  const hh = Math.max(...highs);
-  const hhIdx = highs.lastIndexOf(hh);
-  const currentHigh = highs.at(-1)!;
-  const currentRSI = rsi14.at(-1)!;
+  const hh      = Math.max(...highs);
+  const hhIdx   = highs.lastIndexOf(hh);
+  const hiNow   = highs.at(-1)!;      // high of current candle
+  const rsiNow  = rsi14.at(-1)!;      // RSI of current candle
 
-  // Only if current candle did NOT break the HH
-  if (currentHigh < hh && hhIdx < highs.length - 1) {
+  // Price has not broken the Highest High on this candle
+  if (hiNow < hh && hhIdx < highs.length - 1) {
     const rsiAtHH = rsi14[hhIdx];
-    if (currentRSI <= rsiAtHH) {
-      stallReversal = 'sell'; // Price failed to break HH, RSI is also weaker → potential reversal
+
+    // RSI at HH is strictly higher than current RSI → clear loss of momentum
+    if (rsiAtHH > rsiNow) {
+      stallReversal = 'sell';         // potential bearish reversal
     }
   }
-} else { // trend === 'bearish'
-  const ll = Math.min(...lows);
-  const llIdx = lows.lastIndexOf(ll);
-  const currentLow = lows.at(-1)!;
-  const currentRSI = rsi14.at(-1)!;
+} else { /* trend === 'bearish' */
+  const ll      = Math.min(...lows);
+  const llIdx   = lows.lastIndexOf(ll);
+  const loNow   = lows.at(-1)!;       // low of current candle
+  const rsiNow  = rsi14.at(-1)!;      // RSI of current candle
 
-  // Only if current candle did NOT break the LL
-  if (currentLow > ll && llIdx < lows.length - 1) {
+  // Price has not broken the Lowest Low on this candle
+  if (loNow > ll && llIdx < lows.length - 1) {
     const rsiAtLL = rsi14[llIdx];
-    if (currentRSI >= rsiAtLL) {
-      stallReversal = 'buy'; // Price failed to break LL, RSI is weaker → potential reversal
+
+    // RSI at LL is strictly lower than current RSI → clear loss of bearish power
+    if (rsiAtLL < rsiNow) {
+      stallReversal = 'buy';          // potential bullish reversal
     }
   }
 }
