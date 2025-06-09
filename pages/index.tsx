@@ -1772,7 +1772,7 @@ return (
 {/* ─────────────────────────────────────────────
     📊 3) EMA-CROSS + CURRENT RSI - support for trend continuation 
 ───────────────────────────────────────────── */}
-{(data.crossSignal && !data.abcSignal && (
+          {data.crossSignal && !data.abcSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">
       📊 EMA Cross&nbsp;+&nbsp;RSI Confirmation
@@ -1798,7 +1798,7 @@ return (
       </div>
     )}
   </div>
-))}
+)}
 
 {/* ─────────────────────────────────────────────
     🔄 4) A-B-C-D REVERSAL  +  MOMENTUM-STALL
