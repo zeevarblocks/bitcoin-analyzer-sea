@@ -47,8 +47,8 @@ interface SignalData {
   // === Price + Intraday Movement ===
   currentPrice: number;
   touchedEMA70Today: boolean;         // price interacted with EMA70 today
-  intradayHigherHighBreak: boolean;   // broke today's high
-  intradayLowerLowBreak: boolean;     // broke today's low
+  higherHighBreak: boolean;   // broke today's high
+  lowerLowBreak: boolean;     // broke today's low
   todaysLowestLow: number;
   todaysHighestHigh: number;
 
@@ -1146,8 +1146,8 @@ const shouldTrade =
   currentPrice: lastClose,
   todaysLowestLow,
   todaysHighestHigh,
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
+  higherHighBreak,
+  lowerLowBreak,
 
   // === Support / Resistance Zone Levels ===
   level,                      // confirmed EMA-cross level
