@@ -1203,7 +1203,7 @@ type FilterType =
   | 'bearishBreakout'
   |	'abcSignal'
   |	'crossSignal'
-  |	'absSignal&crossSignal';
+  |	'abcSignal&crossSignal';
 
 export default function SignalChecker({
   signals,
