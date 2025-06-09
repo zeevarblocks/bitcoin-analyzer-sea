@@ -308,53 +308,107 @@ for (let i = ema14.length - 2; i >= 1; i--) {
   /*───────────────────────────────────────────────
    * 4) NEW – A‑B‑C reversal structure detection
    *────────────────────────────────────────────── */
-  let abcPattern: { aIdx: number; bIdx: number; cIdx: number } | null = null;
-  let abcSignal: 'buy' | 'sell' | null = null;
+  
+// assume arrays: highs, lows, rsi  (index-aligned to your candles)
+let abcPattern:
+  | { aIdx: number; bIdx: number; cIdx: number; dIdx?: number }
+  | null = null;
+let abcSignal: 'buy' | 'sell' | null = null;
 
-  if (crossIdx !== null) {
-    const aIdx = crossIdx; // Point‑A: first leg (EMA cross)
+if (crossIdx !== null) {
+  const aIdx = crossIdx; // ---- Point-A (EMA cross)
 
-    if (trend === 'bullish') {
-      let bIdx = aIdx; // Point‑B: highest high inside the trend
-      let cIdx: number | null = null; // Point‑C: break of A
+  if (trend === 'bullish') {
+    let bIdx = aIdx;          // ---- Point-B (highest high)
+    let cIdx: number | null = null;  // ---- Point-C (break of A-low)
+    let dIdx: number | null = null;  // ---- Point-D (failure + RSI drop)
 
-      for (let i = aIdx + 1; i < highs.length; i++) {
-        // Track highest high until the break happens
-        if (highs[i] > highs[bIdx]) bIdx = i;
+    // ───────────────────────────────────────────────────────── Point-B + C
+    for (let i = aIdx + 1; i < highs.length; i++) {
+      // update B while we keep rising
+      if (highs[i] > highs[bIdx]) bIdx = i;
 
-        // Break below Point‑A low → found C
-        if (lows[i] < lows[aIdx]) {
-          cIdx = i;
+      // break of A-low → found C, jump out
+      if (lows[i] < lows[aIdx]) {
+        cIdx = i;
+        break;
+      }
+    }
+
+    // ───────────────────────────────────────────────────────── Point-D test
+    if (cIdx !== null) {
+      for (let i = cIdx + 1; i < highs.length; i++) {
+        const priceFailed = highs[i] <= highs[bIdx];        // no HH
+        const rsiFalling = rsi[i] < rsi[bIdx];              // RSI lower than at B
+
+        if (priceFailed && rsiFalling) {
+          dIdx = i;                                         // got D
           break;
         }
-      }
 
-      if (cIdx !== null && cIdx > bIdx) {
-        abcPattern = { aIdx, bIdx, cIdx };
-        abcSignal = 'sell'; // long trend reversed → short bias
+        // invalidate pattern if a higher high prints first
+        if (highs[i] > highs[bIdx]) break;
       }
-    } else {
-      // bearish trend mirrored logic
-      let bIdx = aIdx; // lowest low inside down‑trend
-      let cIdx: number | null = null;
+    }
 
-      for (let i = aIdx + 1; i < lows.length; i++) {
-        if (lows[i] < lows[bIdx]) bIdx = i;
-
-        // Break above Point‑A high → found C
-        if (highs[i] > highs[aIdx]) {
-          cIdx = i;
-          break;
-        }
-      }
-
-      if (cIdx !== null && cIdx > bIdx) {
-        abcPattern = { aIdx, bIdx, cIdx };
-        abcSignal = 'buy'; // short trend reversed → long bias
-      }
+    // ───────────────────────────────────────────────────────── Final flag
+    if (cIdx !== null && dIdx !== null) {
+      abcPattern = { aIdx, bIdx, cIdx, dIdx };
+      abcSignal  = 'sell';          // exit or short after failure rally
     }
   }
 
+  /*  ─────────────────────────────────────────────────────────────
+      🔻 Bearish version (mirror logic)
+      if (trend === 'bearish') {
+        // aIdx already set
+        // Point-B: lowest low while falling
+        // Point-C: break above A-high
+        // Point-D: failure to make a lower low + RSI rising
+        // set abcSignal = 'buy'
+      }
+  */
+}
+
+  if (trend === 'bearish') {
+    let bIdx = aIdx;                 // Point-B: lowest low after the cross
+    let cIdx: number | null = null;  // Point-C: break of A-high
+    let dIdx: number | null = null;  // Point-D: failure + RSI rise
+
+    // ─────────────────────────────────────────────── Point-B + C
+    for (let i = aIdx + 1; i < lows.length; i++) {
+      // keep tracking the lowest low
+      if (lows[i] < lows[bIdx]) bIdx = i;
+
+      // break above A-high → found C
+      if (highs[i] > highs[aIdx]) {
+        cIdx = i;
+        break;
+      }
+    }
+
+    // ─────────────────────────────────────────────── Point-D test
+    if (cIdx !== null) {
+      for (let i = cIdx + 1; i < lows.length; i++) {
+        const priceFailed = lows[i] >= lows[bIdx];        // no new LL
+        const rsiRising  = rsi[i] > rsi[bIdx];            // RSI diverging up
+
+        if (priceFailed && rsiRising) {
+          dIdx = i;                                       // got D
+          break;
+        }
+
+        // abort if a fresh lower low prints first
+        if (lows[i] < lows[bIdx]) break;
+      }
+    }
+
+    // ─────────────────────────────────────────────── Final flag
+    if (cIdx !== null && dIdx !== null) {
+      abcPattern = { aIdx, bIdx, cIdx, dIdx };
+      abcSignal  = 'buy';            // long after capitulation failure
+    }
+                              }
   /*───────────────────────────────────────────────
    * 5) Fallback when no recent EMA cross
    *────────────────────────────────────────────── */
