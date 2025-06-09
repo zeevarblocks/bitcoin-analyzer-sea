@@ -922,8 +922,12 @@ const prevSessionHigh = candlesPrev.length > 0 ? Math.max(...candlesPrev.map(c =
 // Breakout detection
 const lowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
 const higherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
-      const breakout = bullishBreakout || bearishBreakout;
 
+const bullishBreakout = higherHighBreak;
+const bearishBreakout = lowerLowBreak;
+
+const breakout = bullishBreakout || bearishBreakout;
+      
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
 
