@@ -1628,15 +1628,21 @@ return (
           </div>
         )}
 
-          <div className="pt-4 border-t border-white/10 space-y-4">
-  <h3 className="text-lg font-semibold text-white">📊 Signal Summary: Trend Continuation</h3>
+          {/* ─────────────────────────────────────────────
+    📊 1) TREND-CONTINUATION SUMMARY
+───────────────────────────────────────────── */}
+<div className="pt-4 border-t border-white/10 space-y-4">
+  <h3 className="text-lg font-semibold text-white">
+    📊 Signal Summary: Trend Continuation
+  </h3>
 
   {data.continuationEnded ? (
+    /* Continuation ended */
     <div className="text-yellow-400 space-y-2">
       ⚠️ <span className="font-semibold">Continuation Ended</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
         • Price action failed to maintain structure<br />
-        • Trend continuation conditions no longer valid
+        • Trend-continuation conditions no longer valid
         {data.continuationReason && (
           <>
             <br />• <span className="italic">Reason:</span> {data.continuationReason}
@@ -1645,11 +1651,12 @@ return (
       </p>
     </div>
   ) : data.bullishContinuation && !data.abcSignal ? (
+    /* Bullish continuation */
     <div className="text-green-400 space-y-2">
       🔺 <span className="font-semibold">Bullish Continuation</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
         • EMA trend is upward<br />
-        • Higher lows or RSI structure confirmed
+        • Higher-lows or RSI structure confirmed
         {data.continuationReason && (
           <>
             <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
@@ -1658,11 +1665,12 @@ return (
       </p>
     </div>
   ) : data.bearishContinuation && !data.abcSignal ? (
+    /* Bearish continuation */
     <div className="text-red-400 space-y-2">
       🔻 <span className="font-semibold">Bearish Continuation</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
         • EMA trend is downward<br />
-        • Lower highs or RSI confirmation detected
+        • Lower-highs or RSI confirmation detected
         {data.continuationReason && (
           <>
             <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
@@ -1671,30 +1679,36 @@ return (
       </p>
     </div>
   ) : (
+    /* No continuation */
     <div className="text-white/60 space-y-2">
       ℹ️ <span className="font-semibold">No Continuation Signal</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
-        • Trend continuation pattern not confirmed<br />
+        • Trend-continuation pattern not confirmed<br />
         • Waiting for valid structure or RSI alignment
         <br />• <span className="italic">Reason:</span>{" "}
-        {data.continuationReason || "No significant trend pattern or indicator alignment detected"}
+        {data.continuationReason ||
+          "No significant trend pattern or indicator alignment detected"}
       </p>
     </div>
   )}
 </div>
-          
-{/* 📉 RSI Divergence Evidence */}
+
+{/* ─────────────────────────────────────────────
+    📉 2) RSI DIVERGENCE EVIDENCE
+───────────────────────────────────────────── */}
 {(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && !data.abcSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
+    <h3 className="text-lg font-semibold text-white">
+      📉 RSI Divergence: Supporting Evidence
+    </h3>
 
     {data.nearOrAtEMA70Divergence && (
       <div className="text-indigo-400 space-y-2">
         🧭 <span className="font-semibold">EMA70 RSI Divergence</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • Divergence detected near the 70 EMA<br />
-          • Confluence with dynamic support/resistance enhances signal reliability<br />
-          • Often marks bounce zones or momentum continuation setups
+          • Divergence detected near the 70-EMA<br />
+          • Confluence with dynamic S/R enhances reliability<br />
+          • Often marks bounce zones or continuation setups
         </p>
       </div>
     )}
@@ -1703,16 +1717,16 @@ return (
       <div className="text-pink-400 space-y-2">
         🔍 <span className="font-semibold">Divergence vs Key Level</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • Type:{" "}
+          • Type:&nbsp;
           <span className="capitalize text-white">
             {data.divergenceFromLevelType === "bullish"
-              ? "Bullish Continuation (buy)"
+              ? "Bullish continuation (buy)"
               : data.divergenceFromLevelType === "bearish"
-              ? "Bearish Continuation (sell)"
+              ? "Bearish continuation (sell)"
               : "Confirmed"}
           </span>
           <br />
-          • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
+          • RSI divergence at key {data.levelType || "support/resistance"} zone<br />
           • Suggests a potential trend continuation
         </p>
       </div>
@@ -1720,164 +1734,120 @@ return (
   </div>
 )}
 
-{(data.crossSignal === 'buy' || data.crossSignal === 'sell') && (
+{/* ─────────────────────────────────────────────
+    📊 3) EMA-CROSS + CURRENT RSI
+───────────────────────────────────────────── */}
+{data.crossSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📊 EMA Cross + RSI Confirmation</h3>
+    <h3 className="text-lg font-semibold text-white">
+      📊 EMA Cross&nbsp;+&nbsp;RSI Confirmation
+    </h3>
 
-    {data.crossSignal === 'buy' && (
+    {data.crossSignal === "buy" ? (
       <div className="text-green-400 space-y-2">
         ✅ <span className="font-semibold">Buy Continuation Signal</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • EMA14 crossed above EMA70 → Bullish crossover<br />
-          • RSI is currently lower than it was at the crossover<br />
-          • Indicates price pulled back but bullish momentum may resume<br />
-          • Suggests potential long setup near support
+          • EMA14 crossed above EMA70 – bullish crossover<br />
+          • RSI is now lower than at the cross (pullback)<br />
+          • Momentum may resume upward – watch support for entries
         </p>
       </div>
-    )}
-
-    {data.crossSignal === 'sell' && (
+    ) : (
       <div className="text-red-400 space-y-2">
         ⚠️ <span className="font-semibold">Sell Continuation Signal</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • EMA14 crossed below EMA70 → Bearish crossover<br />
-          • RSI is currently higher than it was at the crossover<br />
-          • Indicates price bounced but bearish momentum may resume<br />
-          • Suggests potential short setup near resistance
+          • EMA14 crossed below EMA70 – bearish crossover<br />
+          • RSI is now higher than at the cross (bounce)<br />
+          • Momentum may resume downward – watch resistance for entries
         </p>
       </div>
     )}
   </div>
 )}
 
-{/* ───────────────────────────────────────────────
-    🔄  A-B-C Reversal Pattern + RSI-Stall Signal
-    (rendered only if at least one of them exists)
-─────────────────────────────────────────────── */}
-<div className="pt-4 border-t border-white/10 space-y-6">
-  {/* ============================================
-     A-B-C REVERSAL CARD
-  ============================================ */}
-  {data.abcSignal && data.abcPattern && (
-    <div>
-      <h3 className="text-lg font-semibold text-white">
-        🔄 A-B-C Reversal Pattern
-      </h3>
+{/* ─────────────────────────────────────────────
+    🔄 4) A-B-C REVERSAL  +  MOMENTUM-STALL
+───────────────────────────────────────────── */}
+{(data.abcSignal || data.divergence || data.momentumSlowing || data.stallReversal) && (
+  <div className="pt-4 border-t border-white/10 space-y-6">
+    {/* A-B-C Reversal */}
+    {data.abcSignal && data.abcPattern && (
+      <div>
+        <h3 className="text-lg font-semibold text-white">🔄 A-B-C Reversal Pattern</h3>
 
-      {/* BULLISH */}
-      {data.abcSignal === 'buy' && (
-        <div className="text-green-400 space-y-2">
-          ✅ <span className="font-semibold">Bullish Reversal Signal</span>
-          <p className="text-sm text-white/70 ml-4 mt-1">
-            • <strong>Point A</strong> at index {data.abcPattern.aIdx}<br />
-            • <strong>Point B</strong> at index {data.abcPattern.bIdx}<br />
-            • <strong>Point C</strong> broke above Point A → structure shift<br />
-            • Suggests bears are trapped; momentum likely rotating up<br />
-            • Look for a long entry on a retest of the breakout zone
-          </p>
-        </div>
-      )}
-
-      {/* BEARISH */}
-      {data.abcSignal === 'sell' && (
-        <div className="text-red-400 space-y-2">
-          ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
-          <p className="text-sm text-white/70 ml-4 mt-1">
-            • <strong>Point A</strong> at index {data.abcPattern.aIdx}<br />
-            • <strong>Point B</strong> at index {data.abcPattern.bIdx}<br />
-            • <strong>Point C</strong> broke below Point A → structure shift<br />
-            • Suggests bulls are trapped; momentum turning down<br />
-            • Watch for a short entry on a retest of the breakdown zone
-          </p>
-        </div>
-      )}
-    </div>
-  )}
-
-  
-
-          
-
-    {/* 🔍 Momentum Slowing, Divergence */}
-{(data.divergence || data.momentumSlowing || data.stallReversal) && (
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    {/* section header (only once) */}
-    <h3 className="text-lg font-semibold text-white">🔍 Momentum Slowing Down</h3>
-
-    {/* ▶️  RSI Divergence  */}
-    {data.divergence && (
-      <div className="text-purple-400 space-y-2">
-        ⚠️{' '}
-        <span className="font-semibold">
-          Momentum Slowing Down{' '}
-          {data.divergenceType === 'bullish' ? 'Bullish' : 'Bearish'} Signal (RSI Divergence)
-        </span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • RSI is moving opposite to price direction<br />
-          • Suggests{' '}
-          {data.divergenceType === 'bullish'
-            ? 'bearish momentum is fading despite lower lows'
-            : 'bullish momentum is fading despite higher highs'}
-          <br />
-          • Look for volume spikes, reversal candles, or trend-line breaks<br />
-          • Currently testing {data.levelType} level at{' '}
-          <span className="text-white">${data.level?.toFixed(9)}</span>
-        </p>
+        {data.abcSignal === "buy" ? (
+          <div className="text-green-400 space-y-2">
+            ✅ <span className="font-semibold">Bullish Reversal Signal</span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • <strong>A</strong> index {data.abcPattern.aIdx}<br />
+              • <strong>B</strong> index {data.abcPattern.bIdx}<br />
+              • <strong>C</strong> broke above A → structure shift
+            </p>
+          </div>
+        ) : (
+          <div className="text-red-400 space-y-2">
+            ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • <strong>A</strong> index {data.abcPattern.aIdx}<br />
+              • <strong>B</strong> index {data.abcPattern.bIdx}<br />
+              • <strong>C</strong> broke below A → structure shift
+            </p>
+          </div>
+        )}
       </div>
     )}
 
-    {/* ▶️  MACD / RSI-50 Momentum-Slowing  */}
-    {data.momentumSlowing && (
-      <div className="text-amber-400 space-y-2">
-        🐢{' '}
-        <span className="font-semibold">
-          {data.momentumSlowing === 'bullish' ? 'Bullish' : 'Bearish'} Momentum Slowing Detected
-        </span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • {data.momentumSlowing === 'bullish'
-            ? 'MACD histogram is climbing toward zero & RSI has crossed up through 50, but price still lags'
-            : 'MACD histogram is dipping toward zero & RSI has slipped below 50, but price hasn’t broken down decisively'}
-          <br />
-          • Histogram bars are contracting — momentum is losing energy<br />
-          • RSI hovering near 50 shows indecision<br />
-          • Volume tapering off → fewer participants pushing the move<br />
-          • Watch for a push into next{' '}
-          {data.momentumSlowing === 'bullish' ? 'resistance' : 'support'} zone or a failed-break reversal<br />
-          • Key reference: {data.levelType} at{' '}
-          <span className="text-white">${data.level?.toFixed(9)}</span>
-        </p>
+    {/* Momentum-Stall / Divergence / RSI-stall */}
+    {(data.divergence || data.momentumSlowing || data.stallReversal) && (
+      <div className="space-y-4">
+        {data.divergence && (
+          <div className="text-purple-400 space-y-2">
+            ⚠️ <span className="font-semibold">
+              Momentum Slowing – {data.divergenceType === "bullish" ? "Bullish" : "Bearish"} RSI Divergence
+            </span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • RSI moving opposite price direction<br />
+              • Testing {data.levelType} at{" "}
+              <span className="text-white">${data.level?.toFixed(2)}</span>
+            </p>
+          </div>
+        )}
+
+        {data.momentumSlowing && (
+          <div className="text-amber-400 space-y-2">
+            🐢 <span className="font-semibold">
+              {data.momentumSlowing === "bullish" ? "Bullish" : "Bearish"} Momentum Slowing
+            </span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • Histogram contracting – energy waning<br />
+              • RSI hovering near 50 – indecision
+            </p>
+          </div>
+        )}
+
+        {data.stallReversal && (
+          <div
+            className={`space-y-2 ${
+              data.stallReversal === "sell" ? "text-red-400" : "text-green-400"
+            }`}
+          >
+            🔄 <span className="font-semibold">
+              {data.stallReversal === "sell"
+                ? "Watch for Exhaustion (RSI-Stall after High)"
+                : "Watch for Exhaustion (RSI-Stall after Low)"}
+            </span>
+            <p className="text-sm text-white/70 ml-4 mt-1">
+              • {data.stallReversal === "sell" ? "Higher high" : "Lower low"} failed to follow
+              through<br />• RSI did not confirm – stalling momentum
+            </p>
+          </div>
+        )}
       </div>
     )}
-
-{/* ============================================
-     RSI-STALL REVERSAL CARD
-  ============================================ */}
-  {data.stallReversal && (
-    <div
-      className={`space-y-2 ${
-        data.stallReversal === 'sell' ? 'text-red-400' : 'text-green-400'
-      }`}
-    >
-      🔄{' '}
-      <span className="font-semibold">
-        {data.stallReversal === 'sell'
-          ? ' Watch for signs of exhaustion (RSI-Stall after High)'
-          : ' Watch for signs of exhaustion (RSI-Stall after Low)'}
-      </span>
-      <p className="text-sm text-white/70 ml-4 mt-1">
-        • Price hit a {data.stallReversal === 'sell' ? 'higher high' : 'lower low'} but next candle failed to break it<br />
-        • RSI also failed to confirm — divergence in momentum<br />
-        • Indicates potential exhaustion of the current trend<br />
-        • Watching key {data.levelType} level near{' '}
-        <span className="text-white">${data.level?.toFixed(9)}</span>
-      </p>
-    </div>
-  )}
-</div>    
+  </div>
 )}
-
+          
               
-
 {(data.ema14Bounce || data.ema70Bounce) && (
   <div className="pt-4 border-t border-white/10 space-y-4">  
     <h3 className="text-lg font-semibold text-white">📊 EMA Bounce Signals (Consolidation)</h3>  
