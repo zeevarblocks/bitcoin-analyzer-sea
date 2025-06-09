@@ -1361,6 +1361,7 @@ const scrollToTop = () => {
       if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
+      if (activeFilter === 'abcSignal') return data.abcSignal;
       return true;  
     });
 
@@ -1574,6 +1575,14 @@ return (
   >
     <span>📉</span>
     <span>bearishContinuation</span>
+  </button>
+
+          <button
+    onClick={() => setActiveFilter('abcSignal')}
+    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>abcdSignal</span>
   </button>
                
 </div>
