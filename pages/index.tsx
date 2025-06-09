@@ -1628,7 +1628,7 @@ return (
           </div>
         )}
 
-          {(data.continuationEnded || data.bullishContinuation || data.bearishContinuation) && !data.stallReversal && (
+          {(data.continuationEnded || data.bullishContinuation || data.bearishContinuation) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary: Trend Continuation</h3>
 
@@ -1647,7 +1647,7 @@ return (
       </div>
     )}
 
-    {data.bullishContinuation && !data.continuationEnded && !data.stallReversal && (
+    {data.bullishContinuation && !data.continuationEnded && !data.abcSignal && (
       <div className="text-green-400 space-y-2">
         🔺 <span className="font-semibold">Bullish Continuation</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1662,7 +1662,7 @@ return (
       </div>
     )}
 
-    {data.bearishContinuation && !data.continuationEnded && !data.stallReversal && (
+    {data.bearishContinuation && !data.continuationEnded && !data.abcSignal && (
       <div className="text-red-400 space-y-2">
         🔻 <span className="font-semibold">Bearish Continuation</span>
         <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1679,7 +1679,7 @@ return (
   </div>
 )}
 
-{!data.continuationEnded && !data.bullishContinuation && !data.bearishContinuation && !data.stallReversal && (
+{!data.continuationEnded && !data.bullishContinuation && !data.bearishContinuation && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 Signal Summary: Trend Continuation</h3>
 
@@ -1696,7 +1696,7 @@ return (
 )}
           
 {/* 📉 RSI Divergence Evidence */}
-{(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && !data.stallReversal && (
+{(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && !data.abcSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📉 RSI Divergence: Supporting Evidence for Trend Continuation</h3>
 
@@ -1732,7 +1732,7 @@ return (
     </div>
   )}
 
-{(data.crossSignal === 'buy' || data.crossSignal === 'sell') && !data.stallReversal && (
+{(data.crossSignal === 'buy' || data.crossSignal === 'sell') && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">📊 EMA Cross + RSI Confirmation</h3>
 
@@ -1806,36 +1806,12 @@ return (
     </div>
   )}
 
-  {/* ============================================
-     RSI-STALL REVERSAL CARD
-  ============================================ */}
-  {data.stallReversal && (
-    <div
-      className={`space-y-2 ${
-        data.stallReversal === 'sell' ? 'text-red-400' : 'text-green-400'
-      }`}
-    >
-      🔄{' '}
-      <span className="font-semibold">
-        {data.stallReversal === 'sell'
-          ? 'Potential Bearish Reversal Detected (RSI-Stall after High)'
-          : 'Potential Bullish Reversal Detected (RSI-Stall after Low)'}
-      </span>
-      <p className="text-sm text-white/70 ml-4 mt-1">
-        • Price hit a {data.stallReversal === 'sell' ? 'higher high' : 'lower low'} but next candle failed to break it<br />
-        • RSI also failed to confirm — divergence in momentum<br />
-        • Indicates potential exhaustion of the current trend<br />
-        • Watching key {data.levelType} level near{' '}
-        <span className="text-white">${data.level?.toFixed(9)}</span>
-      </p>
-    </div>
-  )}
-</div>
+  
 
           
 
     {/* 🔍 Momentum Slowing, Divergence */}
-{(data.divergence || data.momentumSlowing) && (
+{(data.divergence || data.momentumSlowing || data.stallReversal) && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     {/* section header (only once) */}
     <h3 className="text-lg font-semibold text-white">🔍 Momentum Slowing Down</h3>
@@ -1884,7 +1860,32 @@ return (
         </p>
       </div>
     )}
-  </div>
+
+{/* ============================================
+     RSI-STALL REVERSAL CARD
+  ============================================ */}
+  {data.stallReversal && (
+    <div
+      className={`space-y-2 ${
+        data.stallReversal === 'sell' ? 'text-red-400' : 'text-green-400'
+      }`}
+    >
+      🔄{' '}
+      <span className="font-semibold">
+        {data.stallReversal === 'sell'
+          ? ' Watch for signs of exhaustion (RSI-Stall after High)'
+          : ' Watch for signs of exhaustion (RSI-Stall after Low)'}
+      </span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • Price hit a {data.stallReversal === 'sell' ? 'higher high' : 'lower low'} but next candle failed to break it<br />
+        • RSI also failed to confirm — divergence in momentum<br />
+        • Indicates potential exhaustion of the current trend<br />
+        • Watching key {data.levelType} level near{' '}
+        <span className="text-white">${data.level?.toFixed(9)}</span>
+      </p>
+    </div>
+  )}
+</div>    
 )}
 
               
