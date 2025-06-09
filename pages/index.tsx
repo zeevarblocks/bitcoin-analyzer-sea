@@ -1757,7 +1757,7 @@ return (
 {/* ─────────────────────────────────────────────  
     📊 3) CROSS + ABC PATTERN  
 ───────────────────────────────────────────── */}  
-{data.crossSignal && data.abcPattern && (
+{data.crossSignal && data.abcSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">
       📊 EMA Cross&nbsp;+&nbsp;RSI Confirmation
