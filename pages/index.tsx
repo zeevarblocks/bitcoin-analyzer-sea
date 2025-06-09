@@ -339,7 +339,7 @@ if (crossIdx !== null) {
     if (cIdx !== null) {
       for (let i = cIdx + 1; i < highs.length; i++) {
         const priceFailed = highs[i] <= highs[bIdx];        // no HH
-        const rsiFalling = rsi[i] < rsi[bIdx];              // RSI lower than at B
+        const rsiFalling = rsi14[i] < rsi14[bIdx];              // RSI lower than at B
 
         if (priceFailed && rsiFalling) {
           dIdx = i;                                         // got D
@@ -391,7 +391,7 @@ if (crossIdx !== null) {
     if (cIdx !== null) {
       for (let i = cIdx + 1; i < lows.length; i++) {
         const priceFailed = lows[i] >= lows[bIdx];        // no new LL
-        const rsiRising  = rsi[i] > rsi[bIdx];            // RSI diverging up
+        const rsiRising  = rsi14[i] > rsi14[bIdx];            // RSI diverging up
 
         if (priceFailed && rsiRising) {
           dIdx = i;                                       // got D
