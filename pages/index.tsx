@@ -1687,7 +1687,7 @@ return (
         )}  
       </p>  
     </div>  
-  ) : data.bullishContinuation && !data.abcSignal ? (  
+  ) : data.bullishContinuation && (  
     <div className="text-green-400 space-y-2">  
       🔺 <span className="font-semibold">Bullish Continuation</span>  
       <p className="text-sm text-white/70 ml-4 mt-1">  
@@ -1700,7 +1700,7 @@ return (
         )}  
       </p>  
     </div>  
-  ) : data.bearishContinuation && !data.abcSignal ? (  
+  ) : data.bearishContinuation && (  
     <div className="text-red-400 space-y-2">  
       🔻 <span className="font-semibold">Bearish Continuation</span>  
       <p className="text-sm text-white/70 ml-4 mt-1">  
@@ -1730,7 +1730,7 @@ return (
 {/* ─────────────────────────────────────────────  
     📉 2) RSI DIVERGENCE EVIDENCE  
 ───────────────────────────────────────────── */}  
-{(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && !data.abcSignal && (  
+{(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && (  
   <div className="pt-4 border-t border-white/10 space-y-4">  
     <h3 className="text-lg font-semibold text-white">  
       📉 RSI Divergence: Supporting Evidence  
@@ -1768,10 +1768,8 @@ return (
   </div>  
 )}  
   
-{/* ─────────────────────────────────────────────  
-    📊 3) EMA-CROSS + CURRENT RSI - support for trend continuation   
-───────────────────────────────────────────── */}  
-{data.crossSignal && !data.abcSignal && (  
+
+{data.crossSignal && data.abcSignal && (  
   <div className="pt-4 border-t border-white/10 space-y-4">  
     <h3 className="text-lg font-semibold text-white">  
       📊 EMA Cross&nbsp;+&nbsp;RSI Confirmation  
@@ -1796,21 +1794,13 @@ return (
         </p>  
       </div>  
     )}  
-  </div>  
-)}  
-  
-{/* ─────────────────────────────────────────────  
-    🔄 4) A-B-C-D REVERSAL  +  MOMENTUM-STALL  
-───────────────────────────────────────────── */}  
-{(data.abcSignal || data.divergence || data.momentumSlowing || data.stallReversal) && (  
-  <div className="pt-4 border-t border-white/10 space-y-6">  
-    {data.abcSignal && data.abcPattern && (  
+{data.abcSignal && data.abcPattern && (  
       <div>  
         <h3 className="text-lg font-semibold text-white">🔄 A-B-C Reversal Pattern</h3>  
   
         {data.abcSignal === "buy" ? (  
           <div className="text-green-400 space-y-2">  
-            ✅ <span className="font-semibold">Bullish Reversal Signal</span>  
+            ✅ <span className="font-semibold">Bullish Continuation Signal</span>  
             <p className="text-sm text-white/70 ml-4 mt-1">  
               • <strong>A</strong> index {data.abcPattern.aIdx}<br />  
               • <strong>B</strong> index {data.abcPattern.bIdx}<br />  
@@ -1820,7 +1810,7 @@ return (
           </div>  
         ) : (  
           <div className="text-red-400 space-y-2">  
-            ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>  
+            ⚠️ <span className="font-semibold">Bearish Continuation Signal</span>  
             <p className="text-sm text-white/70 ml-4 mt-1">  
               • <strong>A</strong> index {data.abcPattern.aIdx}<br />  
               • <strong>B</strong> index {data.abcPattern.bIdx}<br />  
@@ -1830,8 +1820,15 @@ return (
           </div>  
         )}  
       </div>  
-    )}  
+    )}      
+  </div>  
+)}  
   
+{/* ─────────────────────────────────────────────  
+    🔄 4) MOMENTUM-STALL  
+───────────────────────────────────────────── */}  
+{(data.divergence || data.momentumSlowing || data.stallReversal) && (  
+  <div className="pt-4 border-t border-white/10 space-y-6">  
     {(data.divergence || data.momentumSlowing || data.stallReversal) && (  
       <div className="space-y-4">  
         {data.divergence && (  
