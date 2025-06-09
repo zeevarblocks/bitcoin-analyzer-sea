@@ -316,80 +316,70 @@ let abcPattern:
 let abcSignal: 'buy' | 'sell' | null = null;
 
 if (crossIdx !== null) {
-  const aIdx = crossIdx; // ---- Point-A (EMA cross)
+  const aIdx = crossIdx; // ---- Point-A (EMA-cross candle)
 
-  if (trend === 'bullish') {
-    let bIdx = aIdx; // Point-B: highest high after cross
-    let cIdx: number | null = null; // Point-C: break of A-low
-    let dIdx: number | null = null; // Point-D: failure + RSI drop
+  /* ------------------------------------------
+   *  NEW — treat a bearish trend like the old
+   *  bullish branch (looking for a SELL setup)
+   * ------------------------------------------ */
+  if (trend === 'bearish') {
+    let bIdx = aIdx;                 // Point-B: highest-high
+    let cIdx: number | null = null;  // Point-C: break of A-low
+    let dIdx: number | null = null;  // Point-D: failed rally + RSI drop
 
-    // Find B and C
+    // Find B (HH) and C (first break of A-low)
     for (let i = aIdx + 1; i < highs.length; i++) {
-      if (highs[i] > highs[bIdx]) bIdx = i; // update highest high
-
-      if (lows[i] < lows[aIdx]) { // break of A-low => C found
-        cIdx = i;
-        break;
-      }
+      if (highs[i] > highs[bIdx]) bIdx = i;          // new HH
+      if (lows[i] < lows[aIdx]) { cIdx = i; break; } // break of A-low
     }
 
-    // Check for D (failure + RSI falling)
+    // Look for D (no new HH, RSI weaker)
     if (cIdx !== null) {
       for (let i = cIdx + 1; i < highs.length; i++) {
-        const priceFailed = highs[i] <= highs[bIdx]; // no new HH
-        const rsiFalling = rsi14[i] < rsi14[bIdx];   // RSI lower than at B
-
-        if (priceFailed && rsiFalling) {
-          dIdx = i;
-          break;
-        }
-
-        // Abort if new higher high prints first
-        if (highs[i] > highs[bIdx]) break;
+        const priceFailed = highs[i] <= highs[bIdx];
+        const rsiFalling = rsi14[i] < rsi14[bIdx];
+        if (priceFailed && rsiFalling) { dIdx = i; break; }
+        if (highs[i] > highs[bIdx]) break; // new HH → abort
       }
     }
 
     if (cIdx !== null && dIdx !== null) {
       abcPattern = { aIdx, bIdx, cIdx, dIdx };
-      abcSignal = 'sell'; // signal to sell/short after failure rally
-    }
-  } else if (trend === 'bearish') {
-    let bIdx = aIdx; // Point-B: lowest low after cross
-    let cIdx: number | null = null; // Point-C: break of A-high
-    let dIdx: number | null = null; // Point-D: failure + RSI rise
-
-    // Find B and C
-    for (let i = aIdx + 1; i < lows.length; i++) {
-      if (lows[i] < lows[bIdx]) bIdx = i; // update lowest low
-
-      if (highs[i] > highs[aIdx]) { // break of A-high => C found
-        cIdx = i;
-        break;
-      }
-    }
-
-    // Check for D (failure + RSI rising)
-    if (cIdx !== null) {
-      for (let i = cIdx + 1; i < lows.length; i++) {
-        const priceFailed = lows[i] >= lows[bIdx]; // no new LL
-        const rsiRising = rsi14[i] > rsi14[bIdx];  // RSI rising (divergence)
-
-        if (priceFailed && rsiRising) {
-          dIdx = i;
-          break;
-        }
-
-        // Abort if new lower low prints first
-        if (lows[i] < lows[bIdx]) break;
-      }
-    }
-
-    if (cIdx !== null && dIdx !== null) {
-      abcPattern = { aIdx, bIdx, cIdx, dIdx };
-      abcSignal = 'buy'; // signal to buy/long after failure to continue down
+      abcSignal  = 'sell';           // same as before
     }
   }
-        }
+
+  /* ------------------------------------------
+   *  NEW — treat a bullish trend like the old
+   *  bearish branch (looking for a BUY setup)
+   * ------------------------------------------ */
+  else if (trend === 'bullish') {
+    let bIdx = aIdx;                 // Point-B: lowest-low
+    let cIdx: number | null = null;  // Point-C: break of A-high
+    let dIdx: number | null = null;  // Point-D: failed dump + RSI rise
+
+    // Find B (LL) and C (first break of A-high)
+    for (let i = aIdx + 1; i < lows.length; i++) {
+      if (lows[i] < lows[bIdx]) bIdx = i;            // new LL
+      if (highs[i] > highs[aIdx]) { cIdx = i; break; } // break of A-high
+    }
+
+    // Look for D (no new LL, RSI stronger)
+    if (cIdx !== null) {
+      for (let i = cIdx + 1; i < lows.length; i++) {
+        const priceFailed = lows[i] >= lows[bIdx];
+        const rsiRising   = rsi14[i] > rsi14[bIdx];
+        if (priceFailed && rsiRising) { dIdx = i; break; }
+        if (lows[i] < lows[bIdx]) break; // new LL → abort
+      }
+    }
+
+    if (cIdx !== null && dIdx !== null) {
+      abcPattern = { aIdx, bIdx, cIdx, dIdx };
+      abcSignal  = 'buy';            // same as before
+    }
+  }
+}
   /*───────────────────────────────────────────────
    * 5) Fallback when no recent EMA cross
    *────────────────────────────────────────────── */
@@ -1052,20 +1042,22 @@ if (stallReversal === 'sell') {
 }
 
 if (abcSignal === 'buy' && abcPattern) {
-  // 🅰️🅱️🅲️ Detected Bullish ABC Pattern
-  // • A = first leg low at index abcPattern.aIdx
-  // • B = trend high at index abcPattern.bIdx
-  // • C = breakout above A after pullback, at index abcPattern.cIdx
-  // ✅ Suggests breakout continuation → Consider long setup
+  // 🅰️🅱️🅲️ Detected Bearish-to-Bullish ABC Reversal Pattern
+  // • A = first leg high at index abcPattern.aIdx
+  // • B = trend low at index abcPattern.bIdx
+  // • C = breakout above A-high after pullback, at index abcPattern.cIdx
+  // • D = failure to make new low + RSI rising, at index abcPattern.dIdx
+  // ✅ Suggests bearish trend stalled → Possible bullish reversal → Consider long setup
 }
 
 if (abcSignal === 'sell' && abcPattern) {
-  // 🅰️🅱️🅲️ Detected Bearish ABC Pattern
-  // • A = first leg high at index abcPattern.aIdx
-  // • B = trend low at index abcPattern.bIdx
-  // • C = breakout below A after pullback, at index abcPattern.cIdx
-  // ⚠️ Suggests breakdown continuation → Consider short setup
-  }
+  // 🅰️🅱️🅲️ Detected Bullish-to-Bearish ABC Reversal Pattern
+  // • A = first leg low at index abcPattern.aIdx
+  // • B = trend high at index abcPattern.bIdx
+  // • C = breakout below A-low after pullback, at index abcPattern.cIdx
+  // • D = failure to make new high + RSI falling, at index abcPattern.dIdx
+  // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
+}
       
       
 
