@@ -1860,25 +1860,27 @@ return (
           </div>
         )}
 
-        {data.stallReversal && !data.crossSignal && (
-          <div
-            className={`space-y-2 ${
-              data.stallReversal === "sell" ? "text-red-400" : "text-green-400"
-            }`}
-          >
-            🔄 <span className="font-semibold">
-              {data.stallReversal === "sell"
-                ? "Watch for Exhaustion (RSI-Stall after High)"
-                : "Watch for Exhaustion (RSI-Stall after Low)"}
-            </span>
-            <p className="text-sm text-white/70 ml-4 mt-1">
-              • {data.stallReversal === "sell" ? "Higher high" : "Lower low"} failed to follow
-              through<br />• RSI did not confirm – stalling momentum
-            </p>
-          </div>
-        )}
-      </div>
-    )}
+            {data.stallReversal && !data.crossSignal && (  
+          <div  
+            className={`space-y-2 ${  
+              data.stallReversal === "sell" ? "text-red-400" : "text-green-400"  
+            }`}  
+          >  
+            🔄 <span className="font-semibold">  
+              {data.stallReversal === "sell"  
+                ? "Watch for Exhaustion (RSI-Stall after High)"  
+                : "Watch for Exhaustion (RSI-Stall after Low)"}  
+            </span>  
+            <p className="text-sm text-white/70 ml-4 mt-1">  
+              • {data.stallReversal === "sell" ? "Higher high" : "Lower low"} failed to follow through<br />  
+              • RSI did not confirm – stalling momentum  
+            </p>  
+          </div>  
+        )}  
+      </div>  
+    )}  
+  </div>  
+)}
   
 
   
