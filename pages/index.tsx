@@ -1825,7 +1825,7 @@ return (
           </div>
         )}
 
-        {data.stallReversal && (
+        {(data.stallReversal && !data.crossSignal && (
           <div
             className={`space-y-2 ${
               data.stallReversal === "sell" ? "text-red-400" : "text-green-400"
@@ -1841,11 +1841,13 @@ return (
               through<br />• RSI did not confirm – stalling momentum
             </p>
           </div>
-        )}
+        ))}
       </div>
     )}
   </div>
 )}
+  
+          
           
               
 {(data.ema14Bounce || data.ema70Bounce) && (
