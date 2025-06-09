@@ -1772,7 +1772,7 @@ return (
 {/* ─────────────────────────────────────────────
     📊 3) EMA-CROSS + CURRENT RSI - support for trend continuation 
 ───────────────────────────────────────────── */}
-{data.crossSignal && (
+{data.crossSignal && !data.abcSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
     <h3 className="text-lg font-semibold text-white">
       📊 EMA Cross&nbsp;+&nbsp;RSI Confirmation
@@ -1801,36 +1801,36 @@ return (
 )}
 
 {/* ─────────────────────────────────────────────
-    🔄 4) A-B-C REVERSAL  +  MOMENTUM-STALL
+    🔄 4) A-B-C-D REVERSAL  +  MOMENTUM-STALL
 ───────────────────────────────────────────── */}
 {(data.abcSignal || data.divergence || data.momentumSlowing || data.stallReversal) && (
   <div className="pt-4 border-t border-white/10 space-y-6">
-    {/* A-B-C Reversal */}
-    {data.abcSignal && data.abcPattern && !data.crossSignal && (
+    {/* A-B-C-D Reversal */}
+    {data.abcSignal && data.abcPattern && (
       <div>
         <h3 className="text-lg font-semibold text-white">🔄 A-B-C Reversal Pattern</h3>
 
         {data.abcSignal === "buy" ? (
-          <div className="text-green-400 space-y-2">
-            ✅ <span className="font-semibold">Bullish Reversal Signal</span>
-            <p className="text-sm text-white/70 ml-4 mt-1">
-              • <strong>A</strong> index {data.abcPattern.aIdx}<br />
-              • <strong>B</strong> index {data.abcPattern.bIdx}<br />
-              • <strong>C</strong> broke above A → structure shift
-            </p>
-          </div>
-        ) : (
-          <div className="text-red-400 space-y-2">
-            ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
-            <p className="text-sm text-white/70 ml-4 mt-1">
-              • <strong>A</strong> index {data.abcPattern.aIdx}<br />
-              • <strong>B</strong> index {data.abcPattern.bIdx}<br />
-              • <strong>C</strong> broke below A → structure shift
-            </p>
-          </div>
-        )}
-      </div>
-    )}
+  <div className="text-green-400 space-y-2">
+    ✅ <span className="font-semibold">Bullish Reversal Signal</span>
+    <p className="text-sm text-white/70 ml-4 mt-1">
+      • <strong>A</strong> index {data.abcPattern.aIdx}<br />
+      • <strong>B</strong> index {data.abcPattern.bIdx}<br />
+      • <strong>C</strong> broke above A → structure shift<br />
+      • <strong>D</strong> failure to make lower low + RSI rise
+    </p>
+  </div>
+) : (
+  <div className="text-red-400 space-y-2">
+    ⚠️ <span className="font-semibold">Bearish Reversal Signal</span>
+    <p className="text-sm text-white/70 ml-4 mt-1">
+      • <strong>A</strong> index {data.abcPattern.aIdx}<br />
+      • <strong>B</strong> index {data.abcPattern.bIdx}<br />
+      • <strong>C</strong> broke below A → structure shift<br />
+      • <strong>D</strong> failure to make higher high + RSI drop
+    </p>
+  </div>
+)}
 
     {/* Momentum-Stall / Divergence / RSI-stall */}
     {(data.divergence || data.momentumSlowing || data.stallReversal) && (
