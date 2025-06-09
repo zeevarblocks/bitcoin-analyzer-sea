@@ -1804,8 +1804,8 @@ return (
           <p className="text-sm text-white/70 ml-4 mt-1">
             • <strong>A</strong> index {data.abcPattern.aIdx}<br />
             • <strong>B</strong> index {data.abcPattern.bIdx}<br />
-            • <strong>C</strong> broke above A → structure shift<br />
-            • <strong>D</strong> failure to make higher high + RSI rise
+            • <strong>C</strong> broke below A → structure continuation/ index {data.abcPattern.cIdx}<br />
+            • <strong>D</strong> failure to make lower low + RSI rise/ index {data.abcPattern.dIdx}
           </p>
         </div>
       ) : (
@@ -1814,8 +1814,8 @@ return (
           <p className="text-sm text-white/70 ml-4 mt-1">
             • <strong>A</strong> index {data.abcPattern.aIdx}<br />
             • <strong>B</strong> index {data.abcPattern.bIdx}<br />
-            • <strong>C</strong> broke below A → structure shift<br />
-            • <strong>D</strong> failure to make lower low + RSI drop
+            • <strong>C</strong> broke above A → structure continuation/ index {data.abcPattern.cIdx}<br />
+            • <strong>D</strong> failure to make higher high + RSI drop/ index {data.abcPattern.dIdx}
           </p>
         </div>
       )}
