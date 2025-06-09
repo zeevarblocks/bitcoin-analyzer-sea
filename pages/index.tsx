@@ -1201,7 +1201,9 @@ type FilterType =
   | 'recentCrossings'
   | 'bullishBreakout'
   | 'bearishBreakout'
-  |	'abcSignal';
+  |	'abcSignal'
+  |	'crossSignal'
+  |	'absSignal&crossSignal';
 
 export default function SignalChecker({
   signals,
@@ -1341,7 +1343,7 @@ const scrollToTop = () => {
       if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
-      if (activeFilter === 'abcSignal') return data.abcSignal;
+      if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
       return true;  
     });
 
@@ -1558,11 +1560,11 @@ return (
   </button>
 
           <button
-    onClick={() => setActiveFilter('abcSignal')}
+    onClick={() => setActiveFilter('abcSignal&crossSignal')}
     className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📉</span>
-    <span>abcdSignal</span>
+    <span>abcdSignal&crossSignal</span>
   </button>
                
 </div>
