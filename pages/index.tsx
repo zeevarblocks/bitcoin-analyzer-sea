@@ -1699,26 +1699,26 @@ return (
       </div>
     )}
 
-          {data.divergenceFromLevel && (
-
-<div className="text-pink-400 space-y-2">  
-🔍 <span className="font-semibold">Divergence vs Key Level</span>  
-<p className="text-sm text-white/70 ml-4 mt-1">  
-• Type:{" "}  
-<span className="capitalize text-white">  
-{data.divergenceFromLevelType === "bullish"  
-? "Bullish Continuation (buy)"  
-: data.divergenceFromLevelType === "bearish"  
-? "Bearish Continuation (sell)"  
-: "Confirmed"}  
-</span><br />  
-• RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />  
-• Suggests a potential trend continuation  
-</p>  
-</div>  
+    {data.divergenceFromLevel && (
+      <div className="text-pink-400 space-y-2">
+        🔍 <span className="font-semibold">Divergence vs Key Level</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • Type:{" "}
+          <span className="capitalize text-white">
+            {data.divergenceFromLevelType === "bullish"
+              ? "Bullish Continuation (buy)"
+              : data.divergenceFromLevelType === "bearish"
+              ? "Bearish Continuation (sell)"
+              : "Confirmed"}
+          </span>
+          <br />
+          • RSI divergence identified at a key {data.levelType || "support/resistance"} zone<br />
+          • Suggests a potential trend continuation
+        </p>
+      </div>
     )}
-    </div>
-  )}
+  </div>
+)}
 
 {(data.crossSignal === 'buy' || data.crossSignal === 'sell') && (
   <div className="pt-4 border-t border-white/10 space-y-4">
