@@ -319,96 +319,77 @@ if (crossIdx !== null) {
   const aIdx = crossIdx; // ---- Point-A (EMA cross)
 
   if (trend === 'bullish') {
-    let bIdx = aIdx;          // ---- Point-B (highest high)
-    let cIdx: number | null = null;  // ---- Point-C (break of A-low)
-    let dIdx: number | null = null;  // ---- Point-D (failure + RSI drop)
+    let bIdx = aIdx; // Point-B: highest high after cross
+    let cIdx: number | null = null; // Point-C: break of A-low
+    let dIdx: number | null = null; // Point-D: failure + RSI drop
 
-    // ───────────────────────────────────────────────────────── Point-B + C
+    // Find B and C
     for (let i = aIdx + 1; i < highs.length; i++) {
-      // update B while we keep rising
-      if (highs[i] > highs[bIdx]) bIdx = i;
+      if (highs[i] > highs[bIdx]) bIdx = i; // update highest high
 
-      // break of A-low → found C, jump out
-      if (lows[i] < lows[aIdx]) {
+      if (lows[i] < lows[aIdx]) { // break of A-low => C found
         cIdx = i;
         break;
       }
     }
 
-    // ───────────────────────────────────────────────────────── Point-D test
+    // Check for D (failure + RSI falling)
     if (cIdx !== null) {
       for (let i = cIdx + 1; i < highs.length; i++) {
-        const priceFailed = highs[i] <= highs[bIdx];        // no HH
-        const rsiFalling = rsi14[i] < rsi14[bIdx];              // RSI lower than at B
+        const priceFailed = highs[i] <= highs[bIdx]; // no new HH
+        const rsiFalling = rsi14[i] < rsi14[bIdx];   // RSI lower than at B
 
         if (priceFailed && rsiFalling) {
-          dIdx = i;                                         // got D
+          dIdx = i;
           break;
         }
 
-        // invalidate pattern if a higher high prints first
+        // Abort if new higher high prints first
         if (highs[i] > highs[bIdx]) break;
       }
     }
 
-    // ───────────────────────────────────────────────────────── Final flag
     if (cIdx !== null && dIdx !== null) {
       abcPattern = { aIdx, bIdx, cIdx, dIdx };
-      abcSignal  = 'sell';          // exit or short after failure rally
+      abcSignal = 'sell'; // signal to sell/short after failure rally
     }
-  }
+  } else if (trend === 'bearish') {
+    let bIdx = aIdx; // Point-B: lowest low after cross
+    let cIdx: number | null = null; // Point-C: break of A-high
+    let dIdx: number | null = null; // Point-D: failure + RSI rise
 
-  /*  ─────────────────────────────────────────────────────────────
-      🔻 Bearish version (mirror logic)
-      if (trend === 'bearish') {
-        // aIdx already set
-        // Point-B: lowest low while falling
-        // Point-C: break above A-high
-        // Point-D: failure to make a lower low + RSI rising
-        // set abcSignal = 'buy'
-      }
-  */
-}
-
-  if (trend === 'bearish') {
-    let bIdx = aIdx;                 // Point-B: lowest low after the cross
-    let cIdx: number | null = null;  // Point-C: break of A-high
-    let dIdx: number | null = null;  // Point-D: failure + RSI rise
-
-    // ─────────────────────────────────────────────── Point-B + C
+    // Find B and C
     for (let i = aIdx + 1; i < lows.length; i++) {
-      // keep tracking the lowest low
-      if (lows[i] < lows[bIdx]) bIdx = i;
+      if (lows[i] < lows[bIdx]) bIdx = i; // update lowest low
 
-      // break above A-high → found C
-      if (highs[i] > highs[aIdx]) {
+      if (highs[i] > highs[aIdx]) { // break of A-high => C found
         cIdx = i;
         break;
       }
     }
 
-    // ─────────────────────────────────────────────── Point-D test
+    // Check for D (failure + RSI rising)
     if (cIdx !== null) {
       for (let i = cIdx + 1; i < lows.length; i++) {
-        const priceFailed = lows[i] >= lows[bIdx];        // no new LL
-        const rsiRising  = rsi14[i] > rsi14[bIdx];            // RSI diverging up
+        const priceFailed = lows[i] >= lows[bIdx]; // no new LL
+        const rsiRising = rsi14[i] > rsi14[bIdx];  // RSI rising (divergence)
 
         if (priceFailed && rsiRising) {
-          dIdx = i;                                       // got D
+          dIdx = i;
           break;
         }
 
-        // abort if a fresh lower low prints first
+        // Abort if new lower low prints first
         if (lows[i] < lows[bIdx]) break;
       }
     }
 
-    // ─────────────────────────────────────────────── Final flag
     if (cIdx !== null && dIdx !== null) {
       abcPattern = { aIdx, bIdx, cIdx, dIdx };
-      abcSignal  = 'buy';            // long after capitulation failure
+      abcSignal = 'buy'; // signal to buy/long after failure to continue down
     }
-                              }
+  }
+        }
   /*───────────────────────────────────────────────
    * 5) Fallback when no recent EMA cross
    *────────────────────────────────────────────── */
