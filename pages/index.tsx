@@ -1770,7 +1770,7 @@ return (
 )}
 
 {/* ─────────────────────────────────────────────
-    📊 3) EMA-CROSS + CURRENT RSI
+    📊 3) EMA-CROSS + CURRENT RSI - support for trend continuation 
 ───────────────────────────────────────────── */}
 {data.crossSignal && (
   <div className="pt-4 border-t border-white/10 space-y-4">
@@ -1806,7 +1806,7 @@ return (
 {(data.abcSignal || data.divergence || data.momentumSlowing || data.stallReversal) && (
   <div className="pt-4 border-t border-white/10 space-y-6">
     {/* A-B-C Reversal */}
-    {data.abcSignal && data.abcPattern && (
+    {data.abcSignal && data.abcPattern && !data.crossSignal && (
       <div>
         <h3 className="text-lg font-semibold text-white">🔄 A-B-C Reversal Pattern</h3>
 
