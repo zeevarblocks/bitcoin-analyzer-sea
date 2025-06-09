@@ -15,7 +15,7 @@ interface SignalData {
   divergenceFromLevel: boolean; // divergence specifically from a key level
   crossSignal: 'buy' | 'sell' | null;
   stallReversal: 'buy' | 'sell' | null;
-  abcPattern: { aIdx: number; bIdx: number; cIdx: number; dIdx: number } | null; // NEW: index map
+  abcPattern: { aIdx: number; bIdx: number; cIdx: number; dIdx?: number } | null; // NEW: index map
   abcSignal: 'buy' | 'sell' | null;
   divergenceFromLevelType: 'bullish' | 'bearish' | null; // type from level
   nearOrAtEMA70Divergence: boolean; // divergence detected near or on EMA70
