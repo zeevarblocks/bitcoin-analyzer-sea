@@ -1850,7 +1850,7 @@ return (
             <p className="text-sm text-white/70 ml-4 mt-1">  
               • RSI moving opposite price direction<br />  
               • Testing {data.levelType} at{" "}  
-              <span className="text-white">${data.level?.toFixed(2)}</span>  
+              <span className="text-white">${data.level?.toFixed(9)}</span>  
             </p>  
           </div>  
         )}  
