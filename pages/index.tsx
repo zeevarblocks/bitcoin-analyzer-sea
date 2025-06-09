@@ -1628,61 +1628,49 @@ return (
           </div>
         )}
 
-          {(data.continuationEnded || data.bullishContinuation || data.bearishContinuation) && (
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📊 Signal Summary: Trend Continuation</h3>
+          <div className="pt-4 border-t border-white/10 space-y-4">
+  <h3 className="text-lg font-semibold text-white">📊 Signal Summary: Trend Continuation</h3>
 
-    {data.continuationEnded && (
-      <div className="text-yellow-400 space-y-2">
-        ⚠️ <span className="font-semibold">Continuation Ended</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • Price action failed to maintain structure<br />
-          • Trend continuation conditions no longer valid
-          {data.continuationReason && (
-            <>
-              <br />• <span className="italic">Reason:</span> {data.continuationReason}
-            </>
-          )}
-        </p>
-      </div>
-    )}
-
-    {data.bullishContinuation && !data.continuationEnded && !data.abcSignal && (
-      <div className="text-green-400 space-y-2">
-        🔺 <span className="font-semibold">Bullish Continuation</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • EMA trend is upward<br />
-          • Higher lows or RSI structure confirmed
-          {data.continuationReason && (
-            <>
-              <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
-            </>
-          )}
-        </p>
-      </div>
-    )}
-
-    {data.bearishContinuation && !data.continuationEnded && !data.abcSignal && (
-      <div className="text-red-400 space-y-2">
-        🔻 <span className="font-semibold">Bearish Continuation</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • EMA trend is downward<br />
-          • Lower highs or RSI confirmation detected
-          {data.continuationReason && (
-            <>
-              <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
-            </>
-          )}
-        </p>
-      </div>
-    )}
-  </div>
-)}
-
-{!data.continuationEnded && !data.bullishContinuation && !data.bearishContinuation && (
-  <div className="pt-4 border-t border-white/10 space-y-4">
-    <h3 className="text-lg font-semibold text-white">📊 Signal Summary: Trend Continuation</h3>
-
+  {data.continuationEnded ? (
+    <div className="text-yellow-400 space-y-2">
+      ⚠️ <span className="font-semibold">Continuation Ended</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • Price action failed to maintain structure<br />
+        • Trend continuation conditions no longer valid
+        {data.continuationReason && (
+          <>
+            <br />• <span className="italic">Reason:</span> {data.continuationReason}
+          </>
+        )}
+      </p>
+    </div>
+  ) : data.bullishContinuation && !data.abcSignal ? (
+    <div className="text-green-400 space-y-2">
+      🔺 <span className="font-semibold">Bullish Continuation</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • EMA trend is upward<br />
+        • Higher lows or RSI structure confirmed
+        {data.continuationReason && (
+          <>
+            <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
+          </>
+        )}
+      </p>
+    </div>
+  ) : data.bearishContinuation && !data.abcSignal ? (
+    <div className="text-red-400 space-y-2">
+      🔻 <span className="font-semibold">Bearish Continuation</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • EMA trend is downward<br />
+        • Lower highs or RSI confirmation detected
+        {data.continuationReason && (
+          <>
+            <br />• <span className="italic">Why confirmed:</span> {data.continuationReason}
+          </>
+        )}
+      </p>
+    </div>
+  ) : (
     <div className="text-white/60 space-y-2">
       ℹ️ <span className="font-semibold">No Continuation Signal</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
@@ -1692,8 +1680,8 @@ return (
         {data.continuationReason || "No significant trend pattern or indicator alignment detected"}
       </p>
     </div>
-  </div>
-)}
+  )}
+</div>
           
 {/* 📉 RSI Divergence Evidence */}
 {(data.nearOrAtEMA70Divergence || data.divergenceFromLevel) && !data.abcSignal && (
