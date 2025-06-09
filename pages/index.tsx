@@ -1221,7 +1221,8 @@ type FilterType =
   | 'divergenceFromLevel'
   | 'recentCrossings'
   | 'bullishBreakout'
-  | 'bearishBreakout';
+  | 'bearishBreakout'
+  |	'abcSignal';
 
 export default function SignalChecker({
   signals,
