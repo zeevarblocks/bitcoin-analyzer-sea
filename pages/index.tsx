@@ -62,8 +62,7 @@ interface SignalData {
    momentumSlowing: 'bullish' | 'bearish' | null;
      shouldTrade: boolean;
 
- highestVolumeToday: Candle | null;
-  highestVolumePrev?: Candle | null;
+ 
 	
   // === Metadata ===
   url: string; // chart or signal reference URL
@@ -1113,21 +1112,7 @@ const shouldTrade =
   momentumSlowing === divergenceType;      // confluence with divergence
 
 /* ---------- 5) EXPORT / RETURN ---------- */
-
 	    
-// Find the highest volume in today's session
-const highestVolumeCandleToday = candlesToday.length > 0
-  ? candlesToday.reduce((maxCandle, currentCandle) =>
-      currentCandle.volume > maxCandle.volume ? currentCandle : maxCandle
-    )
-  : null;
-
-// Optional: also find the highest volume in the previous session
-const todaysVolumes = candlesToday.map(c => c.volume);
-const highestVolumeToday = todaysVolumes.length > 0 ? Math.max(...todaysVolumes) : null;
-
-const prevVolumes = candlesPrev.map(c => c.volume);
-const highestVolumePrev = prevVolumes.length > 0 ? Math.max(...prevVolumes) : null;
 
 
 
@@ -1191,8 +1176,7 @@ const highestVolumePrev = prevVolumes.length > 0 ? Math.max(...prevVolumes) : nu
     momentumSlowing === divergenceType,  
 
 
-	    highestVolumePrev,
-		    highestVolumeToday,
+	
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
@@ -1965,23 +1949,7 @@ return (
       ))}
     </ul>
   </div>
-)}
-
-		   <div className="p-4 rounded-2xl shadow-md bg-white space-y-4 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold text-center">🔊 Volume Highlights</h2>
-
-      {highestVolumeToday ? (
-        <div className="bg-gray-50 p-3 rounded-lg border">
-          <h3 className="text-lg font-medium">Today</h3>
-          <p><strong>Time:</strong> {formatTime(highestVolumeToday.timestamp)}</p>
-          <p><strong>Price:</strong> ${highestVolumeToday.close.toFixed(2)}</p>
-          <p><strong>Volume:</strong> {highestVolumeToday.volume.toLocaleString()}</p>
-        </div>
-      ) : (
-        <p className="text-gray-500">No volume data for today.</p>
-
-
-          
+)} 
           
         {/* Trade Link */}
         <div className="flex justify-center pt-4">
