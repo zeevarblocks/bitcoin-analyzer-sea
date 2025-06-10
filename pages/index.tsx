@@ -1953,6 +1953,27 @@ return (
     </div>
 )}
 
+		<p>
+  🧲 Touched EMA70 Today:{' '}
+  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+    {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
+
+		
+		<p>
+  📈 Ascending Support near EMA70 (Bullish):{' '}
+  <span className={data.ascendingSupportNearEMA70InBullish ? 'text-green-400' : 'text-red-400'}>
+    {data.ascendingSupportNearEMA70InBullish ? 'Yes' : 'No'}
+  </span>
+</p>
+
+<p>
+  📉 Descending Resistance near EMA70 (Bearish):{' '}
+  <span className={data.descendingResistanceNearEMA70InBearish ? 'text-green-400' : 'text-red-400'}>
+    {data.descendingResistanceNearEMA70InBearish ? 'Yes' : 'No'}
+  </span>
+</p>
 
 
 		
@@ -1986,28 +2007,6 @@ return (
     </ul>
   </div>
 )} 
-
-<p>
-  🧲 Touched EMA70 Today:{' '}
-  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-    {data.touchedEMA70Today ? 'Yes' : 'No'}
-  </span>
-</p>
-
-{data.ascendingSupportNearEMA70InBullish && (
-  <div className="text-green-500 font-semibold">
-    📈 Ascending Support near EMA70 (Bullish)
-  </div>
-)}
-
-{data.descendingResistanceNearEMA70InBearish && (
-  <div className="text-red-500 font-semibold">
-    📉 Descending Resistance near EMA70 (Bearish)
-  </div>
-)}		
-
-
-
 		
           
         {/* Trade Link */}
