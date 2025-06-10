@@ -1224,8 +1224,8 @@ const descendingResistanceNearEMA70InBearish =
 
 ema70Ascending,
       ema70Descending,
-      supportLowsNearEMA70: supportLows,
-      resistanceHighsNearEMA70: resistanceHighs,
+      supportLowsNearEMA70,
+      resistanceHighsNearEMA70,
       ascendingSupportNearEMA70InBullish,
       descendingResistanceNearEMA70InBearish,
 
