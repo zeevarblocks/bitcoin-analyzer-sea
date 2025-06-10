@@ -4,9 +4,9 @@ interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
   
-ascendingSupportInBullish: boolean;
-  descendingResistanceInBearish: boolean;
-
+ascendingSupportNearEMA70InBullish: boolean;
+  descendingResistanceNearEMA70InBearish: boolean;
+  
   breakout: boolean;
   bullishBreakout: boolean;
   bearishBreakout: boolean;
@@ -1157,8 +1157,8 @@ const descendingResistanceNearEMA70InBearish =
     signals[symbol] = {
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
-  ascendingSupportInBullish,
-  descendingResistanceInBearish,
+  ascendingSupportNearEMA70InBullish,
+  descendingResistanceNearEMA70InBearish,
 	    
 	    
   breakout,
