@@ -1120,6 +1120,7 @@ const shouldTrade =
 	    
 
 
+	      
 const ema70Recent = ema70.slice(-4);
 
 // === EMA70 Slope ===
@@ -1969,12 +1970,7 @@ return (
     </div>
 )}
 
-          <p>
-  🧲 Touched EMA70 Today:{' '}
-  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-    {data.touchedEMA70Today ? 'Yes' : 'No'}
-  </span>
-</p>
+
           
 
 {/* 🔄 Recent EMA Crossings */}
