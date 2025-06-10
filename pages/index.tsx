@@ -920,7 +920,9 @@ const breakout = bullishBreakout || bearishBreakout;
       
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
-
+      const currentHighIdx = lows.lastIndexOf(todaysHighestHigh!);
+			const currentLowIdx = lows.lastIndexOf(todaysLowestLow!);
+      
 let bearishContinuation = false;
 let bullishContinuation = false;
 let continuationEnded = false;
@@ -1053,7 +1055,7 @@ if (abcSignal === 'sell' && abcPattern) {
       
 
       const touchedEMA70Today =
-        higherHighBreak! >= lastEMA70 && lowerLowBreak! <= lastEMA70 &&
+        currentHighIdx! >= lastEMA70 && currentLowIdx! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
