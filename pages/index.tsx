@@ -1722,13 +1722,13 @@ return (
           <p>
             💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
             <span className="text-blue-400">
-              {data.currentPrice !== undefined ? `$${data.currentPrice.toFixed(2)}` : 'N/A'}
+              {data.currentPrice !== undefined ? `$${data.currentPrice.toFixed(9)}` : 'N/A'}
             </span>
           </p>
           <p>
             📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase() ?? 'N/A'} Level:</span>{' '}
             <span className="text-yellow-300">
-              {data.level !== undefined ? data.level.toFixed(2) : 'N/A'}
+              {data.level !== undefined ? data.level.toFixed(9) : 'N/A'}
             </span>
           </p>
           <p>
@@ -1736,7 +1736,7 @@ return (
               Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:
             </span>{' '}
             <span className="text-purple-300">
-              {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(2) : 'N/A'}
+              {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
             </span>
           </p>
                 {data.differenceVsEMA70 !== null && (
@@ -1946,7 +1946,9 @@ return (
           <p className="text-sm text-white/70 ml-4 mt-1">  
             • RSI moving opposite price direction<br />  
             • Testing {data.levelType} at{" "}  
-            <span className="text-white">${data.level?.toFixed(2)}</span>  
+            <span className="text-white">
+  ${typeof data.level === 'number' ? data.level.toFixed(9) : 'N/A'}
+</span> 
           </p>  
         </div>  
       )}  
@@ -2088,7 +2090,7 @@ return (
             {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
           </span>
           <span className="ml-auto font-mono text-xs">
-            @ ${cross.price.toFixed(2)}
+            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
           </span>
         </li>
       ))}
