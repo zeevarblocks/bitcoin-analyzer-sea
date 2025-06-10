@@ -1150,80 +1150,45 @@ for (let i = 2; i < lows.length - 2; i++) {
   }
 }
 
-// Step 2: Check EMA70 direction
-let isEMA70Ascending = false;
-if (bullishStartIndex !== -1 && bullishStartIndex < ema70.length - 1) {
-  isEMA70Ascending = ema70
-    .slice(bullishStartIndex)
-    .every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-}
+// === Bullish Signals ===
+const ema70AscendingFromSwingLow = bullishStartIndex !== -1 && bullishStartIndex < ema70.length - 1 &&
+  ema70.slice(bullishStartIndex).every((val, i, arr) => i === 0 || val >= arr[i - 1]);
 
-let isEMA70Descending = false;
-if (bearishStartIndex !== -1 && bearishStartIndex < ema70.length - 1) {
-  isEMA70Descending = ema70
-    .slice(bearishStartIndex)
-    .every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-}
+const rsi14AscendingFromSwingLow = bullishStartIndex !== -1 && bullishStartIndex < rsi14.length - 1 &&
+  rsi14.slice(bullishStartIndex).every((val, i, arr) => i === 0 || val >= arr[i - 1]);
 
-// Step 3: Check RSI14 direction
-let isRSI14Ascending = false;
-if (bullishStartIndex !== -1 && bullishStartIndex < rsi14.length - 1) {
-  isRSI14Ascending = rsi14
-    .slice(bullishStartIndex)
-    .every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-}
+const rsi14BreakoutAboveSwingLow = bullishStartIndex !== -1 &&
+  rsi14[rsi14.length - 1] > rsi14[bullishStartIndex];
 
-let isRSI14Descending = false;
-if (bearishStartIndex !== -1 && bearishStartIndex < rsi14.length - 1) {
-  isRSI14Descending = rsi14
-    .slice(bearishStartIndex)
-    .every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-}
-
-// Step 4: Check RSI14 continuation
-let isRSI14TrendContinuationBullish = false;
-if (bullishStartIndex !== -1) {
-  const rsiStart = rsi14[bullishStartIndex];
-  const rsiCurrent = rsi14[rsi14.length - 1];
-  isRSI14TrendContinuationBullish = rsiCurrent > rsiStart;
-}
-
-let isRSI14TrendContinuationBearish = false;
-if (bearishStartIndex !== -1) {
-  const rsiStart = rsi14[bearishStartIndex];
-  const rsiCurrent = rsi14[rsi14.length - 1];
-  isRSI14TrendContinuationBearish = rsiCurrent < rsiStart;
-}
-
-// Step 5: Check support lows/resistance highs trend
-const isSupportLowsAscending =
-  supportLows.length >= 2 &&
+const isSupportLowsAscending = supportLows.length >= 2 &&
   supportLows.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
 
-const isResistanceHighsDescending =
-  resistanceHighs.length >= 2 &&
-  resistanceHighs.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-
-// Step 6: Final signals
 const ascendingSupportNearEMA70InBullish =
   trend === 'bullish' &&
-  isEMA70Ascending &&
+  ema70AscendingFromSwingLow &&
   isSupportLowsAscending &&
-  isRSI14Ascending &&
-  isRSI14TrendContinuationBullish;
+  rsi14AscendingFromSwingLow &&
+  rsi14BreakoutAboveSwingLow;
+
+// === Bearish Signals ===
+const ema70DescendingFromSwingHigh = bearishStartIndex !== -1 && bearishStartIndex < ema70.length - 1 &&
+  ema70.slice(bearishStartIndex).every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+const rsi14DescendingFromSwingHigh = bearishStartIndex !== -1 && bearishStartIndex < rsi14.length - 1 &&
+  rsi14.slice(bearishStartIndex).every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+const rsi14BreakdownBelowSwingHigh = bearishStartIndex !== -1 &&
+  rsi14[rsi14.length - 1] < rsi14[bearishStartIndex];
+
+const isResistanceHighsDescending = resistanceHighs.length >= 2 &&
+  resistanceHighs.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
 
 const descendingResistanceNearEMA70InBearish =
   trend === 'bearish' &&
-  isEMA70Descending &&
+  ema70DescendingFromSwingHigh &&
   isResistanceHighsDescending &&
-  isRSI14Descending &&
-  isRSI14TrendContinuationBearish;
-
-// Output
-console.log("Ascending Support near EMA70 (Bullish):", ascendingSupportNearEMA70InBullish ? "Yes" : "No");
-console.log("Descending Resistance near EMA70 (Bearish):", descendingResistanceNearEMA70InBearish ? "Yes" : "No");
-
-
+  rsi14DescendingFromSwingHigh &&
+  rsi14BreakdownBelowSwingHigh;
 
 
 
@@ -1231,17 +1196,17 @@ console.log("Descending Resistance near EMA70 (Bearish):", descendingResistanceN
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
 
-	  // === Bullish Conditions ===
-  ascendingSupportNearEMA70InBullish: ascendingSupportNearEMA70InBullish,
-  ema70AscendingFromSwingLow: ema70AscendingFromSwingLow,
-  rsi14AscendingFromSwingLow: rsi14AscendingFromSwingLow,
-  rsi14BreakoutAboveSwingLow: rsi14BreakoutAboveSwingLow,
+	 // Bullish
+  ascendingSupportNearEMA70InBullish,
+  ema70AscendingFromSwingLow,
+  rsi14AscendingFromSwingLow,
+  rsi14BreakoutAboveSwingLow,
 
-  // === Bearish Conditions ===
-  descendingResistanceNearEMA70InBearish: descendingResistanceNearEMA70InBearish,
-  ema70DescendingFromSwingHigh: ema70DescendingFromSwingHigh,
-  rsi14DescendingFromSwingHigh: rsi14DescendingFromSwingHigh,
-  rsi14BreakdownBelowSwingHigh: rsi14BreakdownBelowSwingHigh,
+  // Bearish
+  descendingResistanceNearEMA70InBearish,
+  ema70DescendingFromSwingHigh,
+  rsi14DescendingFromSwingHigh,
+  rsi14BreakdownBelowSwingHigh,
 
 	    
 	    
