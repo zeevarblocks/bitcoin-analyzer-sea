@@ -1109,8 +1109,6 @@ const Ema70AnalysisDisplay = ({ candles, ema14, ema70, closes, highs, lows, rsi1
   const trend = ema14.at(-1)! > ema70.at(-1)! ? 'bullish' : 'bearish';
 
   const {
-    breakout,
-    touchedEMA70Today,
     ema70Ascending,
     ema70Descending,
     supportLowsNearEMA70,
