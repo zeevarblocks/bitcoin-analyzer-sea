@@ -990,12 +990,10 @@ if (trend === 'bullish') {
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
 const { level, type, crossSignal, stallReversal, abcPattern, abcSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
-      const highestHigh = Math.max(...highs);
-      const lowestLow = Math.min(...lows);
-      const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
-      const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-      const inferredLevelWithinRange = inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
-
+      const inferredLevel = trend === 'bullish' ? todaysHighestHigh! : todaysLowestLow!;
+const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
+const inferredLevelWithinRange = true;
+	    
 // Optional: log or assign the difference from EMA70 for display
 const latestEMA70 = Array.isArray(ema70) ? ema70[ema70.length - 1] : ema70;
 const differenceVsEMA70 = calculateDifferenceVsEMA70(inferredLevel, latestEMA70);
