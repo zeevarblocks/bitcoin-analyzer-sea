@@ -1219,7 +1219,8 @@ type FilterType =
   | 'bearishBreakout'
   |	'abcSignal'
   |	'crossSignal'
-  |	'abcSignal&crossSignal';
+  |	'abcSignal&crossSignal'
+  |	'touchedEMA70Today';
 
 export default function SignalChecker({
   signals,
@@ -1360,6 +1361,7 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
+      if (activeFilter === 'touchedEMA70Today') return data.touchedEMA70Today;
       return true;  
     });
 
@@ -1581,6 +1583,14 @@ return (
   >
     <span>📉</span>
     <span>abcdSignal&crossSignal</span>
+  </button>
+
+          <button
+    onClick={() => setActiveFilter('touchedEMA70Today')}
+    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>touchedEMA70Today</span>
   </button>
                
 </div>
@@ -1898,6 +1908,12 @@ return (
     </div>
 )}
 
+          <p>
+  🧲 Touched EMA70 Today:{' '}
+  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+    {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
           
 
 {/* 🔄 Recent EMA Crossings */}
