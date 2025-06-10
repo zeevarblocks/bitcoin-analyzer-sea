@@ -2026,13 +2026,13 @@ return (
 <p>
   📊 RSI14 Ascending from Swing Low:{' '}
   <span className={data.rsi14AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14AscendingFromSwingLow ? 'yes' : 'No'}
+    {data.rsi14AscendingFromSwingLow ? 'Yes' : 'No'}
   </span>
 </p>
 <p>
   🚀 RSI14 Breakout Above Swing Low:{' '}
   <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakoutAboveSwingLow ? 'strong bullish' : 'strong sell'}
+    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'} // if yes, strong bullish when bullish trend and sell when bearish trend
   </span>
 </p>
 
@@ -2058,7 +2058,7 @@ return (
 <p>
   📉 RSI14 Breakdown Below Swing High:{' '}
   <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakdownBelowSwingHigh ? 'buy' : 'sell'}
+    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} // if yes, strong bearish when bearish trend and buy when bullish trend
   </span>
 </p>
 
