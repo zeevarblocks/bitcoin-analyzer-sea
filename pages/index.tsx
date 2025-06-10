@@ -1206,7 +1206,8 @@ type FilterType =
   |	'abcSignal'
   |	'crossSignal'
   |	'abcSignal&crossSignal'
-  |	'touchedEMA70Today';
+  |	'touchedEMA70Today'
+  |	'breakout';
 
 export default function SignalChecker({
   signals,
@@ -1347,7 +1348,7 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
-      if (activeFilter === 'touchedEMA70Today') return data.touchedEMA70Today;
+      if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
       return true;  
     });
 
@@ -1572,11 +1573,11 @@ return (
   </button>
 
           <button
-    onClick={() => setActiveFilter('touchedEMA70Today')}
+    onClick={() => setActiveFilter('touchedEMA70Today&breakout')}
     className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📉</span>
-    <span>touchedEMA70Today</span>
+    <span>touchedEMA70Today&breakout</span>
   </button>
                
 </div>
@@ -1653,6 +1654,13 @@ return (
             <span className="font-semibold text-cyan-300">{data.trend ?? 'N/A'}</span>
           </p>
         </div>
+
+          <p>
+        🚀 Daily Breakout:{' '}
+        <span className={data.breakout ? 'text-green-400' : 'text-red-400'}>
+          {data.breakout ? 'Yes' : 'No'}
+        </span>
+      </p>
 
           {(data.bullishBreakout || data.bearishBreakout) && (
           <div className="pt-4 border-t border-white/10 space-y-2">
