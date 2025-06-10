@@ -1123,13 +1123,11 @@ const highestVolumeCandleToday = candlesToday.length > 0
   : null;
 
 // Optional: also find the highest volume in the previous session
-const highestVolumeCandlePrev = candlesPrev.length > 0
-  ? candlesPrev.reduce((maxCandle, currentCandle) =>
-      currentCandle.volume > maxCandle.volume ? currentCandle : maxCandle
-    )
-  : null;
+const todaysVolumes = candlesToday.map(c => c.volume);
+const highestVolumeToday = todaysVolumes.length > 0 ? Math.max(...todaysVolumes) : null;
 
-
+const prevVolumes = candlesPrev.map(c => c.volume);
+const highestVolumePrev = prevVolumes.length > 0 ? Math.max(...prevVolumes) : null;
 
 
 
