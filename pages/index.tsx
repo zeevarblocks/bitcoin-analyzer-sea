@@ -1722,22 +1722,26 @@ return (
           <p>
             💰 <span className="font-medium text-white/70">Current Price:</span>{' '}
             <span className="text-blue-400">
-              {data.currentPrice !== undefined ? `$${data.currentPrice.toFixed(9)}` : 'N/A'}
-            </span>
+  {typeof data.currentPrice === 'number'
+    ? `$${data.currentPrice.toFixed(9)}`
+    : 'N/A'}
+</span>
           </p>
           <p>
             📊 <span className="font-medium text-white/70">{data.levelType?.toUpperCase() ?? 'N/A'} Level:</span>{' '}
             <span className="text-yellow-300">
-              {data.level !== undefined ? data.level.toFixed(9) : 'N/A'}
-            </span>
+  {typeof data.level === 'number' ? data.level.toFixed(9) : 'N/A'}
+</span>
           </p>
           <p>
             🧭 <span className="font-medium text-white/70">
               Inferred {data.inferredLevelType === 'support' ? 'Support' : 'Resistance'}:
             </span>{' '}
             <span className="text-purple-300">
-              {data.inferredLevel !== undefined ? data.inferredLevel.toFixed(9) : 'N/A'}
-            </span>
+  {typeof data.inferredLevel === 'number'
+    ? data.inferredLevel.toFixed(9)
+    : 'N/A'}
+</span>
           </p>
                 {data.differenceVsEMA70 !== null && (
   <p>
@@ -1745,7 +1749,9 @@ return (
       Ema70 & Inferred - Gap %:
     </span>{' '}
     <span className="text-yellow-300">
-  {data.differenceVsEMA70.percent.toFixed(2)}% ({data.differenceVsEMA70.direction})
+  {typeof data.differenceVsEMA70?.percent === 'number'
+    ? `${data.differenceVsEMA70.percent.toFixed(2)}% (${data.differenceVsEMA70.direction})`
+    : 'N/A'}
 </span>
   </p>
   )}              
