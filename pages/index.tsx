@@ -880,49 +880,52 @@ const symbols = await fetchTopPairs(100);
 const getUTCMillis = (y: number, m: number, d: number, h: number, min: number) =>
   Date.UTC(y, m, d, h, min);
 
-// Get current UTC date parts
+// Get UTC date components
 const year = now.getUTCFullYear();
 const month = now.getUTCMonth();
 const date = now.getUTCDate();
 
-const today8AM = getUTCMillis(year, month, date, 8, 0);
-const today8PM = getUTCMillis(year, month, date, 20, 0);
-const tomorrow8AM = getUTCMillis(year, month, date + 1, 8, 0);
-const yesterday8PM = getUTCMillis(year, month, date - 1, 20, 0);
+// Define session ranges
+const nightSessionStart = getUTCMillis(year, month, date - 1, 20, 0); // yesterday 8 PM
+const nightSessionEnd = getUTCMillis(year, month, date, 8, 0);        // today 8 AM
+
+const daySessionStart = getUTCMillis(year, month, date, 8, 0);        // today 8 AM
+const daySessionEnd = getUTCMillis(year, month, date, 20, 0);         // today 8 PM
+
+const nowTime = now.getTime();
 
 let sessionStart: number, sessionEnd: number;
 let prevSessionStart: number, prevSessionEnd: number;
 
-const nowTime = now.getTime();
+// Decide which session we're in now
+if (nowTime >= daySessionStart && nowTime < daySessionEnd) {
+  // We're in the day session
+  sessionStart = daySessionStart;
+  sessionEnd = daySessionEnd;
 
-if (nowTime >= today8AM && nowTime < today8PM) {
-  // Day session
-  sessionStart = today8AM;
-  sessionEnd = today8PM;
-
-  // Previous session was last night's session
-  prevSessionStart = yesterday8PM;
-  prevSessionEnd = today8AM;
+  // Previous session was the night session
+  prevSessionStart = nightSessionStart;
+  prevSessionEnd = nightSessionEnd;
 } else {
-  // Night session
-  sessionStart = today8PM <= nowTime ? today8PM : yesterday8PM;
-  sessionEnd = sessionStart + 12 * 60 * 60 * 1000; // Add 12 hours
+  // We're in the night session
+  sessionStart = nightSessionStart;
+  sessionEnd = nightSessionEnd;
 
-  // Previous session was today's day session
-  prevSessionStart = today8AM;
-  prevSessionEnd = today8PM;
+  // Previous session was the previous day's day session
+  prevSessionStart = getUTCMillis(year, month, date - 1, 8, 0);       // yesterday 8 AM
+  prevSessionEnd = getUTCMillis(year, month, date - 1, 20, 0);        // yesterday 8 PM
 }
 
-// Filter candles within sessions
+// Filter candles for each session
 const candlesToday = candles.filter(c => c.timestamp >= sessionStart && c.timestamp < sessionEnd);
 const candlesPrev = candles.filter(c => c.timestamp >= prevSessionStart && c.timestamp < prevSessionEnd);
 
-// Calculate highs/lows
+// Calculate high/low values
 const todaysLowestLow = candlesToday.length > 0 ? Math.min(...candlesToday.map(c => c.low)) : null;
 const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map(c => c.high)) : null;
 const prevSessionLow = candlesPrev.length > 0 ? Math.min(...candlesPrev.map(c => c.low)) : null;
 const prevSessionHigh = candlesPrev.length > 0 ? Math.max(...candlesPrev.map(c => c.high)) : null;
-
+      
 // Breakout detection
 const lowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
 const higherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
