@@ -1231,17 +1231,18 @@ console.log("Descending Resistance near EMA70 (Bearish):", descendingResistanceN
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
 
-	      // === Bullish Conditions ===
-  ascendingSupportNearEMA70InBullish,
-  ema70AscendingFromSwingLow,
-  rsi14AscendingFromSwingLow,
-  rsi14BreakoutAboveSwingLow,
+	  // === Bullish Conditions ===
+  ascendingSupportNearEMA70InBullish: ascendingSupportNearEMA70InBullish,
+  ema70AscendingFromSwingLow: ema70AscendingFromSwingLow,
+  rsi14AscendingFromSwingLow: rsi14AscendingFromSwingLow,
+  rsi14BreakoutAboveSwingLow: rsi14BreakoutAboveSwingLow,
 
   // === Bearish Conditions ===
-  descendingResistanceNearEMA70InBearish,
-  ema70DescendingFromSwingHigh,
-  rsi14DescendingFromSwingHigh,
-  rsi14BreakdownBelowSwingHigh,
+  descendingResistanceNearEMA70InBearish: descendingResistanceNearEMA70InBearish,
+  ema70DescendingFromSwingHigh: ema70DescendingFromSwingHigh,
+  rsi14DescendingFromSwingHigh: rsi14DescendingFromSwingHigh,
+  rsi14BreakdownBelowSwingHigh: rsi14BreakdownBelowSwingHigh,
+
 	    
 	    
   breakout,
