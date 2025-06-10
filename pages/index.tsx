@@ -3,6 +3,9 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
+  
+ascendingSupportInBullish: boolean;
+  descendingResistanceInBearish: boolean;
 
   breakout: boolean;
   bullishBreakout: boolean;
@@ -1106,7 +1109,46 @@ const shouldTrade =
   todaysHighestHigh >= lastEMA70 &&
   todaysLowestLow <= lastEMA70 &&
   candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
-      
+
+	    const recentEMA70 = ema70.slice(-4);
+
+// Check if EMA70 is consistently rising or falling
+const isEMA70Ascending = recentEMA70.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
+const isEMA70Descending = recentEMA70.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+const supportLows: number[] = [];
+const resistanceHighs: number[] = [];
+
+// Find swing lows/highs near EMA70
+for (let i = 2; i < lows.length - 2; i++) {
+  const isSwingLow = lows[i] < lows[i - 1] && lows[i] < lows[i + 1];
+  const isSwingHigh = highs[i] > highs[i - 1] && highs[i] > highs[i + 1];
+  const isNearEMA = Math.abs(closes[i] - ema70[i]) / ema70[i] < 0.005;
+
+  if (isSwingLow && isNearEMA) {
+    supportLows.push(lows[i]);
+  }
+  if (isSwingHigh && isNearEMA) {
+    resistanceHighs.push(highs[i]);
+  }
+}
+
+// Check if support lows are ascending
+const isSupportLowsAscending =
+  supportLows.length >= 2 &&
+  supportLows.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
+
+// Check if resistance highs are descending
+const isResistanceHighsDescending =
+  resistanceHighs.length >= 2 &&
+  resistanceHighs.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+// Final conditions
+const ascendingSupportNearEMA70InBullish =
+  trend === 'bullish' && isEMA70Ascending && isSupportLowsAscending;
+
+const descendingResistanceNearEMA70InBearish =
+  trend === 'bearish' && isEMA70Descending && isResistanceHighsDescending;
 
 
 
@@ -1115,6 +1157,10 @@ const shouldTrade =
     signals[symbol] = {
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
+  ascendingSupportInBullish,
+  descendingResistanceInBearish,
+	    
+	    
   breakout,
   bullishBreakout,
   bearishBreakout,
@@ -1908,6 +1954,9 @@ return (
 )}
 
 
+
+		
+
           
 
 {/* 🔄 Recent EMA Crossings */}
@@ -1938,24 +1987,25 @@ return (
   </div>
 )} 
 
-<div className="p-4 rounded-xl shadow bg-white space-y-2 text-sm">
-  <h2 className="text-lg font-bold">📊 EMA70 Signals</h2>
+		<p>
+        🧲 Touched EMA70 Today:{' '}
+        <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+          {data.touchedEMA70Today ? 'Yes' : 'No'}
+        </span>
+      </p>
 
-  <ul className="list-disc list-inside space-y-1">
-    {touchedEMA70Today && <li>🎯 Price touched EMA70 today</li>}
-    {ema70Ascending && <li>📶 EMA70 is ascending</li>}
-    {ema70Descending && <li>📉 EMA70 is descending</li>}
-    {ascendingSupportNearEMA70InBullish && <li>✅ Bullish signal: Ascending support near EMA70</li>}
-    {descendingResistanceNearEMA70InBearish && <li>❌ Bearish signal: Descending resistance near EMA70</li>}
-    {supportLowsNearEMA70.length > 0 && (
-      <li>🟢 Support lows near EMA70: {supportLowsNearEMA70.join(', ')}</li>
-    )}
-    {resistanceHighsNearEMA70.length > 0 && (
-      <li>🔴 Resistance highs near EMA70: {resistanceHighsNearEMA70.join(', ')}</li>
-    )}
-    {breakout && <li>🚨 Breakout detected</li>}
-  </ul>
-</div>
+{signal.ascendingSupportNearEMA70InBullish && (
+  <div className="text-green-500 font-semibold">
+    📈 Ascending Support near EMA70 (Bullish)
+  </div>
+)}
+
+{signal.descendingResistanceNearEMA70InBearish && (
+  <div className="text-red-500 font-semibold">
+    📉 Descending Resistance near EMA70 (Bearish)
+  </div>
+)}
+		
 
 
 
