@@ -1987,12 +1987,12 @@ return (
   </div>
 )} 
 
-		<p>
-        🧲 Touched EMA70 Today:{' '}
-        <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-          {data.touchedEMA70Today ? 'Yes' : 'No'}
-        </span>
-      </p>
+<p>
+  🧲 Touched EMA70 Today:{' '}
+  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+    {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
 
 {data.ascendingSupportNearEMA70InBullish && (
   <div className="text-green-500 font-semibold">
@@ -2004,8 +2004,7 @@ return (
   <div className="text-red-500 font-semibold">
     📉 Descending Resistance near EMA70 (Bearish)
   </div>
-)}
-		
+)}		
 
 
 
