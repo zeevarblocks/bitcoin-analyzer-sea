@@ -3,12 +3,6 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
-ema70Ascending: boolean;
-      ema70Descending: boolean;
-      supportLowsNearEMA70: number[];
-      resistanceHighsNearEMA70: number[];
-      ascendingSupportNearEMA70InBullish: boolean;
-      descendingResistanceNearEMA70InBearish: boolean;
 
   breakout: boolean;
   bullishBreakout: boolean;
@@ -1105,49 +1099,6 @@ const shouldTrade =
 
 /* ---------- 5) EXPORT / RETURN ---------- */
 	    
-const Ema70AnalysisDisplay = ({ candles, ema14, ema70, closes, highs, lows, rsi14, bullishBreakout, bearishBreakout }) => {
-  const trend = ema14.at(-1)! > ema70.at(-1)! ? 'bullish' : 'bearish';
-	      
-const ema70Recent = ema70.slice(-4);
-
-// === EMA70 Slope ===
-const ema70Ascending = ema70Recent.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-const ema70Descending = ema70Recent.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-
-// === Swing Highs and Lows Near EMA70 ===
-let supportLowsNearEMA70: number[] = [];
-let resistanceHighsNearEMA70: number[] = [];
-
-for (let i = 2; i < lows.length - 2; i++) {
-  const isSwingLow = lows[i] < lows[i - 1] && lows[i] < lows[i + 1];
-  const isSwingHigh = highs[i] > highs[i - 1] && highs[i] > highs[i + 1];
-  const nearEMA = Math.abs(closes[i] - ema70[i]) / ema70[i] < 0.005;
-
-  if (isSwingLow && nearEMA) {
-    supportLowsNearEMA70.push(lows[i]);
-  }
-  if (isSwingHigh && nearEMA) {
-    resistanceHighsNearEMA70.push(highs[i]);
-  }
-}
-
-// === Trend Support/Resistance Check ===
-const supportLowsAscending =
-  supportLowsNearEMA70.length >= 2 &&
-  supportLowsNearEMA70.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-
-const resistanceHighsDescending =
-  resistanceHighsNearEMA70.length >= 2 &&
-  resistanceHighsNearEMA70.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-
-const isBullishTrend = trend === 'bullish';
-const isBearishTrend = trend === 'bearish';
-
-const ascendingSupportNearEMA70InBullish =
-  isBullishTrend && ema70Ascending && supportLowsAscending;
-
-const descendingResistanceNearEMA70InBearish =
-  isBearishTrend && ema70Descending && resistanceHighsDescending;
 
 	const touchedEMA70Today =
   todaysHighestHigh !== null &&
@@ -1217,15 +1168,7 @@ const descendingResistanceNearEMA70InBearish =
     momentumSlowing !== null &&
     momentumSlowing === divergenceType,  
 
-ema70Ascending,
-      ema70Descending,
-      supportLowsNearEMA70,
-      resistanceHighsNearEMA70,
-      ascendingSupportNearEMA70InBullish,
-      descendingResistanceNearEMA70InBearish,
 
-	    
-	
       
   // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
