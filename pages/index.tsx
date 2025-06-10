@@ -872,8 +872,6 @@ const symbols = await fetchTopPairs(100);
       const volumes = candles.map(c => c.volume); // ✅ Valid
       
       
-
-      
       const ema14 = calculateEMA(closes, 14);
       const ema70 = calculateEMA(closes, 70);
       const rsi14 = calculateRSI(closes, 14);
@@ -930,7 +928,7 @@ const breakout = bullishBreakout || bearishBreakout;
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
       const currentHighIdx = lows.lastIndexOf(todaysHighestHigh!);
-			const currentLowIdx = lows.lastIndexOf(todaysLowestLow!);
+	const currentLowIdx = lows.lastIndexOf(todaysLowestLow!);
       
 let bearishContinuation = false;
 let bullishContinuation = false;
@@ -1055,18 +1053,7 @@ if (abcSignal === 'sell' && abcPattern) {
   // • C = breakout below A-low after pullback, at index abcPattern.cIdx
   // • D = failure to make new high + RSI falling, at index abcPattern.dIdx
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
-}
-      
-      
-const touchedEMA70Today =
-  todaysHighestHigh !== null &&
-  todaysLowestLow !== null &&
-  todaysHighestHigh >= lastEMA70 &&
-  todaysLowestLow <= lastEMA70 &&
-  candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
-      
-
-      
+}  
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
 
@@ -1118,7 +1105,19 @@ const shouldTrade =
 
 /* ---------- 5) EXPORT / RETURN ---------- */
 	    
+const Ema70AnalysisDisplay = ({ candles, ema14, ema70, closes, highs, lows, rsi14, bullishBreakout, bearishBreakout }) => {
+  const trend = ema14.at(-1)! > ema70.at(-1)! ? 'bullish' : 'bearish';
 
+  const {
+    breakout,
+    touchedEMA70Today,
+    ema70Ascending,
+    ema70Descending,
+    supportLowsNearEMA70,
+    resistanceHighsNearEMA70,
+    ascendingSupportNearEMA70InBullish,
+    descendingResistanceNearEMA70InBearish
+  } = useEma70Analysis({ candles, ema14, ema70, closes, highs, lows, trend, bullishBreakout, bearishBreakout });
 
 	      
 const ema70Recent = ema70.slice(-4);
@@ -1162,6 +1161,13 @@ const ascendingSupportNearEMA70InBullish =
 const descendingResistanceNearEMA70InBearish =
   isBearishTrend && ema70Descending && resistanceHighsDescending;
 
+	const touchedEMA70Today =
+  todaysHighestHigh !== null &&
+  todaysLowestLow !== null &&
+  todaysHighestHigh >= lastEMA70 &&
+  todaysLowestLow <= lastEMA70 &&
+  candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+      
 
 
 
