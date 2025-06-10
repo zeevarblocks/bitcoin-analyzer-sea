@@ -1994,13 +1994,13 @@ return (
         </span>
       </p>
 
-{signal.ascendingSupportNearEMA70InBullish && (
+{data.ascendingSupportNearEMA70InBullish && (
   <div className="text-green-500 font-semibold">
     📈 Ascending Support near EMA70 (Bullish)
   </div>
 )}
 
-{signal.descendingResistanceNearEMA70InBearish && (
+{data.descendingResistanceNearEMA70InBearish && (
   <div className="text-red-500 font-semibold">
     📉 Descending Resistance near EMA70 (Bearish)
   </div>
