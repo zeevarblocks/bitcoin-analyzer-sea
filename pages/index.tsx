@@ -1233,9 +1233,9 @@ ema70Ascending,
    
 
     } catch (err) {
-      console.error(`Error fetching signal for ${symbol}:` err);
+      console.error(`Error fetching ${symbol}:`, err);
     }
-  }
+    }
 
   const defaultSymbol = symbols[0];
 
