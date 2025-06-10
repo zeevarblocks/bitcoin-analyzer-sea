@@ -1307,7 +1307,8 @@ type FilterType =
   |	'abcSignal&crossSignal'
   |	'touchedEMA70Today'
   |	'breakout'
-  |	'touchedEMA70Today&breakout';
+  |	'touchedEMA70Today&breakout'
+	| 'tradeSignal';
 
 export default function SignalChecker({
   signals,
@@ -1444,7 +1445,7 @@ const scrollToTop = () => {
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
-      if (activeFilter === 'ema70Bounce') return data.ema70Bounce;
+      if (activeFilter === 'tradeSignal') return data.ema70Bounce && data.divergenceFromLevel && data.recentCrossings;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
@@ -1628,11 +1629,11 @@ return (
   <span>divergenceFromLevel</span>
 </button>
           <button
-  onClick={() => setActiveFilter('ema70Bounce')}
+  onClick={() => setActiveFilter('tradeSignal')}
   className="bg-gray-800 hover:bg-yellow-600 text-violet-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
 >
   <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>ema70Bounce</span>
+  <span>tradeSignal</span>
 </button>
           <button
   onClick={() => setActiveFilter('ema14Bounce')}
