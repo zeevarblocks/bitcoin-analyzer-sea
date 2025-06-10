@@ -6,7 +6,7 @@ interface SignalData {
 ema70Ascending: boolean;
       ema70Descending: boolean;
       supportLowsNearEMA70: number[];
-      resistanceHighsNearEMA70: number[];,
+      resistanceHighsNearEMA70: number[];
       ascendingSupportNearEMA70InBullish: boolean;
       descendingResistanceNearEMA70InBearish: boolean;
 
