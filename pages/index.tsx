@@ -1207,7 +1207,8 @@ type FilterType =
   |	'crossSignal'
   |	'abcSignal&crossSignal'
   |	'touchedEMA70Today'
-  |	'breakout';
+  |	'breakout'
+  |	'touchedEMA70Today&breakout';
 
 export default function SignalChecker({
   signals,
