@@ -1055,7 +1055,7 @@ if (abcSignal === 'sell' && abcPattern) {
       
 
       const touchedEMA70Today =
-        todaysHighestHigh! >= lastEMA70 && todaysLowestLow! <= lastEMA70 &&
+        highestHigh! >= lastEMA70 && lowestLow! <= lastEMA70 &&
         candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
       const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
