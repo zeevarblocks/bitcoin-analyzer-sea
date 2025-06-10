@@ -1107,16 +1107,6 @@ const shouldTrade =
 	    
 const Ema70AnalysisDisplay = ({ candles, ema14, ema70, closes, highs, lows, rsi14, bullishBreakout, bearishBreakout }) => {
   const trend = ema14.at(-1)! > ema70.at(-1)! ? 'bullish' : 'bearish';
-
-  const {
-    ema70Ascending,
-    ema70Descending,
-    supportLowsNearEMA70,
-    resistanceHighsNearEMA70,
-    ascendingSupportNearEMA70InBullish,
-    descendingResistanceNearEMA70InBearish
-  } = useEma70Analysis({ candles, ema14, ema70, closes, highs, lows, trend, bullishBreakout, bearishBreakout });
-
 	      
 const ema70Recent = ema70.slice(-4);
 
