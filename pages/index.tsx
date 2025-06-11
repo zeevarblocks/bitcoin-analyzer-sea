@@ -747,6 +747,8 @@ function calcCustomSessionBounds() {
   return { sessionStart, sessionEnd, prevSessionStart, prevSessionEnd };
 }
 
+const { sessionStart, sessionEnd } = calcCustomSessionBounds();
+
 // Filter crossing signals to only include those inside the session window
 function filterCrossingsByPeriod(
   crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[],
@@ -1114,7 +1116,6 @@ if (abcSignal === 'sell' && abcPattern) {
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
 }  
 
-const { sessionStart, sessionEnd } = calcCustomSessionBounds();
 
 const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 const sessionCrosses = filterCrossingsByPeriod(recentCrossings, timestamps, sessionStart, sessionEnd);
