@@ -2026,45 +2026,36 @@ return (
   </span>
 </p>
 		
-{data.pressureDetections?.length === 0 && (
-  <div className="pt-4 border-t border-white/10 space-y-6">
-    <div className="space-y-4">
-      <div className="text-gray-400 space-y-2">
-        ❌ <span className="font-semibold">No Pressure Detected</span>
+<div className="pt-4 border-t border-white/10 space-y-6">
+  {data.pressureDetections?.length === 0 ? (
+    <div className="text-gray-400 space-y-2">
+      ❌ <span className="font-semibold">No Pressure Detected</span>
+      <p className="text-sm text-white/70 ml-4 mt-1">
+        • No selling or buying pressure found<br />
+        • Based on EMA70 + RSI conditions
+      </p>
+    </div>
+  ) : (
+    data.pressureDetections.map((detection, idx) => (
+      <div
+        key={idx}
+        className={`space-y-2 ${
+          detection.type === "bullish" ? "text-green-400" : "text-red-400"
+        }`}
+      >
+        📉 <span className="font-semibold">
+          {detection.type === "bullish"
+            ? "Selling Pressure Detected (Bullish)"
+            : "Buying Pressure Detected (Bearish)"}
+        </span>
         <p className="text-sm text-white/70 ml-4 mt-1">
-          • No selling or buying pressure found<br />
-          • Based on EMA touches and RSI conditions
+          • EMA70 touch + RSI reaction<br />
+          • Between Point {detection.point1} → {detection.point2}
         </p>
       </div>
-    </div>
-  </div>
-)}
-
-{data.pressureDetections?.length > 0 && (
-  <div className="pt-4 border-t border-white/10 space-y-6">
-    <div className="space-y-4">
-      {data.pressureDetections.map((detection, idx) => (
-        <div
-          key={idx}
-          className={`space-y-2 ${
-            detection.type === "bullish" ? "text-green-400" : "text-red-400"
-          }`}
-        >
-          📉 <span className="font-semibold">
-            {detection.type === "bullish"
-              ? "Selling Pressure Detected (Bullish)"
-              : "Buying Pressure Detected (Bearish)"}
-          </span>
-          <p className="text-sm text-white/70 ml-4 mt-1">
-            • EMA70 touch with RSI reaction<br />
-            • Confirmed between Point {detection.point1} and {detection.point2}
-          </p>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
+    ))
+  )}
+</div>
   
   
 		
