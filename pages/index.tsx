@@ -2006,20 +2006,20 @@ return (
   <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
     <p className="text-sm font-medium text-blue-300 mb-2">🧲 EMA70 Pressure Detected</p>
     <ul className="space-y-1">
-      {data.pressureDetections.map((item, idx) => (
+      {data.pressureDetections.map((detection, idx) => (
         <li
           key={idx}
           className={`flex items-center gap-3 px-2 py-1 rounded-md ${
-            item.type === 'bullish'
+            detection.type === 'bullish'
               ? 'bg-green-800 text-green-200'
               : 'bg-red-800 text-red-200'
           }`}
         >
           <span className="text-sm">
-            {item.type === 'bullish' ? '🟢 Bullish Touch' : '🔴 Bearish Touch'}
+            {detection.type === 'bullish' ? '🟢 Bullish Touch' : '🔴 Bearish Touch'}
           </span>
           <span className="ml-auto font-mono text-xs">
-            RSI {item.point1} → {item.point2}
+            RSI {detection.point1} → {detection.point2}
           </span>
         </li>
       ))}
@@ -2027,7 +2027,8 @@ return (
   </div>
 )}
 
-{(!data.pressureDetections || data.pressureDetections.length === 0) && candles.length > 0 && (
+{/* ❌ No Detection */}
+{data.pressureDetections?.length === 0 && candles.length > 0 && (
   <div className="mt-4 p-4 bg-gray-100 rounded shadow text-center text-gray-600 text-sm">
     ❌ No Pressure Detected
   </div>
