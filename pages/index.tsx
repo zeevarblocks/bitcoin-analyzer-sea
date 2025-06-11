@@ -1291,7 +1291,7 @@ const descendingResistanceNearEMA70InBearish =
 
   return {
     props: {
-      toptopPairs,
+      topPairs,
       signals,
       defaultSymbol,
     },
