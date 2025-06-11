@@ -1144,12 +1144,26 @@ const shouldTrade =
   todaysLowestLow <= lastEMA70 &&
   candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-	const bullishPressure = detectSellingPressureAfterEMATouchBullish(data.length - 1, close, low, ema70, rsi14);
+	const bullishPressure = detectSellingPressureAfterEMATouchBullish(
+  candlesToday.length - 1,
+  close,
+  low,
+  ema70,
+  rsi14
+);
+
 if (bullishPressure) {
   console.log(`Selling Pressure Detected: Point1=${bullishPressure.point1}, Point2=${bullishPressure.point2}`);
 }
 
-const bearishPressure = detectBuyingPressureAfterEMATouchBearish(data.length - 1, close, high, ema70, rsi14);
+const bearishPressure = detectBuyingPressureAfterEMATouchBearish(
+  candlesToday.length - 1,
+  close,
+  high,
+  ema70,
+  rsi14
+);
+
 if (bearishPressure) {
   console.log(`Buying Pressure Detected: Point1=${bearishPressure.point1}, Point2=${bearishPressure.point2}`);
 }
