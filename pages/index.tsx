@@ -1290,7 +1290,8 @@ type FilterType =
   |	'touchedEMA70Today'
   |	'breakout'
   |	'touchedEMA70Today&breakout'
-	| 'tradeSignal';
+	| 'tradeSignal'
+	| 'pressureDetections';
 
 export default function SignalChecker({
   signals,
@@ -1432,6 +1433,7 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
       if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
+	if (activeFilter === 'pressureDetections') return data.pressureDetections;    
       return true;  
     });
 
@@ -1661,6 +1663,14 @@ return (
   >
     <span>📉</span>
     <span>touchedEMA70Today&breakout</span>
+  </button>
+
+		<button
+    onClick={() => setActiveFilter('pressureDetections')}
+    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>pressureDetections</span>
   </button>
                
 </div>
@@ -2001,20 +2011,6 @@ return (
   </span>
 </p>
 		
-{data.pressureDetections?.length === 0 && (
-  <div className="pt-4 border-t border-white/10 space-y-6">
-    <div className="space-y-4">
-      <div className="text-gray-400 space-y-2">
-        ❌ <span className="font-semibold">No Pressure Detected</span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
-          • No selling or buying pressure found<br />
-          • Based on EMA touches and RSI conditions
-        </p>
-      </div>
-    </div>
-  </div>
-)}
-
 {data.pressureDetections?.length > 0 && (
   <div className="pt-4 border-t border-white/10 space-y-6">
     <div className="space-y-4">
@@ -2039,6 +2035,7 @@ return (
     </div>
   </div>
 )}
+
   
   
 		
