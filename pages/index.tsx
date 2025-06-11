@@ -928,6 +928,7 @@ const symbols = await fetchTopPairs(100);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
       const volumes = candles.map(c => c.volume); // ✅ Valid
+	const timestamps = candles.map(c => c.timestamp);
       
       
       const ema14 = calculateEMA(closes, 14);
@@ -1114,11 +1115,6 @@ if (abcSignal === 'sell' && abcPattern) {
 }  
 
 const { sessionStart, sessionEnd } = calcCustomSessionBounds();
-
-const timestamps = candles.map(c => c.timestamp);
-const closes = candles.map(c => c.close);
-const ema14 = calculateEMA(closes, 14);  // Use your own EMA implementation
-const ema70 = calculateEMA(closes, 70);
 
 const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 const sessionCrosses = filterCrossingsByPeriod(recentCrossings, timestamps, sessionStart, sessionEnd);
