@@ -3,12 +3,13 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
-  
-    // === EMA70 Pressure Detections ===
-  pressureDetections: {
-    type: 'bullish' | 'bearish';
-    point1: number;
-    point2: number;
+
+	pressureDetections: {
+    type: 'bullish' | 'bearish'; // bullish = reversal up, bearish = reversal down
+    point1: number; // candle index when price touched EMA70, RSI recorded
+    point2: number; // current candle index where RSI confirmed reversal
+    rsiPoint1: number; // RSI value at point1
+    rsiPoint2: number; // RSI value at point2
   }[];
   
   breakout: boolean;
@@ -844,51 +845,54 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
     }
 
-function detectSellingPressureAfterEMATouchBullish(
+function detectBearishReversalInBullishTrend(
   index: number,
   close: number[],
   low: number[],
+  ema14: number[],
   ema70: number[],
-  rsi14: number[],
-  todaysLowestLow: number | null
-): { point1: number; point2: number } | null {
-  if (todaysLowestLow === null) return null;
+  rsi14: number[]
+): { point1: number; point2: number; rsiPoint1: number; rsiPoint2: number } | null {
+  for (let i = index; i >= 1; i--) {
+    if (ema14[i - 1] <= ema70[i - 1]) continue;
+    const priceTouchedEMA70 = low[i - 1] <= ema70[i - 1] && close[i - 1] >= ema70[i - 1];
+    if (!priceTouchedEMA70) continue;
 
-  for (let i = index; i >= 0; i--) {
-    if (low[i] <= ema70[i] && close[i] > ema70[i] && low[i] <= todaysLowestLow) {
-      // EMA touched + price reached today's lowest low
-      for (let j = i + 1; j < rsi14.length; j++) {
-        if (rsi14[j] < rsi14[i]) {
-          return { point1: i, point2: j };
-        }
-      }
-      return null;
+    const point1 = i - 1;
+    const rsiPoint1 = rsi14[point1];
+    const point2 = i;
+    const rsiPoint2 = rsi14[point2];
+
+    if (rsiPoint2 < rsiPoint1) {
+      return { point1, point2, rsiPoint1, rsiPoint2 };
     }
+    break;
   }
   return null;
 }
 
-
-function detectBuyingPressureAfterEMATouchBearish(
+function detectBullishReversalInBearishTrend(
   index: number,
   close: number[],
   high: number[],
+  ema14: number[],
   ema70: number[],
-  rsi14: number[],
-  todaysHighestHigh: number | null
-): { point1: number; point2: number } | null {
-  if (todaysHighestHigh === null) return null;
+  rsi14: number[]
+): { point1: number; point2: number; rsiPoint1: number; rsiPoint2: number } | null {
+  for (let i = index; i >= 1; i--) {
+    if (ema14[i - 1] >= ema70[i - 1]) continue;
+    const priceTouchedEMA70 = high[i - 1] >= ema70[i - 1] && close[i - 1] <= ema70[i - 1];
+    if (!priceTouchedEMA70) continue;
 
-  for (let i = index; i >= 0; i--) {
-    if (high[i] >= ema70[i] && close[i] < ema70[i] && high[i] >= todaysHighestHigh) {
-      // EMA touched + price reached today's highest high
-      for (let j = i + 1; j < rsi14.length; j++) {
-        if (rsi14[j] > rsi14[i]) {
-          return { point1: i, point2: j };
-        }
-      }
-      return null;
+    const point1 = i - 1;
+    const rsiPoint1 = rsi14[point1];
+    const point2 = i;
+    const rsiPoint2 = rsi14[point2];
+
+    if (rsiPoint2 > rsiPoint1) {
+      return { point1, point2, rsiPoint1, rsiPoint2 };
     }
+    break;
   }
   return null;
 }
@@ -1161,45 +1165,51 @@ const shouldTrade =
   todaysLowestLow <= lastEMA70 &&
   candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-	const pressureDetections = [];
 
-const buyingPressure = detectBuyingPressureAfterEMATouchBearish(
-  candlesToday.length - 1,
-  closes,
-  highs,
-  ema70,
-  rsi14,
-  todaysHighestHigh
+	const pressureDetections = [];   
+
+const bullishReversal = detectBullishReversalInBearishTrend(
+candlesToday.length - 1,
+closes,
+highs,
+ema14,
+ema70,
+rsi14
 );
 
-if (buyingPressure) {
-  pressureDetections.push({
-    type: 'bullish', // Because it's buying pressure (bullish signal)
-    point1: buyingPressure.point1,
-    point2: buyingPressure.point2,
-  });
-  console.log(
-    `Buying Pressure Detected: Candle Indexes Point1=${buyingPressure.point1}, Point2=${buyingPressure.point2}`
-  );
+if (bullishReversal) {
+pressureDetections.push({
+type: 'bullish',
+point1: bullishReversal.point1,
+point2: bullishReversal.point2,
+rsiPoint1: bullishReversal.rsiPoint1,
+rsiPoint2: bullishReversal.rsiPoint2,
+});
+console.log(
+Bullish Reversal Detected: From Point ${bullishReversal.point1} (RSI=${bullishReversal.rsiPoint1}) to ${bullishReversal.point2} (RSI=${bullishReversal.rsiPoint2})
+);
 }
+	    
 
-const sellingPressure = detectSellingPressureAfterEMATouchBullish(
+const bearishReversal = detectBearishReversalInBullishTrend(
   candlesToday.length - 1,
   closes,
   lows,
+  ema14,
   ema70,
-  rsi14,
-  todaysLowestLow
+  rsi14
 );
 
-if (sellingPressure) {
+if (bearishReversal) {
   pressureDetections.push({
-    type: 'bearish', // Because it's selling pressure (bearish signal)
-    point1: sellingPressure.point1,
-    point2: sellingPressure.point2,
+    type: 'bearish',
+    point1: bearishReversal.point1,
+    point2: bearishReversal.point2,
+    rsiPoint1: bearishReversal.rsiPoint1,
+    rsiPoint2: bearishReversal.rsiPoint2,
   });
   console.log(
-    `Selling Pressure Detected: Candle Indexes Point1=${sellingPressure.point1}, Point2=${sellingPressure.point2}`
+    `Bearish Reversal Detected: From Point ${bearishReversal.point1} (RSI=${bearishReversal.rsiPoint1}) to ${bearishReversal.point2} (RSI=${bearishReversal.rsiPoint2})`
   );
 }
 	    
@@ -2038,7 +2048,7 @@ return (
       ❌ <span className="font-semibold">No Pressure Detected</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
         • No buying or selling pressure found<br />
-        • Based on EMA70 + RSI confirmation
+        • Based on EMA70 touch + RSI reversal confirmation
       </p>
     </div>
   ) : (
@@ -2049,21 +2059,23 @@ return (
           detection.type === "bullish" ? "text-green-400" : "text-red-400"
         }`}
       >
-        {detection.type === "bullish" ? "💚" : "❤️"}{" "}
-        <span className="font-semibold">
-          {detection.type === "bullish"
-            ? "Buying Pressure Detected (Bullish)"
-            : "Selling Pressure Detected (Bearish)"}
-        </span>
-        <p className="text-sm text-white/70 ml-4 mt-1">
+        <div className="flex items-center gap-1">
+          {detection.type === "bullish" ? "💚" : "❤️"}
+          <span className="font-semibold">
+            {detection.type === "bullish"
+              ? "Buying Pressure Detected (Bullish)"
+              : "Selling Pressure Detected (Bearish)"}
+          </span>
+        </div>
+        <p className="text-sm text-white/70 ml-4 mt-1 leading-relaxed">
           • EMA70 touch with RSI confirmation<br />
-          • Between candles {detection.point1} → {detection.point2}
+          • Reversal detected between candles <strong>{detection.point1}</strong> → <strong>{detection.point2}</strong><br />
+          • RSI {detection.type === "bullish" ? "rose" : "fell"} from <strong>{detection.rsiPoint1}</strong> to <strong>{detection.rsiPoint2}</strong>
         </p>
       </div>
     ))
   )}
 </div>
-
   
 		
 	  
