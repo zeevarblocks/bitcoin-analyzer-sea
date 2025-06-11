@@ -87,41 +87,36 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
-
-  // === Calculated Indicators (optional) ===
   ema14?: number;
   ema70?: number;
-  rsi?: number;
-  macd?: number;
-  signal?: number;
-
-  // === Time Information ===
-  time: number;       // readable timestamp (e.g. Unix in ms or UTC)
-  timestamp: number;  // same as `time` or used as a sortable numeric ID
+  time: number;      // seconds since epoch (for lightweight‑charts)
+  timestamp: number; // ms since epoch (internal use)
 }
 
+/**
+ * Fetch Binance USDT perpetual futures candles.
+ * @param symbol  e.g. 'BTCUSDT'
+ * @param interval e.g. '15m', '1h', '1d'
+ */
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;
+  const limit = interval === '1d' ? 2 : 500;  // keep same behaviour
+  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`;
 
-  const response = await fetch(
-    `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
-  );
+  const response = await fetch(url);
   const data = await response.json();
 
   if (!Array.isArray(data)) throw new Error('Invalid candle data');
 
+  // Binance klines are oldest → newest already
   return data.map((d: any[]) => ({
-  // lightweight-charts wants seconds, not ms
-  time: Math.floor(+d[0] / 1000),   // ✅ REQUIRED for <CandlestickSeries>.setData
-  // If you still want the full ms value elsewhere, keep it too:
-   timestamp: +d[0],
-
-  open:   +d[1],
-  high:   +d[2],
-  low:    +d[3],
-  close:  +d[4],
-  volume: +d[5],
-}));
+    time: Math.floor(+d[0] / 1000), // seconds for chart
+    timestamp: +d[0],               // ms for internal calculations
+    open: +d[1],
+    high: +d[2],
+    low: +d[3],
+    close: +d[4],
+    volume: +d[5],
+  }));
 }
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -856,34 +851,26 @@ function detectBullishContinuationWithEnd(
 
 
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 100): Promise<string[]> {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    const data = await response.json();
+  async function fetchTopPairs(limit = 100) {
+    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const data = await res.json();
 
     const sorted = data
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // ✅ Only USDT pairs
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // ✅ Sort by 24h quote volume
-      .slice(0, limit);
+      .filter((t) => t.symbol.endsWith('USDT') && !t.symbol.includes('_')) // perpetual USDT only
+      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .slice(0, limit)
+      .map((t) => t.symbol);
 
-    return sorted.map((ticker: any) => ticker.symbol);
+    return sorted;
   }
 
-  const topPairs = await fetchTopPairs();
+  const symbols = await fetchTopPairs(100);
+  const signals = {};
 
-  return {
-    props: {
-      topPairs,
-    },
-  };
-}
-
-
-
-  const signals: Record<string, SignalData> = {};
-
-  for (const symbol of topPairs) {
+  for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
+      const candles1d = await fetchCandles(symbol, '1d');
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
@@ -1282,16 +1269,16 @@ const descendingResistanceNearEMA70InBearish =
 };  
    
 
-    } catch (err) {
-      console.error(`Error fetching ${symbol}:`, err);
+   } catch (err) {
+      console.error('Error fetching signal for', symbol, err);
     }
-    }
+  }
 
   const defaultSymbol = symbols[0];
 
   return {
     props: {
-      topPairs,
+      symbols,
       signals,
       defaultSymbol,
     },
@@ -1374,36 +1361,36 @@ const scrollToTop = () => {
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
   try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    const data = await response.json();
+    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const data = await res.json();
 
     const sortedPairs = data
-      .filter((item: any) => item.symbol.endsWith('USDT')) // ✅ Only USDT perpetual futures
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // ✅ Sort by 24h quote volume
-      .map((item: any) => item.symbol);
+      .filter((item) => item.symbol.endsWith('USDT') && !item.symbol.includes('_'))
+      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .map((item) => item.symbol);
 
     setPairs(sortedPairs);
+    await fetchSignals(sortedPairs);
 
     const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
     const validSaved = savedPairs.filter(
-      (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      (p) => liveSignals?.[p]?.currentPrice !== undefined
     );
 
-    if (validSaved.length > 0) {
+    if (validSaved.length) {
       setSelectedPairs(validSaved);
     } else {
-      const topValidPairs = sortedPairs
-        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+      const topValid = sortedPairs
+        .filter((p) => liveSignals?.[p]?.currentPrice !== undefined)
         .slice(0, 100);
-      setSelectedPairs(topValidPairs);
+      setSelectedPairs(topValid);
     }
-  } catch (error) {
-    console.error('Error fetching trading pairs:', error);
+  } catch (err) {
+    console.error('Error fetching pairs:', err);
   } finally {
     setIsLoadingPairs(false);
   }
-}, [signals]);
-  
+}, [liveSignals]);
   
  
   const handleRefresh = async () => {
@@ -2028,19 +2015,57 @@ return (
     {data.touchedEMA70Today ? 'Yes' : 'No'}
   </span>
 </p>
-		
 
+		
+		{/* === Bullish Conditions === */}
+<p>
+  📈 Ascending Support near EMA70 (Bullish):{' '}
+  <span className={data.ascendingSupportNearEMA70InBullish ? 'text-green-400' : 'text-red-400'}>
+    {data.ascendingSupportNearEMA70InBullish ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  🔼 EMA70 Ascending from Swing Low:{' '}
+  <span className={data.ema70AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
+    {data.ema70AscendingFromSwingLow ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  📊 RSI14 Ascending from Swing Low:{' '}
+  <span className={data.rsi14AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
+    {data.rsi14AscendingFromSwingLow ? 'Yes' : 'No'}
+  </span>
+</p>
 <p>
   🚀 RSI14 Breakout Above Swing Low:{' '}
   <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'}
+    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'} // if yes, strong bullish when bullish trend and sell when bearish trend
   </span>
 </p>
 
+{/* === Bearish Conditions === */}
+<p className="mt-4">
+  📉 Descending Resistance near EMA70 (Bearish):{' '}
+  <span className={data.descendingResistanceNearEMA70InBearish ? 'text-green-400' : 'text-red-400'}>
+    {data.descendingResistanceNearEMA70InBearish ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  🔽 EMA70 Descending from Swing High:{' '}
+  <span className={data.ema70DescendingFromSwingHigh ? 'text-green-400' : 'text-red-400'}>
+    {data.ema70DescendingFromSwingHigh ? 'Yes' : 'No'}
+  </span>
+</p>
+<p>
+  📊 RSI14 Descending from Swing High:{' '}
+  <span className={data.rsi14DescendingFromSwingHigh ? 'text-green-400' : 'text-red-400'}>
+    {data.rsi14DescendingFromSwingHigh ? 'Yes' : 'No'}
+  </span>
+</p>
 <p>
   📉 RSI14 Breakdown Below Swing High:{' '}
   <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} 
+    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} // if yes, strong bearish when bearish trend and buy when bullish trend
   </span>
 </p>
 
