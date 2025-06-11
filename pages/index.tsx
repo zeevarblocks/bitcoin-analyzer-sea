@@ -881,7 +881,7 @@ export async function getServerSideProps() {
 
   const signals: Record<string, SignalData> = {};
 
-  for (const symbol of symbols) {
+  for (const symbol of topPairs) {
     try {
       const candles = await fetchCandles(symbol, '15m');
       const closes = candles.map(c => c.close);
