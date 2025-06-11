@@ -877,7 +877,7 @@ export async function getServerSideProps() {
   };
 }
 
-const symbols = await fetchTopPairs(100);
+
 
   const signals: Record<string, SignalData> = {};
 
