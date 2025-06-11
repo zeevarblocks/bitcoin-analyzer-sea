@@ -114,7 +114,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   // lightweight-charts wants seconds, not ms
   time: Math.floor(+d[0] / 1000),   // ✅ REQUIRED for <CandlestickSeries>.setData
   // If you still want the full ms value elsewhere, keep it too:
-  // timestamp: +d[0],
+   timestamp: +d[0],
 
   open:   +d[1],
   high:   +d[2],
