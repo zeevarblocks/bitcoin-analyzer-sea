@@ -2001,7 +2001,7 @@ return (
   </span>
 </p>
 		
-{data.pressureDetections?.length === 0 && data.candles?.length > 0 && (
+{data.pressureDetections?.length === 0 && data.candle?.length > 0 && (
   <div className="pt-4 border-t border-white/10 space-y-6">
     <div className="space-y-4">
       <div className="text-gray-400 space-y-2">
