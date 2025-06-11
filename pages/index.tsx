@@ -4,8 +4,8 @@ interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
   
-  bullishPressure: boolean;
-	bearishPressure: boolean;
+  bullishPressure: { point1: number; point2: number };
+	bearishPressure: { point1: number; point2: number };
 	
   
   breakout: boolean;
