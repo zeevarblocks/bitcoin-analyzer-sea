@@ -1981,18 +1981,13 @@ return (
 )}
 
 		{/* 🧲 EMA70 Touch Today Display */}
-  {data.length > 0 && (
-    <div className="mb-4 text-lg font-medium">
-      🧲 Touched EMA70 Today:{' '}
-      <span
-        className={
-          touchedEMA70Today ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold'
-        }
-      >
-        {touchedEMA70Today ? 'Yes' : 'No'}
-      </span>
-    </div>
-  )}
+<p>
+  🧲 Touched EMA70 Today:{' '}
+  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+    {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
+		
 
   {/* ✅ Bullish Result */}
   {bullishPressure && (
