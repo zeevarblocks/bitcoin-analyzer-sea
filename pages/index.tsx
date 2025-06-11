@@ -845,32 +845,47 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
     }
 
-function detectBearishReversalInBullishTrend(
-  index: number,
-  close: number[],
-  low: number[],
-  ema14: number[],
-  ema70: number[],
-  rsi14: number[]
-): { point1: number; point2: number; rsiPoint1: number; rsiPoint2: number } | null {
-  for (let i = index; i >= 1; i--) {
-    if (ema14[i - 1] <= ema70[i - 1]) continue;
-    const priceTouchedEMA70 = low[i - 1] <= ema70[i - 1] && close[i - 1] >= ema70[i - 1];
-    if (!priceTouchedEMA70) continue;
-
-    const point1 = i - 1;
-    const rsiPoint1 = rsi14[point1];
-    const point2 = i;
-    const rsiPoint2 = rsi14[point2];
-
-    if (rsiPoint2 < rsiPoint1) {
-      return { point1, point2, rsiPoint1, rsiPoint2 };
-    }
-    break;
+/**
+ * Detects an RSI reversal point within a given range.
+ * @param rsi14 - Array of RSI values.
+ * @param fromIndex - Starting index (earlier candle).
+ * @param toIndex - Ending index (more recent candle).
+ * @param direction - 'bullish' for upward RSI movement, 'bearish' for downward.
+ * @returns The index where RSI began to reverse, or null if not found.
+ */
+function detectRsiReversalPoint(
+  rsi14: number[],
+  fromIndex: number,
+  toIndex: number,
+  direction: 'bullish' | 'bearish'
+): number | null {
+  if (
+    fromIndex < 0 ||
+    toIndex >= rsi14.length ||
+    fromIndex >= toIndex
+  ) {
+    return null;
   }
+
+  for (let i = toIndex; i > fromIndex; i--) {
+    const prev = rsi14[i - 1];
+    const curr = rsi14[i];
+
+    if (direction === 'bullish' && curr > prev) {
+      return i - 1;
+    }
+
+    if (direction === 'bearish' && curr < prev) {
+      return i - 1;
+    }
+  }
+
   return null;
 }
 
+/**
+ * Detects a bullish RSI reversal within a bearish trend.
+ */
 function detectBullishReversalInBearishTrend(
   index: number,
   close: number[],
@@ -881,7 +896,10 @@ function detectBullishReversalInBearishTrend(
 ): { point1: number; point2: number; rsiPoint1: number; rsiPoint2: number } | null {
   for (let i = index; i >= 1; i--) {
     if (ema14[i - 1] >= ema70[i - 1]) continue;
-    const priceTouchedEMA70 = high[i - 1] >= ema70[i - 1] && close[i - 1] <= ema70[i - 1];
+
+    const priceTouchedEMA70 =
+      high[i - 1] >= ema70[i - 1] && close[i - 1] <= ema70[i - 1];
+
     if (!priceTouchedEMA70) continue;
 
     const point1 = i - 1;
@@ -890,6 +908,38 @@ function detectBullishReversalInBearishTrend(
     const rsiPoint2 = rsi14[point2];
 
     if (rsiPoint2 > rsiPoint1) {
+      return { point1, point2, rsiPoint1, rsiPoint2 };
+    }
+    break;
+  }
+  return null;
+}
+
+/**
+ * Detects a bearish RSI reversal within a bullish trend.
+ */
+function detectBearishReversalInBullishTrend(
+  index: number,
+  close: number[],
+  low: number[],
+  ema14: number[],
+  ema70: number[],
+  rsi14: number[]
+): { point1: number; point2: number; rsiPoint1: number; rsiPoint2: number } | null {
+  for (let i = index; i >= 1; i--) {
+    if (ema14[i - 1] <= ema70[i - 1]) continue;
+
+    const priceTouchedEMA70 =
+      low[i - 1] <= ema70[i - 1] && close[i - 1] >= ema70[i - 1];
+
+    if (!priceTouchedEMA70) continue;
+
+    const point1 = i - 1;
+    const rsiPoint1 = rsi14[point1];
+    const point2 = i;
+    const rsiPoint2 = rsi14[point2];
+
+    if (rsiPoint2 < rsiPoint1) {
       return { point1, point2, rsiPoint1, rsiPoint2 };
     }
     break;
@@ -1166,15 +1216,16 @@ const shouldTrade =
   candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
 
-	const pressureDetections = [];   
+	// 🚦 Collecting RSI pressure signals
+const pressureDetections = [];
 
 const bullishReversal = detectBullishReversalInBearishTrend(
-candlesToday.length - 1,
-closes,
-highs,
-ema14,
-ema70,
-rsi14
+  candlesToday.length - 1,
+  closes,
+  highs,
+  ema14,
+  ema70,
+  rsi14
 );
 
 if (bullishReversal) {
@@ -1189,19 +1240,7 @@ if (bullishReversal) {
     `💚 Bullish Reversal Detected: From Point ${bullishReversal.point1} (RSI=${bullishReversal.rsiPoint1}) to ${bullishReversal.point2} (RSI=${bullishReversal.rsiPoint2})`
   );
 }
-	    
-	    
 
-const bearishReversal = detectBearishReversalInBullishTrend(
-  candlesToday.length - 1,
-  closes,
-  lows,
-  ema14,
-  ema70,
-  rsi14
-);
-
-if (bearishReversal) {
 const bearishReversal = detectBearishReversalInBullishTrend(
   candlesToday.length - 1,
   closes,
@@ -1223,6 +1262,7 @@ if (bearishReversal) {
     `❤️ Bearish Reversal Detected: From Point ${bearishReversal.point1} (RSI=${bearishReversal.rsiPoint1}) to ${bearishReversal.point2} (RSI=${bearishReversal.rsiPoint2})`
   );
 }
+	    
 	    
 	    
 
