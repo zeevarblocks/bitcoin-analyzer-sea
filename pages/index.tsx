@@ -2022,7 +2022,7 @@ return (
 <p>
   🚀 RSI14 Breakout Above Swing Low:{' '}
   <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'} // if yes, strong bullish when bullish trend and sell when bearish trend
+    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'}
   </span>
 </p>
 
@@ -2030,7 +2030,7 @@ return (
 <p>
   📉 RSI14 Breakdown Below Swing High:{' '}
   <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} // if yes, strong bearish when bearish trend and buy when bullish trend
+    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'}
   </span>
 </p>
 
