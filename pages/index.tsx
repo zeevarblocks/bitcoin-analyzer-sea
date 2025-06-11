@@ -73,7 +73,7 @@ interface SignalData {
   sessionCrosses?: {
     type: 'bullish' | 'bearish';
     price: number;
-    timestamp: number;
+     timestamp: cross.timestamp;
   } | null;
 
    momentumSlowing: 'bullish' | 'bearish' | null;
