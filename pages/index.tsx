@@ -1146,7 +1146,7 @@ const shouldTrade =
 
 	const bullishPressure = detectSellingPressureAfterEMATouchBullish(
   candlesToday.length - 1,
-  close,
+  closes,
   low,
   ema70,
   rsi14
@@ -1158,7 +1158,7 @@ if (bullishPressure) {
 
 const bearishPressure = detectBuyingPressureAfterEMATouchBearish(
   candlesToday.length - 1,
-  close,
+  closes,
   high,
   ema70,
   rsi14
