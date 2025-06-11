@@ -1178,19 +1178,30 @@ rsi14
 );
 
 if (bullishReversal) {
-pressureDetections.push({
-type: 'bullish',
-point1: bullishReversal.point1,
-point2: bullishReversal.point2,
-rsiPoint1: bullishReversal.rsiPoint1,
-rsiPoint2: bullishReversal.rsiPoint2,
-});
-console.log(
-Bullish Reversal Detected: From Point ${bullishReversal.point1} (RSI=${bullishReversal.rsiPoint1}) to ${bullishReversal.point2} (RSI=${bullishReversal.rsiPoint2})
-);
+  pressureDetections.push({
+    type: 'bullish',
+    point1: bullishReversal.point1,
+    point2: bullishReversal.point2,
+    rsiPoint1: bullishReversal.rsiPoint1,
+    rsiPoint2: bullishReversal.rsiPoint2,
+  });
+  console.log(
+    `💚 Bullish Reversal Detected: From Point ${bullishReversal.point1} (RSI=${bullishReversal.rsiPoint1}) to ${bullishReversal.point2} (RSI=${bullishReversal.rsiPoint2})`
+  );
 }
 	    
+	    
 
+const bearishReversal = detectBearishReversalInBullishTrend(
+  candlesToday.length - 1,
+  closes,
+  lows,
+  ema14,
+  ema70,
+  rsi14
+);
+
+if (bearishReversal) {
 const bearishReversal = detectBearishReversalInBullishTrend(
   candlesToday.length - 1,
   closes,
@@ -1209,7 +1220,7 @@ if (bearishReversal) {
     rsiPoint2: bearishReversal.rsiPoint2,
   });
   console.log(
-    `Bearish Reversal Detected: From Point ${bearishReversal.point1} (RSI=${bearishReversal.rsiPoint1}) to ${bearishReversal.point2} (RSI=${bearishReversal.rsiPoint2})`
+    `❤️ Bearish Reversal Detected: From Point ${bearishReversal.point1} (RSI=${bearishReversal.rsiPoint1}) to ${bearishReversal.point2} (RSI=${bearishReversal.rsiPoint2})`
   );
 }
 	    
