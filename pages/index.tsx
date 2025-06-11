@@ -2094,7 +2094,7 @@ return (
 </p>
 		
 <div className="pt-4 border-t border-white/10 space-y-6">
-  {data.pressureDetections?.length === 0 ? (
+  {pressureDetections.length === 0 ? (
     <div className="text-gray-400 space-y-2">
       ❌ <span className="font-semibold">No Pressure Detected</span>
       <p className="text-sm text-white/70 ml-4 mt-1">
@@ -2103,7 +2103,7 @@ return (
       </p>
     </div>
   ) : (
-    data.pressureDetections.map((detection, idx) => (
+    pressureDetections.map((detection, idx) => (
       <div
         key={idx}
         className={`space-y-2 ${
