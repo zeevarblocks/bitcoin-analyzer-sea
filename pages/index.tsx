@@ -111,13 +111,17 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   if (!Array.isArray(data)) throw new Error('Invalid candle data');
 
   return data.map((d: any[]) => ({
-    timestamp: +d[0],    // Open time in ms
-    open: +d[1],
-    high: +d[2],
-    low: +d[3],
-    close: +d[4],
-    volume: +d[5],
-  }));
+  // lightweight-charts wants seconds, not ms
+  time: Math.floor(+d[0] / 1000),   // ✅ REQUIRED for <CandlestickSeries>.setData
+  // If you still want the full ms value elsewhere, keep it too:
+  // timestamp: +d[0],
+
+  open:   +d[1],
+  high:   +d[2],
+  low:    +d[3],
+  close:  +d[4],
+  volume: +d[5],
+}));
 }
 
 function calculateEMA(data: number[], period: number): number[] {
