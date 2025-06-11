@@ -2027,8 +2027,7 @@ return (
   </div>
 )}
 
-{/* ❌ No Detection */}
-{(!data.pressureDetections || data.pressureDetections.length === 0) && data.length > 0 && (
+{(!data.pressureDetections || data.pressureDetections.length === 0) && candles.length > 0 && (
   <div className="mt-4 p-4 bg-gray-100 rounded shadow text-center text-gray-600 text-sm">
     ❌ No Pressure Detected
   </div>
