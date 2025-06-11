@@ -1980,17 +1980,7 @@ return (
     </div>
 )}
 
-		<div className="max-w-2xl mx-auto p-6">
-  <h1 className="text-xl font-bold mb-4">EMA70 RSI14 Pressure Detection</h1>
-
-  <textarea
-    className="w-full border p-2 rounded text-sm mb-4"
-    placeholder="Paste OHLC + EMA70 + RSI14 JSON array here..."
-    rows={8}
-    onChange={handleInput}
-  />
-
-  {/* 🧲 EMA70 Touch Today Display */}
+		{/* 🧲 EMA70 Touch Today Display */}
   {data.length > 0 && (
     <div className="mb-4 text-lg font-medium">
       🧲 Touched EMA70 Today:{' '}
@@ -2032,8 +2022,7 @@ return (
       ❌ No Pressure Detected
     </div>
   )}
-</div>
-
+  
 		
 	  
 
