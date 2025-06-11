@@ -4,17 +4,9 @@ interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
   
-  // === Bullish Conditions ===
-  ascendingSupportNearEMA70InBullish: boolean;
-  ema70AscendingFromSwingLow: boolean;
-  rsi14AscendingFromSwingLow: boolean;
-  rsi14BreakoutAboveSwingLow: boolean;
-
-  // === Bearish Conditions ===
-  descendingResistanceNearEMA70InBearish: boolean;
-  ema70DescendingFromSwingHigh: boolean;
-  rsi14DescendingFromSwingHigh: boolean;
-  rsi14BreakdownBelowSwingHigh: boolean;
+  bullishPressure: boolean;
+	bearishPressure: boolean;
+	
   
   breakout: boolean;
   bullishBreakout: boolean;
@@ -849,6 +841,39 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
     }
 
+function detectSellingPressureAfterEMATouchBullish(index: number, close: number[], low: number[], ema70: number[], rsi14: number[]): { point1: number, point2: number } | null {
+  for (let i = index; i >= 0; i--) {
+    // Candle touches EMA70 from above (bullish trend test)
+    if (low[i] <= ema70[i] && close[i] > ema70[i]) {
+      const point1 = rsi14[i]; // RSI at EMA70 touch (starting point)
+      // Scan forward from that candle
+      for (let j = i + 1; j < rsi14.length; j++) {
+        if (rsi14[j] < point1) {
+          return { point1, point2: rsi14[j] }; // Selling pressure detected
+        }
+      }
+      return null; // No selling pressure after EMA touch
+    }
+  }
+  return null; // No EMA touch found
+}
+
+function detectBuyingPressureAfterEMATouchBearish(index: number, close: number[], high: number[], ema70: number[], rsi14: number[]): { point1: number, point2: number } | null {
+  for (let i = index; i >= 0; i--) {
+    // Candle touches EMA70 from below (bearish trend test)
+    if (high[i] >= ema70[i] && close[i] < ema70[i]) {
+      const point1 = rsi14[i]; // RSI at EMA70 touch (starting point)
+      // Scan forward from that candle
+      for (let j = i + 1; j < rsi14.length; j++) {
+        if (rsi14[j] > point1) {
+          return { point1, point2: rsi14[j] }; // Buying pressure detected
+        }
+      }
+      return null; // No buying pressure after EMA touch
+    }
+  }
+  return null; // No EMA touch found
+}
 
 
 
@@ -1119,76 +1144,16 @@ const shouldTrade =
   todaysLowestLow <= lastEMA70 &&
   candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-	    const supportLows: number[] = [];
-const resistanceHighs: number[] = [];
-
-let bullishStartIndex = -1;
-let bearishStartIndex = -1;
-let lowestSwingLow = Infinity;
-let highestSwingHigh = -Infinity;
-
-// Step 1: Identify swing lows/highs near EMA70
-for (let i = 2; i < lows.length - 2; i++) {
-  const isSwingLow = lows[i] < lows[i - 1] && lows[i] < lows[i + 1];
-  const isSwingHigh = highs[i] > highs[i - 1] && highs[i] > highs[i + 1];
-  const isNearEMA = Math.abs(closes[i] - ema70[i]) / ema70[i] < 0.005;
-
-  if (isSwingLow && isNearEMA) {
-    supportLows.push(lows[i]);
-    if (lows[i] < lowestSwingLow) {
-      lowestSwingLow = lows[i];
-      bullishStartIndex = i;
-    }
-  }
-
-  if (isSwingHigh && isNearEMA) {
-    resistanceHighs.push(highs[i]);
-    if (highs[i] > highestSwingHigh) {
-      highestSwingHigh = highs[i];
-      bearishStartIndex = i;
-    }
-  }
+	const bullishPressure = detectSellingPressureAfterEMATouchBullish(data.length - 1, close, low, ema70, rsi14);
+if (bullishPressure) {
+  console.log(`Selling Pressure Detected: Point1=${bullishPressure.point1}, Point2=${bullishPressure.point2}`);
 }
 
-// === Bullish Signals ===
-const ema70AscendingFromSwingLow = bullishStartIndex !== -1 && bullishStartIndex < ema70.length - 1 &&
-  ema70.slice(bullishStartIndex).every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-
-const rsi14AscendingFromSwingLow = bullishStartIndex !== -1 && bullishStartIndex < rsi14.length - 1 &&
-  rsi14.slice(bullishStartIndex).every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-
-const rsi14BreakoutAboveSwingLow = bullishStartIndex !== -1 &&
-  rsi14[rsi14.length - 1] > rsi14[bullishStartIndex];
-
-const isSupportLowsAscending = supportLows.length >= 2 &&
-  supportLows.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
-
-const ascendingSupportNearEMA70InBullish =
-  trend === 'bullish' &&
-  ema70AscendingFromSwingLow &&
-  isSupportLowsAscending &&
-  rsi14AscendingFromSwingLow &&
-  rsi14BreakoutAboveSwingLow;
-
-// === Bearish Signals ===
-const ema70DescendingFromSwingHigh = bearishStartIndex !== -1 && bearishStartIndex < ema70.length - 1 &&
-  ema70.slice(bearishStartIndex).every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-
-const rsi14DescendingFromSwingHigh = bearishStartIndex !== -1 && bearishStartIndex < rsi14.length - 1 &&
-  rsi14.slice(bearishStartIndex).every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-
-const rsi14BreakdownBelowSwingHigh = bearishStartIndex !== -1 &&
-  rsi14[rsi14.length - 1] < rsi14[bearishStartIndex];
-
-const isResistanceHighsDescending = resistanceHighs.length >= 2 &&
-  resistanceHighs.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
-
-const descendingResistanceNearEMA70InBearish =
-  trend === 'bearish' &&
-  ema70DescendingFromSwingHigh &&
-  isResistanceHighsDescending &&
-  rsi14DescendingFromSwingHigh &&
-  rsi14BreakdownBelowSwingHigh;
+const bearishPressure = detectBuyingPressureAfterEMATouchBearish(data.length - 1, close, high, ema70, rsi14);
+if (bearishPressure) {
+  console.log(`Buying Pressure Detected: Point1=${bearishPressure.point1}, Point2=${bearishPressure.point2}`);
+}
+	    
 
 
 
@@ -1196,18 +1161,8 @@ const descendingResistanceNearEMA70InBearish =
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
 
-	 // Bullish
-  ascendingSupportNearEMA70InBullish,
-  ema70AscendingFromSwingLow,
-  rsi14AscendingFromSwingLow,
-  rsi14BreakoutAboveSwingLow,
-
-  // Bearish
-  descendingResistanceNearEMA70InBearish,
-  ema70DescendingFromSwingHigh,
-  rsi14DescendingFromSwingHigh,
-  rsi14BreakdownBelowSwingHigh,
-
+	bullishPressure,
+bearishPressure,
 	    
 	    
   breakout,
@@ -2011,65 +1966,62 @@ return (
     </div>
 )}
 
-		<p>
-  🧲 Touched EMA70 Today:{' '}
-  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-    {data.touchedEMA70Today ? 'Yes' : 'No'}
-  </span>
-</p>
+		<div className="max-w-2xl mx-auto p-6">
+  <h1 className="text-xl font-bold mb-4">EMA70 RSI14 Pressure Detection</h1>
+
+  <textarea
+    className="w-full border p-2 rounded text-sm mb-4"
+    placeholder="Paste OHLC + EMA70 + RSI14 JSON array here..."
+    rows={8}
+    onChange={handleInput}
+  />
+
+  {/* 🧲 EMA70 Touch Today Display */}
+  {data.length > 0 && (
+    <div className="mb-4 text-lg font-medium">
+      🧲 Touched EMA70 Today:{' '}
+      <span
+        className={
+          touchedEMA70Today ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold'
+        }
+      >
+        {touchedEMA70Today ? 'Yes' : 'No'}
+      </span>
+    </div>
+  )}
+
+  {/* ✅ Bullish Result */}
+  {bullishResult && (
+    <div className="mt-4 p-4 bg-green-100 rounded shadow">
+      <h2 className="text-lg font-semibold text-green-700">
+        Bullish EMA70 Touch: ✅ Selling Pressure
+      </h2>
+      <p className="text-green-800">Point1 RSI: {bullishResult.point1}</p>
+      <p className="text-green-800">Point2 RSI: {bullishResult.point2}</p>
+    </div>
+  )}
+
+  {/* 🔻 Bearish Result */}
+  {bearishResult && (
+    <div className="mt-4 p-4 bg-red-100 rounded shadow">
+      <h2 className="text-lg font-semibold text-red-700">
+        Bearish EMA70 Touch: ✅ Buying Pressure
+      </h2>
+      <p className="text-red-800">Point1 RSI: {bearishResult.point1}</p>
+      <p className="text-red-800">Point2 RSI: {bearishResult.point2}</p>
+    </div>
+  )}
+
+  {/* ❌ No Detection */}
+  {!bullishResult && !bearishResult && data.length > 0 && (
+    <div className="mt-4 p-4 bg-gray-100 rounded shadow text-center text-gray-600 text-sm">
+      ❌ No Pressure Detected
+    </div>
+  )}
+</div>
 
 		
-		{/* === Bullish Conditions === */}
-<p>
-  📈 Ascending Support near EMA70 (Bullish):{' '}
-  <span className={data.ascendingSupportNearEMA70InBullish ? 'text-green-400' : 'text-red-400'}>
-    {data.ascendingSupportNearEMA70InBullish ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  🔼 EMA70 Ascending from Swing Low:{' '}
-  <span className={data.ema70AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.ema70AscendingFromSwingLow ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  📊 RSI14 Ascending from Swing Low:{' '}
-  <span className={data.rsi14AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14AscendingFromSwingLow ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  🚀 RSI14 Breakout Above Swing Low:{' '}
-  <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'} // if yes, strong bullish when bullish trend and sell when bearish trend
-  </span>
-</p>
-
-{/* === Bearish Conditions === */}
-<p className="mt-4">
-  📉 Descending Resistance near EMA70 (Bearish):{' '}
-  <span className={data.descendingResistanceNearEMA70InBearish ? 'text-green-400' : 'text-red-400'}>
-    {data.descendingResistanceNearEMA70InBearish ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  🔽 EMA70 Descending from Swing High:{' '}
-  <span className={data.ema70DescendingFromSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.ema70DescendingFromSwingHigh ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  📊 RSI14 Descending from Swing High:{' '}
-  <span className={data.rsi14DescendingFromSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14DescendingFromSwingHigh ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  📉 RSI14 Breakdown Below Swing High:{' '}
-  <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} // if yes, strong bearish when bearish trend and buy when bullish trend
-  </span>
-</p>
+	  
 
 
 
