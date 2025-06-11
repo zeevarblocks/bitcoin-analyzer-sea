@@ -4,9 +4,12 @@ interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
   
-  bullishPressure: { point1: number; point2: number };
-	bearishPressure: { point1: number; point2: number };
-	
+    // === EMA70 Pressure Detections ===
+  pressureDetections: {
+    type: 'bullish' | 'bearish';
+    point1: number;
+    point2: number;
+  }[];
   
   breakout: boolean;
   bullishBreakout: boolean;
@@ -1144,7 +1147,9 @@ const shouldTrade =
   todaysLowestLow <= lastEMA70 &&
   candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
 
-	const bullishPressure = detectSellingPressureAfterEMATouchBullish(
+	const pressureDetections = [];
+
+const bullishPressure = detectSellingPressureAfterEMATouchBullish(
   candlesToday.length - 1,
   closes,
   lows,
@@ -1153,6 +1158,11 @@ const shouldTrade =
 );
 
 if (bullishPressure) {
+  pressureDetections.push({
+    type: 'bullish',
+    point1: bullishPressure.point1,
+    point2: bullishPressure.point2,
+  });
   console.log(`Selling Pressure Detected: Point1=${bullishPressure.point1}, Point2=${bullishPressure.point2}`);
 }
 
@@ -1165,6 +1175,11 @@ const bearishPressure = detectBuyingPressureAfterEMATouchBearish(
 );
 
 if (bearishPressure) {
+  pressureDetections.push({
+    type: 'bearish',
+    point1: bearishPressure.point1,
+    point2: bearishPressure.point2,
+  });
   console.log(`Buying Pressure Detected: Point1=${bearishPressure.point1}, Point2=${bearishPressure.point2}`);
 }
 	    
@@ -1175,9 +1190,7 @@ if (bearishPressure) {
   // === Trend & Breakout ===
   trend,                      // 'bullish' | 'bearish' | 'neutral'
 
-	bullishPressure,
-bearishPressure,
-	    
+	pressureDetections,
 	    
   breakout,
   bullishBreakout,
@@ -1988,35 +2001,39 @@ return (
   </span>
 </p>
 		
+{/* ✅ Detected EMA70 Pressure */}
+{data.pressureDetections?.length > 0 && (
+  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
+    <p className="text-sm font-medium text-blue-300 mb-2">🧲 EMA70 Pressure Detected</p>
+    <ul className="space-y-1">
+      {data.pressureDetections.map((item, idx) => (
+        <li
+          key={idx}
+          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+            item.type === 'bullish'
+              ? 'bg-green-800 text-green-200'
+              : 'bg-red-800 text-red-200'
+          }`}
+        >
+          <span className="text-sm">
+            {item.type === 'bullish' ? '🟢 Bullish Touch' : '🔴 Bearish Touch'}
+          </span>
+          <span className="ml-auto font-mono text-xs">
+            RSI {item.point1} → {item.point2}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
 
-  {/* ✅ Bullish Result */}
-  {bullishPressure && (
-    <div className="mt-4 p-4 bg-green-100 rounded shadow">
-      <h2 className="text-lg font-semibold text-green-700">
-        Bullish EMA70 Touch: ✅ Selling Pressure
-      </h2>
-      <p className="text-green-800">Point1 RSI: {bullishPressure.point1}</p>
-      <p className="text-green-800">Point2 RSI: {bullishPressure.point2}</p>
-    </div>
-  )}
-
-  {/* 🔻 Bearish Result */}
-  {bearishPressure && (
-    <div className="mt-4 p-4 bg-red-100 rounded shadow">
-      <h2 className="text-lg font-semibold text-red-700">
-        Bearish EMA70 Touch: ✅ Buying Pressure
-      </h2>
-      <p className="text-red-800">Point1 RSI: {bearishPressure.point1}</p>
-      <p className="text-red-800">Point2 RSI: {bearishPressure.point2}</p>
-    </div>
-  )}
-
-  {/* ❌ No Detection */}
-  {!bullishPressure && !bearishPressure && data.length > 0 && (
-    <div className="mt-4 p-4 bg-gray-100 rounded shadow text-center text-gray-600 text-sm">
-      ❌ No Pressure Detected
-    </div>
-  )}
+{/* ❌ No Detection */}
+{(!data.pressureDetections || data.pressureDetections.length === 0) && data.length > 0 && (
+  <div className="mt-4 p-4 bg-gray-100 rounded shadow text-center text-gray-600 text-sm">
+    ❌ No Pressure Detected
+  </div>
+)}
+  
   
 		
 	  
