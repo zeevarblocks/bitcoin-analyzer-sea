@@ -1991,29 +1991,29 @@ return (
   )}
 
   {/* ✅ Bullish Result */}
-  {bullishResult && (
+  {bullishPressure && (
     <div className="mt-4 p-4 bg-green-100 rounded shadow">
       <h2 className="text-lg font-semibold text-green-700">
         Bullish EMA70 Touch: ✅ Selling Pressure
       </h2>
-      <p className="text-green-800">Point1 RSI: {bullishResult.point1}</p>
-      <p className="text-green-800">Point2 RSI: {bullishResult.point2}</p>
+      <p className="text-green-800">Point1 RSI: {bullishPressure.point1}</p>
+      <p className="text-green-800">Point2 RSI: {bullishPressure.point2}</p>
     </div>
   )}
 
   {/* 🔻 Bearish Result */}
-  {bearishResult && (
+  {bearishPressure && (
     <div className="mt-4 p-4 bg-red-100 rounded shadow">
       <h2 className="text-lg font-semibold text-red-700">
         Bearish EMA70 Touch: ✅ Buying Pressure
       </h2>
-      <p className="text-red-800">Point1 RSI: {bearishResult.point1}</p>
-      <p className="text-red-800">Point2 RSI: {bearishResult.point2}</p>
+      <p className="text-red-800">Point1 RSI: {bearishPressure.point1}</p>
+      <p className="text-red-800">Point2 RSI: {bearishPressure.point2}</p>
     </div>
   )}
 
   {/* ❌ No Detection */}
-  {!bullishResult && !bearishResult && data.length > 0 && (
+  {!bullishPressure && !bearishPressure && data.length > 0 && (
     <div className="mt-4 p-4 bg-gray-100 rounded shadow text-center text-gray-600 text-sm">
       ❌ No Pressure Detected
     </div>
