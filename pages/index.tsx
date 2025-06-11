@@ -69,6 +69,12 @@ interface SignalData {
     price: number;
     index: number;
   }[];
+	 // === EMA Cross Signals ===
+  sessionCrosses?: {
+    type: 'bullish' | 'bearish';
+    price: number;
+    timestamp: number;
+  } | null;
 
    momentumSlowing: 'bullish' | 'bearish' | null;
      shouldTrade: boolean;
@@ -710,6 +716,52 @@ function findRecentCrossings(
   return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
+// Utility: Convert to UTC time (with -8 offset to align with session start)
+const getUTCMillis = (y: number, m: number, d: number, hPH: number, min: number) =>
+  Date.UTC(y, m, d, hPH - 8, min);
+
+// Get today’s and previous custom session time ranges
+function calcCustomSessionBounds() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth();
+  const date = now.getUTCDate();
+
+  const today8AM_UTC = getUTCMillis(year, month, date, 8, 0);
+  const tomorrow745AM_UTC = getUTCMillis(year, month, date + 1, 7, 45);
+
+  let sessionStart: number, sessionEnd: number;
+  if (now.getTime() >= today8AM_UTC) {
+    sessionStart = today8AM_UTC;
+    sessionEnd = tomorrow745AM_UTC;
+  } else {
+    const yesterday8AM_UTC = getUTCMillis(year, month, date - 1, 8, 0);
+    const today745AM_UTC = getUTCMillis(year, month, date, 7, 45);
+    sessionStart = yesterday8AM_UTC;
+    sessionEnd = today745AM_UTC;
+  }
+
+  const prevSessionStart = getUTCMillis(year, month, date - 1, 8, 0);
+  const prevSessionEnd = getUTCMillis(year, month, date, 7, 45);
+
+  return { sessionStart, sessionEnd, prevSessionStart, prevSessionEnd };
+}
+
+// Filter crossing signals to only include those inside the session window
+function filterCrossingsByPeriod(
+  crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[],
+  timestamps: number[],
+  periodStart: number,
+  periodEnd: number
+) {
+  return crossings.filter(c => {
+    const ts = timestamps[c.index];
+    return ts >= periodStart && ts <= periodEnd;
+  });
+}
+
+
+
 
 
 // Detect if there's a valid bullish trend first
@@ -1061,7 +1113,23 @@ if (abcSignal === 'sell' && abcPattern) {
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
 }  
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
+const { sessionStart, sessionEnd } = calcCustomSessionBounds();
+
+const timestamps = candles.map(c => c.timestamp);
+const closes = candles.map(c => c.close);
+const ema14 = calculateEMA(closes, 14);  // Use your own EMA implementation
+const ema70 = calculateEMA(closes, 70);
+
+const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+const sessionCrosses = filterCrossingsByPeriod(recentCrossings, timestamps, sessionStart, sessionEnd);
+
+sessionCrosses.forEach(c =>
+  console.log(
+    `${c.type.toUpperCase()} cross @ $${c.price.toFixed(2)} — ${new Date(timestamps[c.index]).toISOString()}`
+  )
+);
+
+	    
 
 /* ---------- 1) PRE-REQS ---------- */
 const rsiPrev = rsi14.at(-2)!;
@@ -1256,7 +1324,8 @@ const descendingResistanceNearEMA70InBearish =
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
-
+sessionCrosses,
+	    
       momentumSlowing,
         shouldTrade:
     divergence &&
@@ -2036,37 +2105,38 @@ return (
 
 
 
+	{/* 🔄 EMA Cross in Current Session */}
+{data.sessionCrosses && (
+  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
+    <p className="text-sm font-medium text-blue-300 mb-2">
+      🔄 EMA Cross (Today’s Session)
+    </p>
+    <div
+      className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+        data.sessionCrosses.type === 'bullish'
+          ? 'bg-green-800 text-green-200'
+          : 'bg-red-800 text-red-200'
+      }`}
+    >
+      <span className="text-sm">
+        {data.sessionCrosses.type === 'bullish'
+          ? '🟢 Bullish Cross'
+          : '🔴 Bearish Cross'}
+      </span>
+      <span className="ml-auto font-mono text-xs">
+        @ ${data.sessionCrosses.price.toFixed(9)}
+      </span>
+    </div>
+    <p className="text-xs text-gray-400 mt-1">
+      ⏱ {new Date(data.sessionCrosses.timestamp).toLocaleString()}
+    </p>
+  </div>
+)}
 		
 
           
 
-{/* 🔄 Recent EMA Crossings */}
-{data.recentCrossings?.length > 0 && (
-  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
-    <p className="text-sm font-medium text-blue-300 mb-2">
-      🔄 Recent EMA Crossings
-    </p>
-    <ul className="space-y-1">
-      {data.recentCrossings.map((cross, idx) => (
-        <li
-          key={idx}
-          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
-            cross.type === 'bullish'
-              ? 'bg-green-800 text-green-200'
-              : 'bg-red-800 text-red-200'
-          }`}
-        >
-          <span className="text-sm">
-            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
-          </span>
-          <span className="ml-auto font-mono text-xs">
-            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
-          </span>
-        </li>
-      ))}
-    </ul>
-  </div>
-)} 
+
 		
           
         {/* Trade Link */}
