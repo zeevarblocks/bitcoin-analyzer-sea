@@ -844,38 +844,48 @@ function detectBullishContinuationWithEnd(
   return { continuation: false, ended: false, reason: 'No valid bullish continuation structure or RSI rejection found' };
     }
 
-function detectSellingPressureAfterEMATouchBullish(index: number, close: number[], low: number[], ema70: number[], rsi14: number[]): { point1: number, point2: number } | null {
+// Function: Bullish (Selling Pressure)
+function detectSellingPressureAfterEMATouchBullish(
+  index: number,
+  close: number[],
+  low: number[],
+  ema70: number[],
+  rsi14: number[]
+): { point1: number; point2: number } | null {
   for (let i = index; i >= 0; i--) {
-    // Candle touches EMA70 from above (bullish trend test)
     if (low[i] <= ema70[i] && close[i] > ema70[i]) {
-      const point1 = rsi14[i]; // RSI at EMA70 touch (starting point)
-      // Scan forward from that candle
+      // EMA touch from above
       for (let j = i + 1; j < rsi14.length; j++) {
-        if (rsi14[j] < point1) {
-          return { point1, point2: rsi14[j] }; // Selling pressure detected
+        if (rsi14[j] < rsi14[i]) {
+          return { point1: i, point2: j }; // return candle indexes
         }
       }
-      return null; // No selling pressure after EMA touch
+      return null;
     }
   }
-  return null; // No EMA touch found
+  return null;
 }
 
-function detectBuyingPressureAfterEMATouchBearish(index: number, close: number[], high: number[], ema70: number[], rsi14: number[]): { point1: number, point2: number } | null {
+// Function: Bearish (Buying Pressure)
+function detectBuyingPressureAfterEMATouchBearish(
+  index: number,
+  close: number[],
+  high: number[],
+  ema70: number[],
+  rsi14: number[]
+): { point1: number; point2: number } | null {
   for (let i = index; i >= 0; i--) {
-    // Candle touches EMA70 from below (bearish trend test)
     if (high[i] >= ema70[i] && close[i] < ema70[i]) {
-      const point1 = rsi14[i]; // RSI at EMA70 touch (starting point)
-      // Scan forward from that candle
+      // EMA touch from below
       for (let j = i + 1; j < rsi14.length; j++) {
-        if (rsi14[j] > point1) {
-          return { point1, point2: rsi14[j] }; // Buying pressure detected
+        if (rsi14[j] > rsi14[i]) {
+          return { point1: i, point2: j }; // return candle indexes
         }
       }
-      return null; // No buying pressure after EMA touch
+      return null;
     }
   }
-  return null; // No EMA touch found
+  return null;
 }
 
 
@@ -1163,7 +1173,9 @@ if (bullishPressure) {
     point1: bullishPressure.point1,
     point2: bullishPressure.point2,
   });
-  console.log(`Selling Pressure Detected: Point1=${bullishPressure.point1}, Point2=${bullishPressure.point2}`);
+  console.log(
+    `Selling Pressure Detected: Candle Indexes Point1=${bullishPressure.point1}, Point2=${bullishPressure.point2}`
+  );
 }
 
 const bearishPressure = detectBuyingPressureAfterEMATouchBearish(
@@ -1180,8 +1192,11 @@ if (bearishPressure) {
     point1: bearishPressure.point1,
     point2: bearishPressure.point2,
   });
-  console.log(`Buying Pressure Detected: Point1=${bearishPressure.point1}, Point2=${bearishPressure.point2}`);
+  console.log(
+    `Buying Pressure Detected: Candle Indexes Point1=${bearishPressure.point1}, Point2=${bearishPressure.point2}`
+  );
 }
+	    
 	    
 
 
@@ -2011,6 +2026,20 @@ return (
   </span>
 </p>
 		
+{data.pressureDetections?.length === 0 && (
+  <div className="pt-4 border-t border-white/10 space-y-6">
+    <div className="space-y-4">
+      <div className="text-gray-400 space-y-2">
+        ❌ <span className="font-semibold">No Pressure Detected</span>
+        <p className="text-sm text-white/70 ml-4 mt-1">
+          • No selling or buying pressure found<br />
+          • Based on EMA touches and RSI conditions
+        </p>
+      </div>
+    </div>
+  </div>
+)}
+
 {data.pressureDetections?.length > 0 && (
   <div className="pt-4 border-t border-white/10 space-y-6">
     <div className="space-y-4">
