@@ -87,36 +87,38 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
+
+  // === Calculated Indicators (optional) ===
   ema14?: number;
   ema70?: number;
-  time: number;      // seconds since epoch (for lightweight‑charts)
-  timestamp: number; // ms since epoch (internal use)
+  rsi?: number;
+  macd?: number;
+  signal?: number;
+
+  // === Time Information ===
+  time: number;       // readable timestamp (e.g. Unix in ms or UTC)
+  timestamp: number;  // same as `time` or used as a sortable numeric ID
 }
 
-/**
- * Fetch Binance USDT perpetual futures candles.
- * @param symbol  e.g. 'BTCUSDT'
- * @param interval e.g. '15m', '1h', '1d'
- */
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;  // keep same behaviour
-  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`;
-
-  const response = await fetch(url);
+  const limit = interval === '1d' ? 2 : 500;
+  const response = await fetch(
+    `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
+  );
   const data = await response.json();
 
-  if (!Array.isArray(data)) throw new Error('Invalid candle data');
+  if (!data.data || !Array.isArray(data.data)) throw new Error('Invalid candle data');
 
-  // Binance klines are oldest → newest already
-  return data.map((d: any[]) => ({
-    time: Math.floor(+d[0] / 1000), // seconds for chart
-    timestamp: +d[0],               // ms for internal calculations
-    open: +d[1],
-    high: +d[2],
-    low: +d[3],
-    close: +d[4],
-    volume: +d[5],
-  }));
+  return data.data
+    .map((d: string[]) => ({
+      timestamp: +d[0],
+      open: +d[1],
+      high: +d[2],
+      low: +d[3],
+      close: +d[4],
+      volume: +d[5],
+    }))
+    .reverse();
 }
 
 function calculateEMA(data: number[], period: number): number[] {
@@ -851,26 +853,25 @@ function detectBullishContinuationWithEnd(
 
 
 export async function getServerSideProps() {
-  async function fetchTopPairs(limit = 100) {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    const data = await res.json();
+  async function fetchTopPairs(limit = 100): Promise<string[]> {
+    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const data = await response.json();
 
-    const sorted = data
-      .filter((t) => t.symbol.endsWith('USDT') && !t.symbol.includes('_')) // perpetual USDT only
-      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, limit)
-      .map((t) => t.symbol);
+    const sorted = data.data
+      .filter((ticker: any) => ticker.instId.endsWith('USDT')) // ✅ Only USDT pairs
+      .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
+      .slice(0, limit);
 
-    return sorted;
+    return sorted.map((ticker: any) => ticker.instId);
   }
 
-  const symbols = await fetchTopPairs(100);
-  const signals = {};
+const symbols = await fetchTopPairs(100);
+
+  const signals: Record<string, SignalData> = {};
 
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
-      const candles1d = await fetchCandles(symbol, '1d');
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
@@ -1269,10 +1270,10 @@ const descendingResistanceNearEMA70InBearish =
 };  
    
 
-   } catch (err) {
-      console.error('Error fetching signal for', symbol, err);
+    } catch (err) {
+      console.error(`Error fetching ${symbol}:`, err);
     }
-  }
+    }
 
   const defaultSymbol = symbols[0];
 
@@ -1359,38 +1360,39 @@ const scrollToTop = () => {
 
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-  setIsLoadingPairs(true);
-  try {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    const data = await res.json();
+    setIsLoadingPairs(true);
+    try {
+      const response = await fetch(
+        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+      );
+      const data = await response.json();
+      const sortedPairs = data.data
+        .sort(
+          (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
+        )
+        .map((item: any) => item.instId);
 
-    const sortedPairs = data
-      .filter((item) => item.symbol.endsWith('USDT') && !item.symbol.includes('_'))
-      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .map((item) => item.symbol);
+      setPairs(sortedPairs);
 
-    setPairs(sortedPairs);
-    await fetchSignals(sortedPairs);
+      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+      const validSaved = savedPairs.filter(
+        (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      );
 
-    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-    const validSaved = savedPairs.filter(
-      (p) => liveSignals?.[p]?.currentPrice !== undefined
-    );
-
-    if (validSaved.length) {
-      setSelectedPairs(validSaved);
-    } else {
-      const topValid = sortedPairs
-        .filter((p) => liveSignals?.[p]?.currentPrice !== undefined)
-        .slice(0, 100);
-      setSelectedPairs(topValid);
+      if (validSaved.length > 0) {
+        setSelectedPairs(validSaved);
+      } else {
+        const topValidPairs = sortedPairs
+          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          .slice(0, 100);
+        setSelectedPairs(topValidPairs);
+      }
+    } catch (error) {
+      console.error('Error fetching trading pairs:', error);
+    } finally {
+      setIsLoadingPairs(false);
     }
-  } catch (err) {
-    console.error('Error fetching pairs:', err);
-  } finally {
-    setIsLoadingPairs(false);
-  }
-}, [liveSignals]);
+  }, [signals]);
   
  
   const handleRefresh = async () => {
@@ -2017,25 +2019,6 @@ return (
 </p>
 
 		
-		{/* === Bullish Conditions === */}
-<p>
-  📈 Ascending Support near EMA70 (Bullish):{' '}
-  <span className={data.ascendingSupportNearEMA70InBullish ? 'text-green-400' : 'text-red-400'}>
-    {data.ascendingSupportNearEMA70InBullish ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  🔼 EMA70 Ascending from Swing Low:{' '}
-  <span className={data.ema70AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.ema70AscendingFromSwingLow ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  📊 RSI14 Ascending from Swing Low:{' '}
-  <span className={data.rsi14AscendingFromSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14AscendingFromSwingLow ? 'Yes' : 'No'}
-  </span>
-</p>
 <p>
   🚀 RSI14 Breakout Above Swing Low:{' '}
   <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
@@ -2043,25 +2026,7 @@ return (
   </span>
 </p>
 
-{/* === Bearish Conditions === */}
-<p className="mt-4">
-  📉 Descending Resistance near EMA70 (Bearish):{' '}
-  <span className={data.descendingResistanceNearEMA70InBearish ? 'text-green-400' : 'text-red-400'}>
-    {data.descendingResistanceNearEMA70InBearish ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  🔽 EMA70 Descending from Swing High:{' '}
-  <span className={data.ema70DescendingFromSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.ema70DescendingFromSwingHigh ? 'Yes' : 'No'}
-  </span>
-</p>
-<p>
-  📊 RSI14 Descending from Swing High:{' '}
-  <span className={data.rsi14DescendingFromSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14DescendingFromSwingHigh ? 'Yes' : 'No'}
-  </span>
-</p>
+
 <p>
   📉 RSI14 Breakdown Below Swing High:{' '}
   <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
