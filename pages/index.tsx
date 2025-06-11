@@ -1445,7 +1445,7 @@ const scrollToTop = () => {
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
-      if (activeFilter === 'tradeSignal') return data.ema70Bounce && data.divergenceFromLevel && data.recentCrossings;
+      if (activeFilter === 'tradeSignal') return data.ema70Bounce && data.recentCrossings;
       if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
