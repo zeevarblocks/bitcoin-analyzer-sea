@@ -935,20 +935,24 @@ const scrollToTop = () => {
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
-  console.log('Fetching pairs...'); // Added log statement
+  const fetchPairs = useCallback(async () => {
+  setIsLoadingPairs(true);
   try {
-    // ... (Your fetch logic)
-    console.log('Fetched data:', data); // Added log statement
-    const sortedPairs = // ...(your filtering and sorting)
-    console.log('Sorted pairs:', sortedPairs); // Added log statement
-    setPairs(sortedPairs);
-    console.log('Pairs set:', pairs); // Added log statement //Check pairs after setPairs is called
-    // ...(rest of your logic)
-
+    const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+    if (!response.ok) {
+      const errorText = await response.text(); // Get error details from the response.
+      throw new Error(`API request failed (${response.status}): ${errorText}`);
+    }
+    const data = await response.json();
+    // ... (rest of your code)
   } catch (error) {
-    console.error('Error fetching trading pairs:', error);
-  } finally {
+    console.error('Error fetching futures trading pairs:', error);
+    alert(`Error fetching pairs: ${error.message}`); // Alert the user
     setIsLoadingPairs(false);
+    return; //Important: stop execution if there's an error.
+  }
+  setIsLoadingPairs(false);
+}, []);
   }
 }, [signals]);
 
