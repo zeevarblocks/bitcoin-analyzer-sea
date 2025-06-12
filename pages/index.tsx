@@ -3,7 +3,6 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
-  candles: Candle[];
 
   breakout: boolean;
   bullishBreakout: boolean;
@@ -658,8 +657,6 @@ export async function getServerSideProps() {
     for (const symbol of symbols) {
       const candles = await fetchCandles(symbol, '15m');
       if (!candles.length) continue;
-
-      const currentPrice = candles[candles.length - 1].close;
         
                 const closes = candles.map(c => c.close);
                 const highs = candles.map(c => c.high);
@@ -802,8 +799,7 @@ export async function getServerSideProps() {
                 const recentCrossings = findRecentCrossings(ema14, ema70, closes);
 
                 signals[symbol] = {
-                    trend,
-                  candles,
+                    trend,        
                     breakout,
                     bullishBreakout,
                     bearishBreakout,
