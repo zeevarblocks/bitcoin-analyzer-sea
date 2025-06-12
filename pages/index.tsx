@@ -1614,6 +1614,7 @@ return (
 >
   <span>📉</span> {/* Level-based divergence — potential trap signal */}
   <span>divergenceFromLevel</span>
+	</button>
 
           <button
     onClick={() => setActiveFilter('bullishContinuation')}
