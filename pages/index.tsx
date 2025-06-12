@@ -627,35 +627,18 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopPairs(limit = 100): Promise<string[]> {
-    let sorted: any[] = [];
-
-try {
-  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-  if (!res.ok) throw new Error(`Status ${res.status}`);
-  const data = await res.json();
-
-  sorted = data
-    .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
-    .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-    .slice(0, 100); // or however many you need
-} catch (err) {
-  console.error("❌ Failed to fetch Binance data on Vercel:", err);
-}
-
-// ✅ This is now safe — sorted is always defined
-return sorted.map((ticker: any) => ticker.symbol);
-                                         }
-
 export async function getServerSideProps() {
-    try {
-        const symbols = await fetchTopPairs(100);
-        const signals: Record<string, SignalData> = {};
-
+  try {
+    const symbols = await fetchTopPairs(100);
+    const signals: Record<string, SignalData> = {};
+   
         for (const symbol of symbols) {
             try {
                 const candles = await fetchCandles(symbol, '15m');
-                if (!candles || candles.length === 0) continue;
+                if (!candles || candles.length === 0) {
+          console.warn(`⚠️ Skipping ${symbol} due to empty candles`);
+          continue;
+        }
 
                 const closes = candles.map(c => c.close);
                 const highs = candles.map(c => c.high);
@@ -829,9 +812,9 @@ export async function getServerSideProps() {
                     recentCrossings,
                     url: `https://okx.com/join/96631749`,
                 };
-            } catch (err) {
-                console.error('❌ Server Error in per-symbol processing:', err);
-            }
+             } catch (error) {
+        console.error(`❌ Error processing ${symbol}:`, error);
+      }
         }
 
         const defaultSymbol = symbols.length > 0 ? symbols[0] : null;
@@ -843,8 +826,8 @@ export async function getServerSideProps() {
                 defaultSymbol,
             },
         };
-    } catch (err) {
-        console.error('❌ Server Error in getServerSideProps:', err);
+      } catch (error) {
+    console.error("❌ getServerSideProps failed completely:", error);
         return {
             props: {
                 symbols: [],
