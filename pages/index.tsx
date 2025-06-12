@@ -1293,22 +1293,13 @@ type FilterType =
   | null
   | 'bullishContinuation'
   | 'bearishContinuation'
-  | 'ema14Bounce'
-  | 'ema70Bounce'
-  | 'ema14&70Bounce' // Combined EMA14 & EMA70 bounce filter
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
-  | 'recentCrossings'
   | 'bullishBreakout'
   | 'bearishBreakout'
-  |	'abcSignal'
-  |	'crossSignal'
-  |	'abcSignal&crossSignal'
-  |	'touchedEMA70Today'
-  |	'breakout'
-  |	'touchedEMA70Today&breakout'
-	| 'latestCross';
+  |	'touchedEMA70Today';
+
 
 export default function SignalChecker({
   signals,
@@ -1445,11 +1436,7 @@ const scrollToTop = () => {
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
-      if (activeFilter === 'latestCross') return latestCross;
-      if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
-      if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
-      if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
-      if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
+	if (activeFilter === 'touchedEMA70Today') return data.touchedEMA70Today;
       return true;  
     });
 
@@ -1627,28 +1614,7 @@ return (
 >
   <span>📉</span> {/* Level-based divergence — potential trap signal */}
   <span>divergenceFromLevel</span>
-</button>
-          <button
-  onClick={() => setActiveFilter('latestCross')}
-  className="bg-gray-800 hover:bg-yellow-600 text-violet-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>tradeSignal</span>
-</button>
-          <button
-  onClick={() => setActiveFilter('ema14Bounce')}
-  className="bg-gray-800 hover:bg-purple-600 text-indigo-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>ema14Bounce</span>
-</button>
-          <button
-  onClick={() => setActiveFilter('ema14&70Bounce')}
-  className="bg-gray-800 hover:bg-orange-600 text-cyan-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
->
-  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
-  <span>ema14&70Bounce</span>
-</button>
+
           <button
     onClick={() => setActiveFilter('bullishContinuation')}
     className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
@@ -1665,20 +1631,12 @@ return (
     <span>bearishContinuation</span>
   </button>
 
-          <button
-    onClick={() => setActiveFilter('abcSignal&crossSignal')}
+	<button
+    onClick={() => setActiveFilter('touchedEMA70Today')}
     className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📉</span>
-    <span>abcdSignal&crossSignal</span>
-  </button>
-
-          <button
-    onClick={() => setActiveFilter('touchedEMA70Today&breakout')}
-    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>📉</span>
-    <span>touchedEMA70Today&breakout</span>
+    <span>touchedEMA70Today</span>
   </button>
                
 </div>
