@@ -68,6 +68,7 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
+pattern?: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
   }[];
 
    momentumSlowing: 'bullish' | 'bearish' | null;
@@ -2045,24 +2046,32 @@ return (
     <ul className="space-y-1">
       {data.recentCrossings.map((cross, idx) => {
         const isReversal = idx === data.recentCrossings.length - 1;
+        const isBullish = cross.type === 'bullish';
 
         return (
           <li
             key={idx}
-            className={`flex items-center gap-3 px-2 py-1 rounded-md ${
-              cross.type === 'bullish'
-                ? 'bg-green-800 text-green-200'
-                : 'bg-red-800 text-red-200'
+            className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-2 py-1 rounded-md ${
+              isBullish ? 'bg-green-800 text-green-200' : 'bg-red-800 text-red-200'
             }`}
           >
-            <span className="text-sm font-medium">
-              {isReversal
-                ? `🔁 Reversal ${cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross`
-                : cross.type === 'bullish'
-                ? '🟢 Bullish Cross'
-                : '🔴 Bearish Cross'}
-            </span>
-            <span className="ml-auto font-mono text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {isReversal
+                  ? `🔁 Reversal ${isBullish ? 'Bullish' : 'Bearish'} Cross`
+                  : isBullish
+                  ? '🟢 Bullish Cross'
+                  : '🔴 Bearish Cross'}
+              </span>
+
+              {cross.pattern && (
+                <span className="text-xs italic opacity-70 ml-2">
+                  ({cross.pattern.replace('_', ' ')})
+                </span>
+              )}
+            </div>
+
+            <span className="ml-auto font-mono text-xs sm:mt-0">
               @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
             </span>
           </li>
