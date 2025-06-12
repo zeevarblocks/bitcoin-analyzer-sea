@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
@@ -68,6 +70,41 @@ interface Candle {
   timestamp: number; 
 }
 
+async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
+  const limit = interval === '1d' ? 2 : 500;
+
+  try {
+    const response = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid candle data format');
+    }
+
+    return data.map((d: any[]) => {
+      const ts = +d[0];
+      return {
+        timestamp: ts,
+        time: ts,
+        open: +d[1],
+        high: +d[2],
+        low: +d[3],
+        close: +d[4],
+        volume: +d[5],
+      };
+    }).reverse();
+  } catch (error) {
+    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
+    return []; // Return empty so main app doesn’t crash
+  }
+}
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
@@ -590,67 +627,29 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;
+async function fetchTopPairs(limit = 100): Promise<string[]> {
+    let sorted: any[] = [];
 
-  try {
-    const response = await fetch(
-      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
-    );
+try {
+  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+  if (!res.ok) throw new Error(`Status ${res.status}`);
+  const data = await res.json();
 
-    if (!response.ok) {
-      throw new Error(`Binance Futures candle fetch failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('Invalid or empty candle array from Binance Futures');
-    }
-
-    return data.map((d: any[]) => {
-      const ts = +d[0];
-      return {
-        timestamp: ts,
-        time: ts,
-        open: +d[1],
-        high: +d[2],
-        low: +d[3],
-        close: +d[4],
-        volume: +d[5],
-      };
-    });
-  } catch (error) {
-    console.error('Error fetching Futures candles:', error);
-    return [];
-  }
+  sorted = data
+    .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
+    .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, 100); // or however many you need
+} catch (err) {
+  console.error("❌ Failed to fetch Binance data on Vercel:", err);
 }
 
-async function fetchTopPairs(limit = 1): Promise<string[]> {
-  try {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-
-    const data = await res.json();
-
-    const sorted = data
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // Filter only USDT futures
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // Sort by volume
-      .slice(0, limit); // Limit to top N
-
-    console.log('Top Futures Pairs:', sorted.map(t => t.symbol));
-
-    return sorted.map(ticker => ticker.symbol);
-  } catch (err) {
-    console.error('❌ Error fetching Binance Futures data:', err);
-    return [];
-  }
-}
-
+// ✅ This is now safe — sorted is always defined
+return sorted.map((ticker: any) => ticker.symbol);
+                                         }
 
 export async function getServerSideProps() {
     try {
-        const symbols = await fetchTopPairs(1);
+        const symbols = await fetchTopPairs(100);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
@@ -863,7 +862,8 @@ export async function getServerSideProps() {
 
 
 // In the component SignalChecker, just render the two new fields like this:
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
 
 type FilterType =
   | null
@@ -884,7 +884,8 @@ export default function SignalChecker({
   defaultSignals,
 }: {
   signals: Record<string, SignalData>;
-  defaultSignals: SignalData[]; }) {
+  defaultSignals: SignalData[];
+}) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -893,7 +894,7 @@ export default function SignalChecker({
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const resetToggles = () => {
   setSelectedPairs([]);
@@ -931,7 +932,7 @@ const scrollToTop = () => {
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
     try {
-      const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
       const data = await response.json();
       console.log('Fetched Binance data:', data);
 
@@ -952,7 +953,7 @@ const scrollToTop = () => {
       } else {
         const topValidPairs = sortedPairs
           .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 1);
+          .slice(0, 100);
         setSelectedPairs(topValidPairs);
       }
     } catch (error) {
@@ -967,19 +968,22 @@ const scrollToTop = () => {
       fetchPairs();
     }
   }, [signals]);
-  
-    
-    let intervalId;
-    if (Object.keys(signals).length > 0) {
-      intervalId = setInterval(fetchPairs, 300000); // Fetch every 5 minutes
-    }
+
+  const handleRefresh = async () => {
+  setIsRefreshing(true);
+  await Promise.all([fetchPairs()]);
+  setIsRefreshing(false);
+};
+
+  // Fetch pairs on mount and every 5 minutes
+  useEffect(() => {
+    fetchPairs();
+    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
-  }, [signals, fetchPairs]);
+  }, [fetchPairs]);
 
-
-
-//Persist selectedPairs (this remains unchanged)
-useEffect(() => {
+  // Persist selected pairs in localStorage
+  useEffect(() => {
     if (selectedPairs.length > 0) {
       localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
     }
@@ -1223,7 +1227,15 @@ return (
         >
           Unselect
         </button>
-            
+                       <button
+  onClick={() => {
+    fetchPairs();
+  }}
+  disabled={isLoadingPairs}
+  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
+>
+  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
+</button>
             </div>
            
               <div className="space-y-1">
@@ -1436,16 +1448,6 @@ return (
     </ul>
   </div>
 )}
-
-        <div>
-        <h2>Available Futures Pairs</h2>
-        <ul>
-          {pairs.map((pair) => (
-            <li key={pair}>{pair}</li>
-          ))}
-        </ul>
-      </div>
-
 
 
           
