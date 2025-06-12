@@ -70,6 +70,13 @@ interface SignalData {
     index: number;
   }[];
 
+	PreCrossingCandleSignal = {
+  type: 'bullish' | 'bearish';
+  pattern: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
+  price: number;
+  index: number;
+};
+
    momentumSlowing: 'bullish' | 'bearish' | null;
      shouldTrade: boolean;
 
@@ -1366,7 +1373,8 @@ const descendingResistanceNearEMA70InBearish =
 
   // === Historical Signals (Optional) ===
   recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
-
+PreCrossingCandleSignal,
+	    
       momentumSlowing,
         shouldTrade:
     divergence &&
