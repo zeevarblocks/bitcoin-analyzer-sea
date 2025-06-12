@@ -660,9 +660,6 @@ export async function getServerSideProps() {
       if (!candles.length) continue;
 
       const currentPrice = candles[candles.length - 1].close;
-      signals[symbol] = {
-        currentPrice,
-        candles,
         
                 const closes = candles.map(c => c.close);
                 const highs = candles.map(c => c.high);
