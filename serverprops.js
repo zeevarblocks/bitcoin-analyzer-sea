@@ -1,3 +1,4 @@
+
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
@@ -18,11 +19,10 @@ const symbols = await fetchTopPairs(100);
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
-      const candles1d = await fetchCandles(symbol, '1d');
       const closes = candles.map(c => c.close);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
-      
+      const volumes = candles.map(c => c.volume); // ✅ Valid
       
       
       const ema14 = calculateEMA(closes, 14);
@@ -32,6 +32,7 @@ const symbols = await fetchTopPairs(100);
       const lastClose = closes.at(-1)!;
       const lastEMA14 = ema14.at(-1)!;
       const lastEMA70 = ema70.at(-1)!;
+      
 
       const trend = lastEMA14 > lastEMA70 ? 'bullish' : 'bearish';
 
@@ -67,17 +68,21 @@ const symbols = await fetchTopPairs(100);
       const todaysHighestHigh = candlesToday.length > 0 ? Math.max(...candlesToday.map(c => c.high)) : null;
       const prevSessionLow = candlesPrev.length > 0 ? Math.min(...candlesPrev.map(c => c.low)) : null;
       const prevSessionHigh = candlesPrev.length > 0 ? Math.max(...candlesPrev.map(c => c.high)) : null;
+      
+// Breakout detection
+const lowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
+const higherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
 
-      const intradayLowerLowBreak = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
-      const intradayHigherHighBreak = todaysHighestHigh !== null && prevSessionHigh !== null && todaysHighestHigh > prevSessionHigh;
+const bullishBreakout = higherHighBreak;
+const bearishBreakout = lowerLowBreak;
 
-      const bullishBreakout = intradayHigherHighBreak;
-      const bearishBreakout = intradayLowerLowBreak;
-      const breakout = bullishBreakout || bearishBreakout;
-
+const breakout = bullishBreakout || bearishBreakout;
+      
       const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
       const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
-
+      const currentHighIdx = lows.lastIndexOf(todaysHighestHigh!);
+	const currentLowIdx = lows.lastIndexOf(todaysLowestLow!);
+      
 let bearishContinuation = false;
 let bullishContinuation = false;
 let continuationEnded = false;
@@ -142,16 +147,15 @@ if (trend === 'bullish') {
       const ema14Bounce = nearEMA14 && lastClose > lastEMA14;
       const ema70Bounce = nearEMA70 && lastClose > lastEMA70;
 
-const { level, type } = findRelevantLevel(ema14, ema70, closes, highs, lows, trend);
-      const highestHigh = Math.max(...highs);
-      const lowestLow = Math.min(...lows);
-      const inferredLevel = trend === 'bullish' ? highestHigh : lowestLow;
-      const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
-      const inferredLevelWithinRange = inferredLevel <= todaysHighestHigh! && inferredLevel >= todaysLowestLow!;
-
+const { level, type, crossSignal, stallReversal, abcPattern, abcSignal } = findRelevantLevel(ema14, ema70, closes, highs, lows, rsi14, trend);
+      const inferredLevel = trend === 'bullish' ? todaysHighestHigh! : todaysLowestLow!;
+const inferredLevelType = trend === 'bullish' ? 'resistance' : 'support';
+const inferredLevelWithinRange = true;
+	    
 // Optional: log or assign the difference from EMA70 for display
 const latestEMA70 = Array.isArray(ema70) ? ema70[ema70.length - 1] : ema70;
 const differenceVsEMA70 = calculateDifferenceVsEMA70(inferredLevel, latestEMA70);
+      
       
       let divergenceFromLevel = false;
 let divergenceFromLevelType: 'bullish' | 'bearish' | null = null;
@@ -168,64 +172,255 @@ if (type && level !== null) {
     } else if (type === 'support' && lastClose < level && currentRSI > pastRSI) {
       divergenceFromLevel = true;
       divergenceFromLevelType = 'bullish';
+    } 
+  }
+}
+
+      if (crossSignal === 'buy') {
+  // ✅ Queue a long setup
+} else if (crossSignal === 'sell') {
+  // ✅ Queue a short setup
+}
+
+if (stallReversal === 'buy') {
+  // ➡️ Potential bullish reversal after bearish trend stalls
+}
+
+if (stallReversal === 'sell') {
+  // ⬅️ Potential bearish reversal after bullish trend stalls
+}
+
+if (abcSignal === 'buy' && abcPattern) {
+  // 🅰️🅱️🅲️ Detected Bearish-to-Bullish ABC Reversal Pattern
+  // • A = first leg high at index abcPattern.aIdx
+  // • B = trend low at index abcPattern.bIdx
+  // • C = breakout above A-high after pullback, at index abcPattern.cIdx
+  // • D = failure to make new low + RSI rising, at index abcPattern.dIdx
+  // ✅ Suggests bearish trend stalled → Possible bullish reversal → Consider long setup
+}
+
+if (abcSignal === 'sell' && abcPattern) {
+  // 🅰️🅱️🅲️ Detected Bullish-to-Bearish ABC Reversal Pattern
+  // • A = first leg low at index abcPattern.aIdx
+  // • B = trend high at index abcPattern.bIdx
+  // • C = breakout below A-low after pullback, at index abcPattern.cIdx
+  // • D = failure to make new high + RSI falling, at index abcPattern.dIdx
+  // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
+}  
+
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
+
+/* ---------- 1) PRE-REQS ---------- */
+const rsiPrev = rsi14.at(-2)!;
+const rsiCurr = rsi14.at(-1)!;
+
+const { macdLine, signalLine } = macd(closes);
+const macdPrev = macdLine.at(-2)! - signalLine.at(-2)!;
+const macdCurr = macdLine.at(-1)! - signalLine.at(-1)!;
+
+/* ---------- 2) INDIVIDUAL MOMENTUM CUES ---------- */
+const macdShift: 'bullish' | 'bearish' | null =
+  macdPrev <= 0 && macdCurr > 0
+    ? 'bullish'
+    : macdPrev >= 0 && macdCurr < 0
+    ? 'bearish'
+    : null;
+
+const rsiShift: 'bullish' | 'bearish' | null =
+  rsiPrev < 50 && rsiCurr > 50
+    ? 'bullish'
+    : rsiPrev > 50 && rsiCurr < 50
+    ? 'bearish'
+    : null;
+
+/* ---------- 3) FINAL momentumShift ---------- */
+/**
+ *  Rule-of-thumb:
+ *  - If both indicators agree → use that side.
+ *  - If only one fires → use that one.
+ *  - If they disagree or neither fires → null.
+ */
+let momentumSlowing: 'bullish' | 'bearish' | null = null;
+
+if (macdShift && rsiShift && macdShift === rsiShift) {
+  momentumSlowing = macdShift;                // confluence ✔
+} else if (macdShift && !rsiShift) {
+  momentumSlowing = macdShift;                // MACD only
+} else if (rsiShift && !macdShift) {
+  momentumSlowing = rsiShift;                 // RSI-50 only
+}
+
+/* ---------- 4) TRADE FILTER ---------- */
+const shouldTrade =
+  divergence &&                          // you already have this bool
+  momentumSlowing !== null &&
+  momentumSlowing === divergenceType;      // confluence with divergence
+
+/* ---------- 5) EXPORT / RETURN ---------- */
+	    
+
+	const touchedEMA70Today =
+  todaysHighestHigh !== null &&
+  todaysLowestLow !== null &&
+  todaysHighestHigh >= lastEMA70 &&
+  todaysLowestLow <= lastEMA70 &&
+  candlesToday.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+
+	    const supportLows: number[] = [];
+const resistanceHighs: number[] = [];
+
+let bullishStartIndex = -1;
+let bearishStartIndex = -1;
+let lowestSwingLow = Infinity;
+let highestSwingHigh = -Infinity;
+
+// Step 1: Identify swing lows/highs near EMA70
+for (let i = 2; i < lows.length - 2; i++) {
+  const isSwingLow = lows[i] < lows[i - 1] && lows[i] < lows[i + 1];
+  const isSwingHigh = highs[i] > highs[i - 1] && highs[i] > highs[i + 1];
+  const isNearEMA = Math.abs(closes[i] - ema70[i]) / ema70[i] < 0.005;
+
+  if (isSwingLow && isNearEMA) {
+    supportLows.push(lows[i]);
+    if (lows[i] < lowestSwingLow) {
+      lowestSwingLow = lows[i];
+      bullishStartIndex = i;
+    }
+  }
+
+  if (isSwingHigh && isNearEMA) {
+    resistanceHighs.push(highs[i]);
+    if (highs[i] > highestSwingHigh) {
+      highestSwingHigh = highs[i];
+      bearishStartIndex = i;
     }
   }
 }
 
-      const touchedEMA70Today =
-        prevSessionHigh! >= lastEMA70 && prevSessionLow! <= lastEMA70 &&
-        candles.some(c => Math.abs(c.close - lastEMA70) / c.close < 0.002);
+// === Bullish Signals ===
+const ema70AscendingFromSwingLow = bullishStartIndex !== -1 && bullishStartIndex < ema70.length - 1 &&
+  ema70.slice(bullishStartIndex).every((val, i, arr) => i === 0 || val >= arr[i - 1]);
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);
+const rsi14AscendingFromSwingLow = bullishStartIndex !== -1 && bullishStartIndex < rsi14.length - 1 &&
+  rsi14.slice(bullishStartIndex).every((val, i, arr) => i === 0 || val >= arr[i - 1]);
+
+const rsi14BreakoutAboveSwingLow = bullishStartIndex !== -1 &&
+  rsi14[rsi14.length - 1] > rsi14[bullishStartIndex];
+
+const isSupportLowsAscending = supportLows.length >= 2 &&
+  supportLows.every((val, i, arr) => i === 0 || val >= arr[i - 1]);
+
+const ascendingSupportNearEMA70InBullish =
+  trend === 'bullish' &&
+  ema70AscendingFromSwingLow &&
+  isSupportLowsAscending &&
+  rsi14AscendingFromSwingLow &&
+  rsi14BreakoutAboveSwingLow;
+
+// === Bearish Signals ===
+const ema70DescendingFromSwingHigh = bearishStartIndex !== -1 && bearishStartIndex < ema70.length - 1 &&
+  ema70.slice(bearishStartIndex).every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+const rsi14DescendingFromSwingHigh = bearishStartIndex !== -1 && bearishStartIndex < rsi14.length - 1 &&
+  rsi14.slice(bearishStartIndex).every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+const rsi14BreakdownBelowSwingHigh = bearishStartIndex !== -1 &&
+  rsi14[rsi14.length - 1] < rsi14[bearishStartIndex];
+
+const isResistanceHighsDescending = resistanceHighs.length >= 2 &&
+  resistanceHighs.every((val, i, arr) => i === 0 || val <= arr[i - 1]);
+
+const descendingResistanceNearEMA70InBearish =
+  trend === 'bearish' &&
+  ema70DescendingFromSwingHigh &&
+  isResistanceHighsDescending &&
+  rsi14DescendingFromSwingHigh &&
+  rsi14BreakdownBelowSwingHigh;
 
 
-      signals[symbol] = {
-  trend,
+
+    signals[symbol] = {
+  // === Trend & Breakout ===
+  trend,                      // 'bullish' | 'bearish' | 'neutral'
+
+	 // Bullish
+  ascendingSupportNearEMA70InBullish,
+  ema70AscendingFromSwingLow,
+  rsi14AscendingFromSwingLow,
+  rsi14BreakoutAboveSwingLow,
+
+  // Bearish
+  descendingResistanceNearEMA70InBearish,
+  ema70DescendingFromSwingHigh,
+  rsi14DescendingFromSwingHigh,
+  rsi14BreakdownBelowSwingHigh,
+
+	    
+	    
   breakout,
   bullishBreakout,
   bearishBreakout,
+
+  // === Divergence Detection ===
   divergence,
-  divergenceType,
+  divergenceType,             // 'bullish' | 'bearish' | null
   divergenceFromLevel,
-  divergenceFromLevelType,
+      crossSignal,
+      stallReversal,
+      abcPattern,
+        abcSignal,
+  divergenceFromLevelType,    // 'bullish' | 'bearish' | null
   nearOrAtEMA70Divergence,
+
+  // === EMA Bounce Detection ===
   ema14Bounce,
   ema70Bounce,
   touchedEMA70Today,
 
-  // Core price data
+  // === Core Price Metrics ===
   currentPrice: lastClose,
-  level,
-  levelType: type,
-  inferredLevel,
-  inferredLevelType,
-  inferredLevelWithinRange,
-  differenceVsEMA70,
   todaysLowestLow,
   todaysHighestHigh,
-  intradayHigherHighBreak,
-  intradayLowerLowBreak,
+  higherHighBreak,
+  lowerLowBreak,
 
-  // Trend continuation logic
-  bearishContinuation,
+  // === Support / Resistance Zone Levels ===
+  level,                      // confirmed EMA-cross level
+  levelType: type,            // 'support' | 'resistance' | null
+  inferredLevel,              // high/low pivot near current
+  inferredLevelType,          // 'support' | 'resistance'
+  inferredLevelWithinRange,
+  differenceVsEMA70,          // { percent: number, direction: 'above' | 'below' | 'equal' }
+
+  // === Trend Continuation Logic ===
   bullishContinuation,
+  bearishContinuation,
   cleanTrendContinuation:
-    (trend === 'bearish' && bearishContinuation) ||
-    (trend === 'bullish' && bullishContinuation),
+    (trend === 'bullish' && bullishContinuation && !bearishContinuation) ||
+    (trend === 'bearish' && bearishContinuation && !bullishContinuation),
   continuationEnded,
   continuationReason,
-  recentCrossings,
 
-  // Metadata
+  // === Historical Signals (Optional) ===
+  recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
+
+      momentumSlowing,
+        shouldTrade:
+    divergence &&
+    momentumSlowing !== null &&
+    momentumSlowing === divergenceType,  
+
+
+      
+  // === Metadata / External Link ===
   url: `https://okx.com/join/96631749`,
-  candles15m,
-  candles1d,
-};
+};  
+   
 
     } catch (err) {
-      console.error(`Error fetching signal for ${symbol}:`, err);
+      console.error(`Error fetching ${symbol}:`, err);
     }
-  }
+    }
 
   const defaultSymbol = symbols[0];
 
