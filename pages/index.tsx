@@ -103,13 +103,13 @@ interface Candle {
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
   const response = await fetch(
-    `https://www.okx.com/api/v5/market/candles?instId=${symbol}&bar=${interval}&limit=${limit}`
+    `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
   );
   const data = await response.json();
 
-  if (!data.data || !Array.isArray(data.data)) throw new Error('Invalid candle data');
+  if (!data || !Array.isArray(data)) throw new Error('Invalid candle data');
 
-  return data.data
+  return data
     .map((d: string[]) => ({
       timestamp: +d[0],
       open: +d[1],
@@ -852,15 +852,15 @@ function detectBullishContinuationWithEnd(
 
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
-    const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
+    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
     const data = await response.json();
 
     const sorted = data.data
-      .filter((ticker: any) => ticker.instId.endsWith('USDT')) // ✅ Only USDT pairs
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // ✅ Only USDT pairs
       .sort((a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h))
       .slice(0, limit);
 
-    return sorted.map((ticker: any) => ticker.instId);
+    return sorted.map((ticker: any) => ticker.symbol);
   }
 
 const symbols = await fetchTopPairs(100);
@@ -1361,14 +1361,14 @@ const scrollToTop = () => {
     setIsLoadingPairs(true);
     try {
       const response = await fetch(
-        'https://www.okx.com/api/v5/market/tickers?instType=SPOT'
+        'https://fapi.binance.com/fapi/v1/ticker/24hr'
       );
       const data = await response.json();
       const sortedPairs = data.data
         .sort(
           (a: any, b: any) => parseFloat(b.volCcy24h) - parseFloat(a.volCcy24h)
         )
-        .map((item: any) => item.instId);
+        .map((item: any) => item.symbol);
 
       setPairs(sortedPairs);
 
