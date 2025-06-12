@@ -923,7 +923,7 @@ const scrollToTop = () => {
   setIsLoadingPairs(true);
   console.log('Fetching pairs...');
   try {
-    const response = await fetch(url);
+    const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
     console.log('Response status:', response.status);
     if (!response.ok) {
       const errorText = await response.text();
