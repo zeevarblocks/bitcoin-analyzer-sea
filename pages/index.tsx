@@ -683,8 +683,18 @@ function findRecentCrossings(
   opens: number[],
   highs: number[],
   lows: number[]
-): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
-  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+): {
+  type: 'bullish' | 'bearish';
+  price: number;
+  index: number;
+  pattern?: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
+}[] {
+  const crossings: {
+    type: 'bullish' | 'bearish';
+    price: number;
+    index: number;
+    pattern?: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
+  }[] = [];
 
   const isBearishMarubozu = (i: number): boolean => {
     const body = opens[i] - closes[i];
@@ -722,34 +732,33 @@ function findRecentCrossings(
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
-    const candleOk =
-      isBearishMarubozu(i - 1) ||
-      isBullishMarubozu(i - 1) ||
-      isBearishEngulfing(i - 1) ||
-      isBullishEngulfing(i - 1);
+    let pattern: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing' | undefined;
 
-    if (!candleOk) continue;
+    if (isBullishMarubozu(i - 1)) pattern = 'bullish_marubozu';
+    else if (isBearishMarubozu(i - 1)) pattern = 'bearish_marubozu';
+    else if (isBullishEngulfing(i - 1)) pattern = 'bullish_engulfing';
+    else if (isBearishEngulfing(i - 1)) pattern = 'bearish_engulfing';
 
-    // Bullish crossover
+    if (!pattern) continue;
+
     if (prev14 < prev70 && curr14 >= curr70) {
       crossings.push({
         type: 'bullish',
         price: closes[i],
         index: i,
+        pattern,
       });
-    }
-
-    // Bearish crossover
-    if (prev14 > prev70 && curr14 <= curr70) {
+    } else if (prev14 > prev70 && curr14 <= curr70) {
       crossings.push({
         type: 'bearish',
         price: closes[i],
         index: i,
+        pattern,
       });
     }
   }
 
-  return crossings.reverse(); // Oldest to newest
+  return crossings.reverse(); // Return oldest to newest
 }
 
 
@@ -2041,36 +2050,36 @@ return (
 		
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
-    <p className="text-sm font-medium text-blue-300 mb-2">
+    <p className="text-sm font-semibold text-blue-300 mb-2">
       🔄 Recent EMA Crossings
     </p>
-    <ul className="space-y-1">
+    <ul className="space-y-2">
       {data.recentCrossings.map((cross, idx) => {
         const isReversal = idx === data.recentCrossings.length - 1;
         const isBullish = cross.type === 'bullish';
 
+        const label = isReversal
+          ? `🔁 Reversal ${isBullish ? 'Bullish' : 'Bearish'} Cross`
+          : isBullish
+          ? '🟢 Bullish Cross'
+          : '🔴 Bearish Cross';
+
+        const formattedPattern = cross.pattern
+          ? cross.pattern.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+          : 'No Pattern';
+
         return (
           <li
             key={idx}
-            className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-2 py-1 rounded-md ${
-              isBullish ? 'bg-green-800 text-green-200' : 'bg-red-800 text-red-200'
+            className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 px-3 py-2 rounded-md ${
+              isBullish ? 'bg-green-800 text-green-100' : 'bg-red-800 text-red-100'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
-                {isReversal
-                  ? `🔁 Reversal ${isBullish ? 'Bullish' : 'Bearish'} Cross`
-                  : isBullish
-                  ? '🟢 Bullish Cross'
-                  : '🔴 Bearish Cross'}
-              </span>
-
-              <span className="text-xs italic opacity-70 ml-2">
-                ({cross.pattern?.replace('_', ' ') || 'no pattern'})
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <span className="text-sm font-medium">{label}</span>
+              <span className="text-xs italic opacity-80">{formattedPattern}</span>
             </div>
-
-            <span className="ml-auto font-mono text-xs sm:mt-0">
+            <span className="ml-auto font-mono text-xs">
               @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
             </span>
           </li>
