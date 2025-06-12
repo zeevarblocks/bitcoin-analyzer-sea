@@ -619,7 +619,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   }
 }
 
-async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
+async function fetchTopPairs(limit = 1): Promise<string[]> {
   try {
     const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
     if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
