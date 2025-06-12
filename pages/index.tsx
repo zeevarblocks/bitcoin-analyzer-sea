@@ -935,16 +935,13 @@ const scrollToTop = () => {
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
-  console.log('Fetching pairs...'); // Log start of fetch
   try {
     const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
-    console.log('Response status:', response.status); // Log the status code
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`API request failed (${response.status}): ${errorText}`);
     }
     const data = await response.json();
-    console.log('Received data:', data); // Log the received data
     if (!data || !data.symbols) {
       throw new Error('Invalid data format from Binance API');
     }
@@ -955,51 +952,44 @@ const scrollToTop = () => {
       )
       .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
       .map((item: any) => item.symbol);
-    console.log('Sorted pairs:', sortedPairs); // Log the sorted pairs
-    setPairs(sortedPairs);
-    console.log('Pairs state updated:', pairs); // Log the pairs after update
+    setPairs((prevPairs) => sortedPairs); // Functional update
   } catch (error) {
     console.error('Error fetching futures trading pairs:', error);
-    alert(`Error fetching pairs: ${error.message}`);
+    alert(`Error fetching pairs: ${error.message}`); 
     setIsLoadingPairs(false);
-    return;
   } finally {
     setIsLoadingPairs(false);
   }
-}, []);
-
+}, [signals]); // Correct dependency array
 
 useEffect(() => {
-  console.log('useEffect running...'); //Confirm useEffect runs
-  fetchPairs();
-}, [fetchPairs]);
-  
-
-  useEffect(() => {
-    if (Object.keys(signals).length > 0) {
-      fetchPairs();
-    }
-  }, [signals]);
-
-  const handleRefresh = async () => {
-  setIsRefreshing(true);
-  await Promise.all([fetchPairs()]);
-  setIsRefreshing(false);
-};
-
-  // Fetch pairs on mount and every 5 minutes
-  useEffect(() => {
+  // Fetch pairs initially when the component mounts
+  if (Object.keys(signals).length > 0) {
     fetchPairs();
-    const intervalId = setInterval(fetchPairs, 5 * 60 * 1000);
-    return () => clearInterval(intervalId);
-  }, [fetchPairs]);
+  }
 
-  // Persist selected pairs in localStorage
-  useEffect(() => {
-    if (selectedPairs.length > 0) {
-      localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
-    }
-  }, [selectedPairs]);
+  //Optional: Set up interval only if signals exist
+  let intervalId;
+  if (Object.keys(signals).length > 0) {
+    intervalId = setInterval(fetchPairs, 300000); // Fetch every 5 minutes
+  }
+
+  return () => {
+    clearInterval(intervalId); //Clean up when component unmounts
+  }
+}, [signals, fetchPairs]);
+
+
+// Remove handleRefresh -- it's no longer needed
+
+
+//Persist selectedPairs (this remains unchanged)
+useEffect(() => {
+  if (selectedPairs.length > 0) {
+    localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
+  }
+}, [selectedPairs]);
+
 
   // Load favorites from localStorage on mount
   useEffect(() => {
@@ -1239,15 +1229,7 @@ return (
         >
           Unselect
         </button>
-                       <button
-  onClick={() => {
-    fetchPairs();
-  }}
-  disabled={isLoadingPairs}
-  className="px-4 py-2 rounded-2xl bg-gray-800 text-gray-100 hover:bg-gray-700 disabled:bg-gray-600 transition-all duration-200 shadow-md disabled:cursor-not-allowed"
->
-  {isLoadingPairs ? '🔄 Refreshing...' : '🔄 Refresh'}
-</button>
+            
             </div>
            
               <div className="space-y-1">
