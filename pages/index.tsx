@@ -651,7 +651,7 @@ async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
 
 export async function getServerSideProps() {
     try {
-        const symbols = await fetchTopPairs(100);
+        const symbols = await fetchTopFuturesPairs(100);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
