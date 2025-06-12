@@ -68,7 +68,6 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
-reversalCross?: boolean;
   }[];
 
    momentumSlowing: 'bullish' | 'bearish' | null;
@@ -680,8 +679,8 @@ function findRecentCrossings(
   ema14: number[],
   ema70: number[],
   closes: number[]
-): { type: 'bullish' | 'bearish'; price: number; index: number; reversalCross?: boolean }[] {
-  const reversalCross : { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
+  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
@@ -708,18 +707,9 @@ function findRecentCrossings(
     }
   }
 
-  const reversed = crossings.reverse(); // order from oldest to newest
-
-  // 🆕 Mark the latest one as "reversalCross"
-  if (reversed.length > 0) {
-    reversed[reversed.length - 1] = {
-      ...reversed[reversed.length - 1],
-      reversalCross: true,
-    };
-  }
-
-  return reversed;
+  return crossings.reverse(); // So it's ordered from oldest to newest
 }
+
 
 
 // Detect if there's a valid bullish trend first
@@ -1309,7 +1299,7 @@ type FilterType =
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
-  | 'reversalCross'
+  | 'recentCrossings'
   | 'bullishBreakout'
   | 'bearishBreakout'
   |	'abcSignal'
@@ -1460,9 +1450,6 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
       if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
-	if (activeFilter === 'reversalCross') {
-  return data.recentCrossings?.some(cross => cross.reversalCross);
-	}
       return true;  
     });
 
@@ -1692,14 +1679,6 @@ return (
   >
     <span>📉</span>
     <span>touchedEMA70Today&breakout</span>
-  </button>
-
-		<button
-    onClick={() => setActiveFilter('reversalCross')}
-    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
-  >
-    <span>📉</span>
-    <span>reversalCross</span>
   </button>
                
 </div>
@@ -2054,7 +2033,9 @@ return (
     {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} 
   </span>
 </p>
+		
 
+          
 
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
@@ -2062,35 +2043,34 @@ return (
       🔄 Recent EMA Crossings
     </p>
     <ul className="space-y-1">
-      {data.recentCrossings.map((cross, idx) => (
-        <li
-          key={idx}
-          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
-            cross.type === 'bullish'
-              ? 'bg-green-800 text-green-200'
-              : 'bg-red-800 text-red-200'
-          }`}
-        >
-          <span className="text-sm">
-            {cross.reversalCross
-              ? `🔁 Reversal ${cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross`
-              : cross.type === 'bullish'
-              ? '🟢 Bullish Cross'
-              : '🔴 Bearish Cross'}
-          </span>
-          <span className="ml-auto font-mono text-xs">
-            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
-          </span>
-        </li>
-      ))}
+      {data.recentCrossings.map((cross, idx) => {
+        const isReversal = idx === data.recentCrossings.length - 1;
+
+        return (
+          <li
+            key={idx}
+            className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+              cross.type === 'bullish'
+                ? 'bg-green-800 text-green-200'
+                : 'bg-red-800 text-red-200'
+            }`}
+          >
+            <span className="text-sm font-medium">
+              {isReversal
+                ? `🔁 Reversal ${cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross`
+                : cross.type === 'bullish'
+                ? '🟢 Bullish Cross'
+                : '🔴 Bearish Cross'}
+            </span>
+            <span className="ml-auto font-mono text-xs">
+              @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   </div>
 )}
-		
-
-          
-
-
 		
           
         {/* Trade Link */}
