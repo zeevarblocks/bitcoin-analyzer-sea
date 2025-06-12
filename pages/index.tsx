@@ -627,26 +627,30 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopPairs(limit = 100): Promise<string[]> {
+async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
   try {
     const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    if (!res.ok) throw new Error(`Status ${res.status}`);
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+
     const data = await res.json();
 
-    return data
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, limit)
-      .map((ticker: any) => ticker.symbol);
+    const sorted = data
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // Filter only USDT futures
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // Sort by volume
+      .slice(0, limit); // Limit to top N
+
+    console.log('Top Futures Pairs:', sorted.map(t => t.symbol));
+
+    return sorted.map(ticker => ticker.symbol);
   } catch (err) {
-    console.error("❌ Failed to fetch Binance data:", err);
+    console.error('❌ Error fetching Binance Futures data:', err);
     return [];
   }
 }
 
 export async function getServerSideProps() {
     try {
-        const symbols = await fetchTopPairs(100);
+        const symbols = await fetchTopFuturesPairs(100);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
