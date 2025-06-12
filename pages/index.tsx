@@ -1970,35 +1970,57 @@ return (
     </div>
 )}
 
-		<p>
-  🧲 Touched EMA70 Today:{' '}
-  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
-    {data.touchedEMA70Today ? 'Yes' : 'No'}
-  </span>
-</p>
+		<div className="space-y-3 text-sm">
+  <div className="flex items-center gap-2">
+    <span className="text-lg">🧲</span>
+    <span className="font-medium">Touched EMA70 Today:</span>
+    <span className={data.touchedEMA70Today ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
+      {data.touchedEMA70Today ? 'Yes' : 'No'}
+    </span>
+  </div>
 
+  <div className="flex items-center gap-2">
+    <span className="text-lg">🚀</span>
+    <span className="font-medium">RSI14 Breakout Above Swing Low:</span>
+    <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
+      {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'}
+    </span>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <span className="text-lg">📉</span>
+    <span className="font-medium">RSI14 Breakdown Below Swing High:</span>
+    <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
+      {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'}
+    </span>
+  </div>
+</div>
 		
-<p>
-  🚀 RSI14 Breakout Above Swing Low:{' '}
-  <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'} 
-  </span>
-</p>
-
-
-<p>
-  📉 RSI14 Breakdown Below Swing High:{' '}
-  <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
-    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} 
-  </span>
-</p>
-		
-{latestCross && latestCross.type === activeFilter && (
-  <span className="text-sm font-medium">
-    {latestCross.index === closes.length - 1
-      ? `🔥 Live ${capitalizeFirst(latestCross.type)} Cross`
-      : `🔁 Reversal ${capitalizeFirst(latestCross.type)} Cross`}
-  </span>
+{data.recentCrossings?.length === 1 && (
+  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
+    <p className="text-sm font-medium text-blue-300 mb-2">
+      🔄 Recent EMA Crossing
+    </p>
+    <ul className="space-y-1">
+      {data.recentCrossings.map((cross, idx) => (
+        <li
+          key={idx}
+          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+            cross.type === 'bullish'
+              ? 'bg-green-800 text-green-200'
+              : 'bg-red-800 text-red-200'
+          }`}
+        >
+          <span className="text-sm font-medium">
+            🔁 Reversal {cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross
+          </span>
+          <span className="ml-auto font-mono text-xs">
+            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
 )}
           
 
