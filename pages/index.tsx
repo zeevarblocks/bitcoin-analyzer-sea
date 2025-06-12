@@ -681,7 +681,7 @@ function findRecentCrossings(
   ema70: number[],
   closes: number[]
 ): { type: 'bullish' | 'bearish'; price: number; index: number; reversalCross?: boolean }[] {
-  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+  const reversalCross : { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
