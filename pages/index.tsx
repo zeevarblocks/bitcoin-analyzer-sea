@@ -961,15 +961,14 @@ const scrollToTop = () => {
       setIsLoadingPairs(false);
     }
   }, [signals]);
-  
-useEffect(() => {
+
+  useEffect(() => {
     if (Object.keys(signals).length > 0) {
       fetchPairs();
     }
   }, [signals]);
-
   
-    }
+    
     let intervalId;
     if (Object.keys(signals).length > 0) {
       intervalId = setInterval(fetchPairs, 300000); // Fetch every 5 minutes
