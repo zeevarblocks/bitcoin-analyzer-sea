@@ -623,7 +623,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 }
 
 async function fetchTopPairs(limit = 1): Promise<string[]> {
-  const url = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
+  const url = 'https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}';
   try {
     const response = await fetch(url); 
     if (!response.ok) {
@@ -930,7 +930,7 @@ const scrollToTop = () => {
   setIsLoadingPairs(true);
   console.log('Fetching pairs...');
   try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+    const response = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}');
     console.log('Response status:', response.status);
     if (!response.ok) {
       const errorText = await response.text();
