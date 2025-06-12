@@ -850,8 +850,6 @@ function detectBullishContinuationWithEnd(
     }
 
 
-
-
 export async function getServerSideProps() {
   async function fetchTopPairs(limit = 100): Promise<string[]> {
     const response = await fetch('https://www.okx.com/api/v5/market/tickers?instType=SPOT');
