@@ -70,39 +70,6 @@ interface Candle {
   timestamp: number; 
 }
 
-async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;
-  try {
-    const response = await fetch(
-      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    ); // Use the futures API endpoint
-
-    if (!response.ok) {
-      throw new Error(
-        `Binance futures candle fetch failed: ${response.status} ${response.statusText}`
-      );
-    }
-    const data = await response.json();
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid candle data format');
-    }
-    return data.map((d: any[]) => ({
-      timestamp: +d[0],
-      time: +d[0],
-      open: +d[1],
-      high: +d[2],
-      low: +d[3],
-      close: +d[4],
-      volume: +d[5],
-    })).reverse();
-  } catch (error) {
-    console.error(
-      `❌ Error fetching futures candles for ${symbol} (${interval}):`,
-      error
-    );
-    return []; //Return empty array on error
-  }
-}
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
