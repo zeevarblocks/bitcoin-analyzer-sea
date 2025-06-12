@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
