@@ -592,12 +592,12 @@ function detectBullishContinuationWithEnd(
 // logic in getServerSideProps:
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
-  const url = `https://fapi.binance.com/fapi/v1/ticker/24hr`;
+  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const response = await fetch(url);
     if (!response.ok) {
-      const errorText = await response.text(); // Get the error message from the response
-      throw new Error(`Binance futures candle fetch failed (${response.status}): ${errorText} at URL ${url}`); 
+      const errorText = await response.text();
+      throw new Error(`Binance futures candle fetch failed (${response.status}): ${errorText} at URL ${url}`);
     }
     const data = await response.json();
     if (!Array.isArray(data)) {
@@ -614,16 +614,15 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
     })).reverse();
   } catch (error) {
     console.error(`❌ Error fetching futures candles for ${symbol} (${interval}):`, error);
-    // Return an empty array to prevent crashes, but also alert the user.
-    alert(`Error fetching data for ${symbol}: ${error.message}`); 
-    return []; 
+    alert(`Error fetching data for ${symbol}: ${error.message}`);
+    return [];
   }
 }
 
 async function fetchTopPairs(limit = 1): Promise<string[]> {
-  const url = 'https://fapi.binance.com/fapi/v1/ticker/24hr';
+  const url = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
   try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr'); 
+    const response = await fetch(url);
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Binance futures exchange info fetch failed (${response.status}): ${errorText} at URL ${url}`);
@@ -633,21 +632,17 @@ async function fetchTopPairs(limit = 1): Promise<string[]> {
       throw new Error(`Invalid exchange info format from URL ${url}`);
     }
     return data.symbols
-      .filter(
-        (ticker: any) =>
-          ticker.symbol.endsWith('USDT') && ticker.contractType === 'PERPETUAL'
-      )
-      .sort((a: any, b: any) =>
-        parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)
-      )
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT') && ticker.contractType === 'PERPETUAL')
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
       .slice(0, limit)
       .map((ticker: any) => ticker.symbol);
   } catch (error) {
     console.error('❌ Error fetching top futures pairs:', error);
-    alert(`Error fetching pairs: ${error.message}`); // Alert user of the error
-    return []; 
+    alert(`Error fetching pairs: ${error.message}`);
+    return [];
   }
 }
+
 
 export async function getServerSideProps() {
     try {
@@ -928,7 +923,7 @@ const scrollToTop = () => {
   setIsLoadingPairs(true);
   console.log('Fetching pairs...');
   try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const response = await fetch(url);
     console.log('Response status:', response.status);
     if (!response.ok) {
       const errorText = await response.text();
