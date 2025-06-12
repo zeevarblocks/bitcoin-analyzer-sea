@@ -679,8 +679,18 @@ function findRecentCrossings(
   ema14: number[],
   ema70: number[],
   closes: number[]
-): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
-  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+): {
+  type: 'bullish' | 'bearish';
+  price: number;
+  index: number;
+  reversalCross: boolean; // NEW flag
+}[] {
+  const crossings: {
+    type: 'bullish' | 'bearish';
+    price: number;
+    index: number;
+    reversalCross: boolean;
+  }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
@@ -694,6 +704,7 @@ function findRecentCrossings(
         type: 'bullish',
         price: closes[i],
         index: i,
+        reversalCross: false, // initially false
       });
     }
 
@@ -703,13 +714,18 @@ function findRecentCrossings(
         type: 'bearish',
         price: closes[i],
         index: i,
+        reversalCross: false, // initially false
       });
     }
   }
 
-  return crossings.reverse(); // So it's ordered from oldest to newest
-}
+  // Mark the most recent one as the reversal cross
+  if (crossings.length > 0) {
+    crossings[0].reversalCross = true;
+  }
 
+  return crossings.reverse(); // Return ordered from oldest to newest
+}
 
 
 // Detect if there's a valid bullish trend first
@@ -1299,7 +1315,7 @@ type FilterType =
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
-  | 'recentCrossings'
+  | 'reversalCross'
   | 'bullishBreakout'
   | 'bearishBreakout'
   |	'abcSignal'
@@ -1450,6 +1466,7 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
       if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
+	if (activeFilter === 'reversalCross') return data.reversalCross;    
       return true;  
     });
 
@@ -1679,6 +1696,14 @@ return (
   >
     <span>📉</span>
     <span>touchedEMA70Today&breakout</span>
+  </button>
+
+		<button
+    onClick={() => setActiveFilter('reversalCross')}
+    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>reversalCross</span>
   </button>
                
 </div>
@@ -2035,12 +2060,6 @@ return (
 </p>
 
 
-
-		
-
-          
-
-{/* 🔄 Recent EMA Crossings */}
 {data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
     <p className="text-sm font-medium text-blue-300 mb-2">
@@ -2057,7 +2076,11 @@ return (
           }`}
         >
           <span className="text-sm">
-            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+            {cross.reversalCross
+              ? `🔁 Reversal ${cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross`
+              : cross.type === 'bullish'
+              ? '🟢 Bullish Cross'
+              : '🔴 Bearish Cross'}
           </span>
           <span className="ml-auto font-mono text-xs">
             @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
@@ -2066,7 +2089,12 @@ return (
       ))}
     </ul>
   </div>
-)} 
+)}
+		
+
+          
+
+
 		
           
         {/* Trade Link */}
