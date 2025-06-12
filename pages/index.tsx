@@ -1468,6 +1468,15 @@ return (
   </div>
 )}
 
+          <div>
+        <h2>Available Futures Pairs</h2>
+        <ul>
+          {pairs.map((pair) => (
+            <li key={pair}>{pair}</li>
+          ))}
+        </ul>
+      </div>
+
 
           
           
