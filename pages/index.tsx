@@ -23,7 +23,6 @@ function useFuturesTicker(symbol: string) {
 }
 
 
-import React from 'react';
 
 interface SignalData {
   // === Trend & Breakout ===
