@@ -914,10 +914,11 @@ const symbols = await fetchTopPairs(100);
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
-      const closes = candles.map(c => c.close);
-      const highs = candles.map(c => c.high);
-      const lows = candles.map(c => c.low);
-      const volumes = candles.map(c => c.volume); // ✅ Valid
+const opens = candles.map(c => c.open);     // ✅ Required
+const closes = candles.map(c => c.close);
+const highs = candles.map(c => c.high);
+const lows = candles.map(c => c.low);
+const volumes = candles.map(c => c.volume); // ✅ Valid
       
       
       const ema14 = calculateEMA(closes, 14);
