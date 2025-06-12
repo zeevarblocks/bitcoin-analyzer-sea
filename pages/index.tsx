@@ -803,6 +803,7 @@ export async function getServerSideProps() {
 
                 signals[symbol] = {
                     trend,
+                  candles,
                     breakout,
                     bullishBreakout,
                     bearishBreakout,
