@@ -920,27 +920,38 @@ const scrollToTop = () => {
 
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-  setIsLoadingPairs(true);
-  console.log('Fetching pairs...');
-  try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
-    console.log('Response status:', response.status);
-    if (!response.ok) {
-      const errorText = await response.text();
-      const errorMessage = `API request failed (${response.status}): ${errorText}`;
-      console.error('API Error:', errorMessage); //Detailed error log
-      throw new Error(errorMessage);
+    setIsLoadingPairs(true);
+    try {
+      const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+      const data = await response.json();
+      console.log('Fetched Binance data:', data);
+
+      const sortedPairs = data
+        .filter((item: any) => item.symbol.endsWith('USDT'))
+        .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+        .map((item: any) => item.symbol);
+
+      setPairs(sortedPairs);
+
+      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+      const validSaved = savedPairs.filter(
+        (pair: string) => signals?.[pair]?.currentPrice !== undefined
+      );
+
+      if (validSaved.length > 0) {
+        setSelectedPairs(validSaved);
+      } else {
+        const topValidPairs = sortedPairs
+          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+          .slice(0, 1);
+        setSelectedPairs(topValidPairs);
+      }
+    } catch (error) {
+      console.error('Error fetching trading pairs:', error);
+    } finally {
+      setIsLoadingPairs(false);
     }
-    // ... (rest of your fetchPairs logic)
-  } catch (error) {
-    console.error('Error in fetchPairs:', error); // Log the error object
-    alert(`Error fetching pairs: ${error.message}`);
-    setIsLoadingPairs(false);
-  } finally {
-    console.log('setIsLoadingPairs(false) called.');
-    setIsLoadingPairs(false);
-  }
-}, [signals]);
+  }, [signals]);
   
 
   useEffect(() => {
