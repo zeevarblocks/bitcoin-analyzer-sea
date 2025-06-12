@@ -678,15 +678,56 @@ function detectBearishContinuationWithEnd(closes, lows, highs, ema70, rsi, ema14
 function findRecentCrossings(
   ema14: number[],
   ema70: number[],
-  closes: number[]
+  closes: number[],
+  opens: number[],
+  highs: number[],
+  lows: number[]
 ): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
   const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+
+  const isBearishMarubozu = (i: number): boolean => {
+    const body = opens[i] - closes[i];
+    const upperWick = highs[i] - opens[i];
+    const lowerWick = closes[i] - lows[i];
+    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
+  };
+
+  const isBullishMarubozu = (i: number): boolean => {
+    const body = closes[i] - opens[i];
+    const upperWick = highs[i] - closes[i];
+    const lowerWick = opens[i] - lows[i];
+    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
+  };
+
+  const isBullishEngulfing = (i: number): boolean => {
+    return (
+      opens[i - 1] > closes[i - 1] && // previous is red
+      closes[i] > opens[i] && // current is green
+      opens[i] < closes[i - 1] && closes[i] > opens[i - 1]
+    );
+  };
+
+  const isBearishEngulfing = (i: number): boolean => {
+    return (
+      closes[i - 1] > opens[i - 1] && // previous is green
+      opens[i] > closes[i] && // current is red
+      opens[i] > closes[i - 1] && closes[i] < opens[i - 1]
+    );
+  };
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
     const prev70 = ema70[i - 1];
     const curr14 = ema14[i];
     const curr70 = ema70[i];
+
+    const candleOk =
+      isBearishMarubozu(i - 1) ||
+      isBullishMarubozu(i - 1) ||
+      isBearishEngulfing(i - 1) ||
+      isBullishEngulfing(i - 1);
+
+    if (!candleOk) continue;
 
     // Bullish crossover
     if (prev14 < prev70 && curr14 >= curr70) {
@@ -707,7 +748,7 @@ function findRecentCrossings(
     }
   }
 
-  return crossings.reverse(); // So it's ordered from oldest to newest
+  return crossings.reverse(); // Oldest to newest
 }
 
 
@@ -1061,7 +1102,7 @@ if (abcSignal === 'sell' && abcPattern) {
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
 }  
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes, opens, highs, lows);  
 
 /* ---------- 1) PRE-REQS ---------- */
 const rsiPrev = rsi14.at(-2)!;
