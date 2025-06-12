@@ -66,43 +66,40 @@ interface Candle {
   volume: number;
   ema14?: number;
   ema70?: number;
-  time: number; 
-  timestamp: number; 
+  time: number;
+  timestamp: number;
 }
 
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
-
   try {
     const response = await fetch(
-      `https://fapi.binance.com/fapi/v1/ticker/24hr`
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
     );
-
     if (!response.ok) {
-      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Binance candle fetch failed: ${response.status} ${response.statusText}`
+      );
     }
-
     const data = await response.json();
-
-   if (!Array.isArray(data) || data.length === 0 || !Array.isArray(data[0])) {
-  throw new Error('Invalid or empty candle array');
-   }
-
-    return data.map((d: any[]) => {
-      const ts = +d[0];
-      return {
-        timestamp: ts,
-        time: ts,
-        open: +d[1],
-        high: +d[2],
-        low: +d[3],
-        close: +d[4],
-        volume: +d[5],
-      };
-    }).reverse();
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid candle data format');
+    }
+    return data.map((d: any[]) => ({
+      timestamp: +d[0],
+      time: +d[0],
+      open: +d[1],
+      high: +d[2],
+      low: +d[3],
+      close: +d[4],
+      volume: +d[5],
+    })).reverse();
   } catch (error) {
-    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
-    return []; // Return empty so main app doesn’t crash
+    console.error(
+      `❌ Error fetching candles for ${symbol} (${interval}):`,
+      error
+    );
+    return []; // Return empty array to prevent app crashes
   }
 }
 
@@ -627,25 +624,28 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
+async function fetchTopPairs(limit = 100): Promise<string[]> {
+  let sorted: any[] = [];
   try {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-
+    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+    if (!res.ok) throw new Error(`Status ${res.status}`);
     const data = await res.json();
 
-    const sorted = data
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // Filter only USDT futures
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // Sort by volume
-      .slice(0, limit); // Limit to top N
+    //Filter for perpetual contracts ending in USDT
+    sorted = data.symbols.filter(
+      (ticker: any) =>
+        ticker.symbol.endsWith('USDT') && ticker.contractType === 'PERPETUAL'
+    ).sort((a: any, b: any) =>
+      parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)
+    ).slice(0, limit);
 
-    console.log('Top Futures Pairs:', sorted.map(t => t.symbol));
 
-    return sorted.map(ticker => ticker.symbol);
   } catch (err) {
-    console.error('❌ Error fetching Binance Futures data:', err);
+    console.error('❌ Failed to fetch Binance data:', err);
+    //Return empty array to prevent app crashes
     return [];
   }
+    return sorted.map((ticker: any) => ticker.symbol);
 }
 
 export async function getServerSideProps() {
