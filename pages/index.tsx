@@ -63,6 +63,13 @@ interface SignalData {
   todaysLowestLow: number;
   todaysHighestHigh: number;
 
+  // === Trend History ===
+  recentCrossings?: {
+    type: 'bullish' | 'bearish';
+    price: number;
+    index: number;
+  }[];
+
    momentumSlowing: 'bullish' | 'bearish' | null;
      shouldTrade: boolean;
 
@@ -704,76 +711,6 @@ function findRecentCrossings(
 }
 
 
-/**
- * Detects strong candle pattern right before the latest EMA14/EMA70 crossover
- */
-function detectPreCrossingCandleSignal(
-  ema14: number[],
-  ema70: number[],
-  closes: number[],
-  opens: number[],
-  highs: number[],
-  lows: number[]
-): CandlePatternSignal | null {
-  const isBearishMarubozu = (i: number): boolean => {
-    const body = opens[i] - closes[i];
-    const upperWick = highs[i] - opens[i];
-    const lowerWick = closes[i] - lows[i];
-    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
-  };
-
-  const isBullishMarubozu = (i: number): boolean => {
-    const body = closes[i] - opens[i];
-    const upperWick = highs[i] - closes[i];
-    const lowerWick = opens[i] - lows[i];
-    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
-  };
-
-  const isBullishEngulfing = (i: number): boolean => {
-    return (
-      opens[i - 1] > closes[i - 1] && // previous red
-      closes[i] > opens[i] && // current green
-      opens[i] < closes[i - 1] && closes[i] > opens[i - 1]
-    );
-  };
-
-  const isBearishEngulfing = (i: number): boolean => {
-    return (
-      closes[i - 1] > opens[i - 1] && // previous green
-      opens[i] > closes[i] && // current red
-      opens[i] > closes[i - 1] && closes[i] < opens[i - 1]
-    );
-  };
-
-  for (let i = ema14.length - 2; i >= 1; i--) {
-    const prev14 = ema14[i - 1];
-    const prev70 = ema70[i - 1];
-    const curr14 = ema14[i];
-    const curr70 = ema70[i];
-
-    const isBullishCross = prev14 < prev70 && curr14 >= curr70;
-    const isBearishCross = prev14 > prev70 && curr14 <= curr70;
-
-    if (isBullishCross || isBearishCross) {
-      const patternIdx = i - 1;
-
-      if (isBullishMarubozu(patternIdx)) {
-        return {
-          pattern: 'bullish_marubozu',
-          index: patternIdx,
-          price: closes[patternIdx],
-          type: 'bullish',
-        };
-      }
-      if (isBearishMarubozu(patternIdx)) {
-        return {
-          pattern: 'bearish_marubozu',
-          index: patternIdx,
-          price: closes[patternIdx],
-          type: 'bearish',
-        };
-
-
 
 // Detect if there's a valid bullish trend first
 function isInBullishTrend(closes: number[], ema70: number[], rsi: number[]): boolean {
@@ -939,7 +876,6 @@ const symbols = await fetchTopPairs(100);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
       const volumes = candles.map(c => c.volume); // ✅ Valid
- const opens = candles.map(c => c.open); // Add this before using it
       
       
       const ema14 = calculateEMA(closes, 14);
@@ -1125,6 +1061,7 @@ if (abcSignal === 'sell' && abcPattern) {
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
 }  
 
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
 
 /* ---------- 1) PRE-REQS ---------- */
 const rsiPrev = rsi14.at(-2)!;
@@ -1317,7 +1254,9 @@ const descendingResistanceNearEMA70InBearish =
   continuationEnded,
   continuationReason,
 
-	    
+  // === Historical Signals (Optional) ===
+  recentCrossings,            // Array<{ type: 'bullish' | 'bearish', price: number, index: n
+
       momentumSlowing,
         shouldTrade:
     divergence &&
@@ -2094,7 +2033,42 @@ return (
     {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} 
   </span>
 </p>
-     
+
+
+
+		
+
+          
+
+{/* 🔄 Recent EMA Crossings */}
+{data.recentCrossings?.length > 0 && (
+  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
+    <p className="text-sm font-medium text-blue-300 mb-2">
+      🔄 Recent EMA Crossings
+    </p>
+    <ul className="space-y-1">
+      {data.recentCrossings.map((cross, idx) => (
+        <li
+          key={idx}
+          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+            cross.type === 'bullish'
+              ? 'bg-green-800 text-green-200'
+              : 'bg-red-800 text-red-200'
+          }`}
+        >
+          <span className="text-sm">
+            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+          </span>
+          <span className="ml-auto font-mono text-xs">
+            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)} 
+		
+          
         {/* Trade Link */}
         <div className="flex justify-center pt-4">
           <button
