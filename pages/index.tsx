@@ -593,8 +593,8 @@ function detectBullishContinuationWithEnd(
 
 // logic in getServerSideProps:
 // Fetch 15m candles from Binance Futures
-async function fetchCandles(symbol: string, interval: string = '15m'): Promise<Candle[]> {
-  const limit = 500;
+export async function fetchCandles(symbol: string, interval: string = '15m'): Promise<Candle[]> {
+  const limit = interval === '1d' ? 2 : 500;
 
   try {
     const response = await fetch(
@@ -602,7 +602,7 @@ async function fetchCandles(symbol: string, interval: string = '15m'): Promise<C
     );
 
     if (!response.ok) {
-      throw new Error(`Binance Futures candle fetch failed: ${response.status} ${response.statusText}`);
+      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -624,41 +624,45 @@ async function fetchCandles(symbol: string, interval: string = '15m'): Promise<C
       };
     }).reverse();
   } catch (error) {
-    console.error(`❌ Error fetching 15m candles for ${symbol}:`, error);
+    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
     return [];
   }
-}
+
 
 // Fetch top Futures perpetual USDT pairs from Binance
-async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
-  let sorted: any[] = [];
-
+export async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
   try {
     const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
     if (!res.ok) throw new Error(`Status ${res.status}`);
     const data = await res.json();
 
-    sorted = data
+    const sorted = data
       .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
       .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
       .slice(0, limit);
+
+    return sorted.map((ticker: any) => ticker.symbol);
   } catch (err) {
     console.error("❌ Failed to fetch Binance Futures data:", err);
+    return [];
   }
-
-  return sorted.map((ticker: any) => ticker.symbol);
 }
 
+  
 export async function getServerSideProps() {
-    try {
-        const symbols = await fetchTopFuturesPairs(100);
-        const signals: Record<string, SignalData> = {};
+  try {
+    const symbols = await fetchTopFuturesPairs(100); // Top 100 USDT perpetual
+    const signals: Record<string, SignalData> = {};
 
-        for (const symbol of symbols) {
-            try {
-                const candles = await fetchCandles(symbol, '15m');
-                if (!candles || candles.length === 0) continue;
+    for (const symbol of symbols) {
+      const candles = await fetchCandles(symbol, '15m');
+      if (!candles.length) continue;
 
+      const currentPrice = candles[candles.length - 1].close;
+      signals[symbol] = {
+        currentPrice,
+        candles,
+        
                 const closes = candles.map(c => c.close);
                 const highs = candles.map(c => c.high);
                 const lows = candles.map(c => c.low);
