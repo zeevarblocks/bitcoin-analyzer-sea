@@ -710,6 +710,111 @@ function findRecentCrossings(
   return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
+interface CandlePatternSignal {
+  pattern: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
+  index: number;
+  price: number;
+  type: 'bullish' | 'bearish';
+}
+
+/**
+ * Detects strong candle pattern right before the latest EMA14/EMA70 crossover
+ */
+function detectPreCrossingCandleSignal(
+  ema14: number[],
+  ema70: number[],
+  closes: number[],
+  opens: number[],
+  highs: number[],
+  lows: number[]
+): CandlePatternSignal | null {
+  const isBearishMarubozu = (i: number): boolean => {
+    const body = opens[i] - closes[i];
+    const upperWick = highs[i] - opens[i];
+    const lowerWick = closes[i] - lows[i];
+    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
+  };
+
+  const isBullishMarubozu = (i: number): boolean => {
+    const body = closes[i] - opens[i];
+    const upperWick = highs[i] - closes[i];
+    const lowerWick = opens[i] - lows[i];
+    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
+  };
+
+  const isBullishEngulfing = (i: number): boolean => {
+    return (
+      opens[i - 1] > closes[i - 1] && // previous red
+      closes[i] > opens[i] && // current green
+      opens[i] < closes[i - 1] && closes[i] > opens[i - 1]
+    );
+  };
+
+  const isBearishEngulfing = (i: number): boolean => {
+    return (
+      closes[i - 1] > opens[i - 1] && // previous green
+      opens[i] > closes[i] && // current red
+      opens[i] > closes[i - 1] && closes[i] < opens[i - 1]
+    );
+  };
+
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    const isBullishCross = prev14 < prev70 && curr14 >= curr70;
+    const isBearishCross = prev14 > prev70 && curr14 <= curr70;
+
+    if (isBullishCross || isBearishCross) {
+      const patternIdx = i - 1;
+
+      if (isBullishMarubozu(patternIdx)) {
+        return {
+          pattern: 'bullish_marubozu',
+          index: patternIdx,
+          price: closes[patternIdx],
+          type: 'bullish',
+        };
+      }
+      if (isBearishMarubozu(patternIdx)) {
+        return {
+          pattern: 'bearish_marubozu',
+          index: patternIdx,
+          price: closes[patternIdx],
+          type: 'bearish',
+        };
+      }
+      if (isBullishEngulfing(patternIdx)) {
+        return {
+          pattern: 'bullish_engulfing',
+          index: patternIdx,
+          price: closes[patternIdx],
+          type: 'bullish',
+        };
+      }
+      if (isBearishEngulfing(patternIdx)) {
+        return {
+          pattern: 'bearish_engulfing',
+          index: patternIdx,
+          price: closes[patternIdx],
+          type: 'bearish',
+        };
+      }
+
+      // If no pattern found, return null but break to only check first crossing
+      return null;
+    }
+  }
+
+  return null; // No crossover found
+}
+
+
+
+
+
 
 
 // Detect if there's a valid bullish trend first
@@ -1061,7 +1166,11 @@ if (abcSignal === 'sell' && abcPattern) {
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
 }  
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);  
+	    const preCrossSignal = detectPreCrossingCandleSignal(ema14, ema70, closes, opens, highs, lows);
+if (preCrossSignal) {
+  console.log("🔥 Strong pattern before crossover:", preCrossSignal);
+  }
 
 /* ---------- 1) PRE-REQS ---------- */
 const rsiPrev = rsi14.at(-2)!;
@@ -2067,6 +2176,36 @@ return (
     </ul>
   </div>
 )} 
+
+		   <div className="bg-gray-900 p-4 rounded-xl shadow-lg mt-4 border border-gray-700">
+      <p className="text-sm font-semibold text-blue-300 mb-3">
+        🔍 Pre-Crossing Candlestick Patterns (15m)
+      </p>
+      <ul className="space-y-2">
+        {signals.map((signal, idx) => {
+          const isBullish = signal.type === 'bullish';
+          const bg = isBullish ? 'bg-green-800 text-green-100' : 'bg-red-800 text-red-100';
+
+          return (
+            <li
+              key={idx}
+              className={`flex flex-col sm:flex-row sm:items-center justify-between p-2 rounded-md ${bg}`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">
+                  {isBullish ? '🟢 Bullish' : '🔴 Bearish'} {signal.pattern.replace('_', ' ')}
+                </span>
+              </div>
+              <span className="font-mono text-xs mt-1 sm:mt-0">
+                Price: ${signal.price.toFixed(5)}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+		
 		
           
         {/* Trade Link */}
