@@ -592,29 +592,36 @@ function detectBullishContinuationWithEnd(
 // logic in getServerSideProps:
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
-  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+
   try {
-    const response = await fetch(url);
+    const response = await fetch(
+      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
+    );
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Binance futures candle fetch failed (${response.status}): ${errorText} at URL ${url}`);
+      throw new Error(`Binance Futures candle fetch failed: ${response.status} ${response.statusText}`);
     }
+
     const data = await response.json();
-    if (!Array.isArray(data)) {
-      throw new Error(`Invalid candle data format from URL ${url}`);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('Invalid or empty candle array from Binance Futures');
     }
-    return data.map((d: any[]) => ({
-      timestamp: +d[0],
-      time: +d[0],
-      open: +d[1],
-      high: +d[2],
-      low: +d[3],
-      close: +d[4],
-      volume: +d[5],
-    })).reverse();
+
+    return data.map((d: any[]) => {
+      const ts = +d[0];
+      return {
+        timestamp: ts,
+        time: ts,
+        open: +d[1],
+        high: +d[2],
+        low: +d[3],
+        close: +d[4],
+        volume: +d[5],
+      };
+    });
   } catch (error) {
-    console.error(`❌ Error fetching futures candles for ${symbol} (${interval}):`, error);
-    alert(`Error fetching data for ${symbol}: ${error.message}`);
+    console.error('Error fetching Futures candles:', error);
     return [];
   }
 }
