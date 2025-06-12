@@ -107,17 +107,17 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   );
   const data = await response.json();
 
-  if (!data || !Array.isArray(data)) throw new Error('Invalid candle data');
+  if (!Array.isArray(data)) throw new Error('Invalid candle data');
 
-  return data
-    .map((d: string[]) => ({
-      timestamp: +d[0],
-      open: +d[1],
-      high: +d[2],
-      low: +d[3],
-      close: +d[4],
-      volume: +d[5],
-    }))
+  return data.map((d: any[]) => ({
+    time: +d[0],           // 👈 ADD THIS LINE
+    timestamp: +d[0],      // ✅ Also keep this
+    open: +d[1],
+    high: +d[2],
+    low: +d[3],
+    close: +d[4],
+    volume: +d[5],
+  }));
     .reverse();
 }
 
