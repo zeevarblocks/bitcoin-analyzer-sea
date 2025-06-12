@@ -1,8 +1,6 @@
 import React from 'react';
 
 interface SignalData {
-  signal: string;
-  strength: number;
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
 
@@ -381,7 +379,7 @@ function detectBearishContinuationWithEnd(closes, lows, highs, ema70, rsi, ema14
   let pointBIndex = -1;
   let pointCIndex = -1;
   let highestHigh = -Infinity;
-  let foundStructure = false;
+  let foundStructure = false; 
 
   for (let i = ema14.length - 5; i >= 3; i--) {
     const emaSlopeDown = ema70[i] < ema70[i - 1];
@@ -647,15 +645,13 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
 }
 
 export async function getServerSideProps() {
-  try {
-    const symbols = await fetchTopPairs(100);
-    const signals: Record<string, SignalData> = {};
+    try {
+        const symbols = await fetchTopPairs(100);
+        const signals: Record<string, SignalData> = {};
 
-    for (const symbol of symbols) {
-  let signal: SignalData | null = null;
-
-  try {
-    const candles = await fetchCandles(symbol, '15m');
+        for (const symbol of symbols) {
+            try {
+                const candles = await fetchCandles(symbol, '15m');
     if (!candles || candles.length === 0) {
       console.warn(`⚠️ Skipping ${symbol} due to empty candles`);
       continue;
