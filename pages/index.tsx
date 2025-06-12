@@ -3,6 +3,8 @@ import React from 'react';
 interface SignalData {
   // === Trend & Breakout ===
   trend: 'bullish' | 'bearish' | 'neutral';
+   currentPrice: number;
+  candles: Candle[];
 
   breakout: boolean;
   bullishBreakout: boolean;
@@ -805,6 +807,7 @@ export async function getServerSideProps() {
 
                 signals[symbol] = {
                     trend,
+                    currentPrice,
                     breakout,
                     bullishBreakout,
                     bearishBreakout,
