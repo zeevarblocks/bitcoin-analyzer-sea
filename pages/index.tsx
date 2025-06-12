@@ -883,13 +883,7 @@ type FilterType =
   | 'bullishBreakout'
   | 'bearishBreakout';
 
-export default function SignalChecker({
-  signals,
-  defaultSignals,
-}: {
-  signals: Record<string, SignalData>;
-  defaultSignals: SignalData[];
-}) {
+export default function SignalChecker({ signals, defaultSignals }: { signals: Record<string, SignalData>; defaultSignals: SignalData[] }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -898,7 +892,7 @@ export default function SignalChecker({
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const resetToggles = () => {
   setSelectedPairs([]);
@@ -934,53 +928,47 @@ const scrollToTop = () => {
 
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
-  setIsLoadingPairs(true);
-  console.log('Fetching pairs...');
-  try {
-    const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
-    console.log('Response status:', response.status);
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed (${response.status}): ${errorText}`);
+    setIsLoadingPairs(true);
+    console.log('Fetching pairs...');
+    try {
+      const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed (${response.status}): ${errorText}`);
+      }
+      const data = await response.json();
+      console.log('Received data:', data);
+      if (!data || !data.symbols) {
+        throw new Error('Invalid data format from Binance API');
+      }
+      const sortedPairs = data.symbols
+        .filter((item: any) => item.symbol.endsWith('USDT') && item.contractType === 'PERPETUAL')
+        .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+        .map((item: any) => item.symbol);
+      setPairs((prevPairs) => sortedPairs);
+      console.log('Pairs state updated:', pairs);
+    } catch (error) {
+      console.error('Error fetching futures trading pairs:', error);
+      alert(`Error fetching pairs: ${error.message}`);
+      setIsLoadingPairs(false); 
+    } finally {
+      console.log('setIsLoadingPairs(false) called.');
+      setIsLoadingPairs(false); 
     }
-    const data = await response.json();
-    console.log('Received data:', data);
-    if (!data || !data.symbols) {
-      throw new Error('Invalid data format from Binance API');
+  }, [signals]);
+
+
+  useEffect(() => {
+    if (Object.keys(signals).length > 0) {
+      fetchPairs();
     }
-    const sortedPairs = data.symbols
-      .filter((item: any) => item.symbol.endsWith('USDT') && item.contractType === 'PERPETUAL')
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .map((item: any) => item.symbol);
-    setPairs((prevPairs) => sortedPairs);
-    console.log('Pairs state updated:', pairs);
-  } catch (error) {
-    console.error('Error fetching futures trading pairs:', error);
-    alert(`Error fetching pairs: ${error.message}`);
-    setIsLoadingPairs(false); // Make sure this is called even on error.
-  } finally {
-    console.log('setIsLoadingPairs(false) called.'); //Confirmation
-    setIsLoadingPairs(false); 
-  }
-}, [signals]);
-  
-
-useEffect(() => {
-  // Fetch pairs initially when the component mounts
-  if (Object.keys(signals).length > 0) {
-    fetchPairs();
-  }
-
-  //Optional: Set up interval only if signals exist
-  let intervalId;
-  if (Object.keys(signals).length > 0) {
-    intervalId = setInterval(fetchPairs, 300000); // Fetch every 5 minutes
-  }
-
-  return () => {
-    clearInterval(intervalId); //Clean up when component unmounts
-  }
-}, [signals, fetchPairs]);
+    let intervalId;
+    if (Object.keys(signals).length > 0) {
+      intervalId = setInterval(fetchPairs, 300000); // Fetch every 5 minutes
+    }
+    return () => clearInterval(intervalId);
+  }, [signals, fetchPairs]);
 
 
 
