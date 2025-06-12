@@ -935,29 +935,45 @@ const scrollToTop = () => {
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
+  console.log('Fetching pairs...'); // Log start of fetch
   try {
     const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+    console.log('Response status:', response.status); // Log the status code
     if (!response.ok) {
-      const errorText = await response.text(); // Get error details from the response.
+      const errorText = await response.text();
       throw new Error(`API request failed (${response.status}): ${errorText}`);
     }
     const data = await response.json();
-    // ... (rest of your code)
+    console.log('Received data:', data); // Log the received data
+    if (!data || !data.symbols) {
+      throw new Error('Invalid data format from Binance API');
+    }
+    const sortedPairs = data.symbols
+      .filter(
+        (item: any) =>
+          item.symbol.endsWith('USDT') && item.contractType === 'PERPETUAL'
+      )
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .map((item: any) => item.symbol);
+    console.log('Sorted pairs:', sortedPairs); // Log the sorted pairs
+    setPairs(sortedPairs);
+    console.log('Pairs state updated:', pairs); // Log the pairs after update
   } catch (error) {
     console.error('Error fetching futures trading pairs:', error);
-    alert(`Error fetching pairs: ${error.message}`); // Alert the user
+    alert(`Error fetching pairs: ${error.message}`);
     setIsLoadingPairs(false);
-    return; //Important: stop execution if there's an error.
+    return;
+  } finally {
+    setIsLoadingPairs(false);
   }
-  setIsLoadingPairs(false);
 }, []);
 
 
 useEffect(() => {
-  console.log('useEffect running...'); // Added log statement
+  console.log('useEffect running...'); //Confirm useEffect runs
   fetchPairs();
-}, [fetchPairs]); // Ensure fetchPairs is in the dependency array
-
+}, [fetchPairs]);
+  
 
   useEffect(() => {
     if (Object.keys(signals).length > 0) {
