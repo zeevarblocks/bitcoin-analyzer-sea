@@ -627,7 +627,7 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
+async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
   try {
     const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
     if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
@@ -650,7 +650,7 @@ async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
 
 export async function getServerSideProps() {
     try {
-        const symbols = await fetchTopFuturesPairs(100);
+        const symbols = await fetchTopFuturesPairs(1);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
