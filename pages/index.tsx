@@ -68,6 +68,7 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
+reversalCross?: boolean;
   }[];
 
    momentumSlowing: 'bullish' | 'bearish' | null;
