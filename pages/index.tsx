@@ -851,7 +851,7 @@ export async function getServerSideProps() {
     console.error("❌ getServerSideProps failed completely:", error);
         return {
             props: {
-                symbols: [],
+                symbols: string[];
                 signals: {},
                 defaultSymbol: null,
             },
