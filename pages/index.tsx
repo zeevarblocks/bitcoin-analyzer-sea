@@ -935,32 +935,35 @@ const scrollToTop = () => {
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
+  console.log('Fetching pairs...');
   try {
     const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+    console.log('Response status:', response.status);
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`API request failed (${response.status}): ${errorText}`);
     }
     const data = await response.json();
+    console.log('Received data:', data);
     if (!data || !data.symbols) {
       throw new Error('Invalid data format from Binance API');
     }
     const sortedPairs = data.symbols
-      .filter(
-        (item: any) =>
-          item.symbol.endsWith('USDT') && item.contractType === 'PERPETUAL'
-      )
+      .filter((item: any) => item.symbol.endsWith('USDT') && item.contractType === 'PERPETUAL')
       .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
       .map((item: any) => item.symbol);
-    setPairs((prevPairs) => sortedPairs); // Functional update
+    setPairs((prevPairs) => sortedPairs);
+    console.log('Pairs state updated:', pairs);
   } catch (error) {
     console.error('Error fetching futures trading pairs:', error);
-    alert(`Error fetching pairs: ${error.message}`); 
-    setIsLoadingPairs(false);
+    alert(`Error fetching pairs: ${error.message}`);
+    setIsLoadingPairs(false); // Make sure this is called even on error.
   } finally {
-    setIsLoadingPairs(false);
+    console.log('setIsLoadingPairs(false) called.'); //Confirmation
+    setIsLoadingPairs(false); 
   }
-}, [signals]); // Correct dependency array
+}, [signals]);
+  
 
 useEffect(() => {
   // Fetch pairs initially when the component mounts
@@ -979,8 +982,6 @@ useEffect(() => {
   }
 }, [signals, fetchPairs]);
 
-
-// Remove handleRefresh -- it's no longer needed
 
 
 //Persist selectedPairs (this remains unchanged)
