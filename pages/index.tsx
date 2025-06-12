@@ -68,7 +68,6 @@ interface SignalData {
     type: 'bullish' | 'bearish';
     price: number;
     index: number;
-pattern?: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
   }[];
 
    momentumSlowing: 'bullish' | 'bearish' | null;
@@ -679,52 +678,9 @@ function detectBearishContinuationWithEnd(closes, lows, highs, ema70, rsi, ema14
 function findRecentCrossings(
   ema14: number[],
   ema70: number[],
-  closes: number[],
-  opens: number[],
-  highs: number[],
-  lows: number[]
-): {
-  type: 'bullish' | 'bearish';
-  price: number;
-  index: number;
-  pattern?: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
-}[] {
-  const crossings: {
-    type: 'bullish' | 'bearish';
-    price: number;
-    index: number;
-    pattern?: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing';
-  }[] = [];
-
-  const isBearishMarubozu = (i: number): boolean => {
-    const body = opens[i] - closes[i];
-    const upperWick = highs[i] - opens[i];
-    const lowerWick = closes[i] - lows[i];
-    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
-  };
-
-  const isBullishMarubozu = (i: number): boolean => {
-    const body = closes[i] - opens[i];
-    const upperWick = highs[i] - closes[i];
-    const lowerWick = opens[i] - lows[i];
-    return body > 0 && upperWick / body < 0.1 && lowerWick / body < 0.1;
-  };
-
-  const isBullishEngulfing = (i: number): boolean => {
-    return (
-      opens[i - 1] > closes[i - 1] && // previous is red
-      closes[i] > opens[i] && // current is green
-      opens[i] < closes[i - 1] && closes[i] > opens[i - 1]
-    );
-  };
-
-  const isBearishEngulfing = (i: number): boolean => {
-    return (
-      closes[i - 1] > opens[i - 1] && // previous is green
-      opens[i] > closes[i] && // current is red
-      opens[i] > closes[i - 1] && closes[i] < opens[i - 1]
-    );
-  };
+  closes: number[]
+): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
+  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
@@ -732,33 +688,26 @@ function findRecentCrossings(
     const curr14 = ema14[i];
     const curr70 = ema70[i];
 
-    let pattern: 'bullish_marubozu' | 'bearish_marubozu' | 'bullish_engulfing' | 'bearish_engulfing' | undefined;
-
-    if (isBullishMarubozu(i - 1)) pattern = 'bullish_marubozu';
-    else if (isBearishMarubozu(i - 1)) pattern = 'bearish_marubozu';
-    else if (isBullishEngulfing(i - 1)) pattern = 'bullish_engulfing';
-    else if (isBearishEngulfing(i - 1)) pattern = 'bearish_engulfing';
-
-    if (!pattern) continue;
-
+    // Bullish crossover
     if (prev14 < prev70 && curr14 >= curr70) {
       crossings.push({
         type: 'bullish',
         price: closes[i],
         index: i,
-        pattern,
       });
-    } else if (prev14 > prev70 && curr14 <= curr70) {
+    }
+
+    // Bearish crossover
+    if (prev14 > prev70 && curr14 <= curr70) {
       crossings.push({
         type: 'bearish',
         price: closes[i],
         index: i,
-        pattern,
       });
     }
   }
 
-  return crossings.reverse(); // Return oldest to newest
+  return crossings.reverse(); // So it's ordered from oldest to newest
 }
 
 
@@ -923,11 +872,10 @@ const symbols = await fetchTopPairs(100);
   for (const symbol of symbols) {
     try {
       const candles = await fetchCandles(symbol, '15m');
-const opens = candles.map(c => c.open);     // ✅ Required
-const closes = candles.map(c => c.close);
-const highs = candles.map(c => c.high);
-const lows = candles.map(c => c.low);
-const volumes = candles.map(c => c.volume); // ✅ Valid
+      const closes = candles.map(c => c.close);
+      const highs = candles.map(c => c.high);
+      const lows = candles.map(c => c.low);
+      const volumes = candles.map(c => c.volume); // ✅ Valid
       
       
       const ema14 = calculateEMA(closes, 14);
@@ -1113,7 +1061,7 @@ if (abcSignal === 'sell' && abcPattern) {
   // ⚠️ Suggests bullish trend stalled → Possible bearish reversal → Consider short setup
 }  
 
-      const recentCrossings = findRecentCrossings(ema14, ema70, closes, opens, highs, lows);  
+      const recentCrossings = findRecentCrossings(ema14, ema70, closes);   
 
 /* ---------- 1) PRE-REQS ---------- */
 const rsiPrev = rsi14.at(-2)!;
@@ -1345,13 +1293,22 @@ type FilterType =
   | null
   | 'bullishContinuation'
   | 'bearishContinuation'
+  | 'ema14Bounce'
+  | 'ema70Bounce'
+  | 'ema14&70Bounce' // Combined EMA14 & EMA70 bounce filter
   | 'divergence'
   | 'nearOrAtEMA70Divergence'
   | 'divergenceFromLevel'
+  | 'recentCrossings'
   | 'bullishBreakout'
   | 'bearishBreakout'
-  |	'touchedEMA70Today';
-
+  |	'abcSignal'
+  |	'crossSignal'
+  |	'abcSignal&crossSignal'
+  |	'touchedEMA70Today'
+  |	'breakout'
+  |	'touchedEMA70Today&breakout'
+	| 'tradeSignal';
 
 export default function SignalChecker({
   signals,
@@ -1488,7 +1445,11 @@ const scrollToTop = () => {
       if (activeFilter === 'divergence') return data.divergence;
       if (activeFilter === 'nearOrAtEMA70Divergence') return data.nearOrAtEMA70Divergence;
       if (activeFilter === 'divergenceFromLevel') return data.divergenceFromLevel;
-	if (activeFilter === 'touchedEMA70Today') return data.touchedEMA70Today;
+      if (activeFilter === 'tradeSignal') return data.ema70Bounce && data.recentCrossings;
+      if (activeFilter === 'ema14Bounce') return data.ema14Bounce;
+      if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
+      if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
+      if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
       return true;  
     });
 
@@ -1666,8 +1627,28 @@ return (
 >
   <span>📉</span> {/* Level-based divergence — potential trap signal */}
   <span>divergenceFromLevel</span>
-	</button>
-
+</button>
+          <button
+  onClick={() => setActiveFilter('tradeSignal')}
+  className="bg-gray-800 hover:bg-yellow-600 text-violet-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>tradeSignal</span>
+</button>
+          <button
+  onClick={() => setActiveFilter('ema14Bounce')}
+  className="bg-gray-800 hover:bg-purple-600 text-indigo-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>ema14Bounce</span>
+</button>
+          <button
+  onClick={() => setActiveFilter('ema14&70Bounce')}
+  className="bg-gray-800 hover:bg-orange-600 text-cyan-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+>
+  <span>📈</span> {/* EMA14 & EMA70 Bounce — trend continuation signal */}
+  <span>ema14&70Bounce</span>
+</button>
           <button
     onClick={() => setActiveFilter('bullishContinuation')}
     className="bg-gray-800 hover:bg-green-700 text-green-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
@@ -1684,12 +1665,20 @@ return (
     <span>bearishContinuation</span>
   </button>
 
-	<button
-    onClick={() => setActiveFilter('touchedEMA70Today')}
+          <button
+    onClick={() => setActiveFilter('abcSignal&crossSignal')}
     className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
   >
     <span>📉</span>
-    <span>touchedEMA70Today</span>
+    <span>abcdSignal&crossSignal</span>
+  </button>
+
+          <button
+    onClick={() => setActiveFilter('touchedEMA70Today&breakout')}
+    className="bg-gray-800 hover:bg-orange-700 text-blue-300 px-2.5 py-1 text-xs rounded-md transition flex items-center gap-1"
+  >
+    <span>📉</span>
+    <span>touchedEMA70Today&breakout</span>
   </button>
                
 </div>
@@ -2022,75 +2011,62 @@ return (
     </div>
 )}
 
-		<div className="space-y-3 text-sm">
-  <div className="flex items-center gap-2">
-    <span className="text-lg">🧲</span>
-    <span className="font-medium">Touched EMA70 Today:</span>
-    <span className={data.touchedEMA70Today ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
-      {data.touchedEMA70Today ? 'Yes' : 'No'}
-    </span>
-  </div>
+		<p>
+  🧲 Touched EMA70 Today:{' '}
+  <span className={data.touchedEMA70Today ? 'text-green-400' : 'text-red-400'}>
+    {data.touchedEMA70Today ? 'Yes' : 'No'}
+  </span>
+</p>
 
-  <div className="flex items-center gap-2">
-    <span className="text-lg">🚀</span>
-    <span className="font-medium">RSI14 Breakout Above Swing Low:</span>
-    <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
-      {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'}
-    </span>
-  </div>
-
-  <div className="flex items-center gap-2">
-    <span className="text-lg">📉</span>
-    <span className="font-medium">RSI14 Breakdown Below Swing High:</span>
-    <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
-      {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'}
-    </span>
-  </div>
-</div>
 		
-{data.recentCrossings?.length > 0 && (
-  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
-    <p className="text-sm font-semibold text-blue-300 mb-2">
-      🔄 Recent EMA Crossings
-    </p>
-    <ul className="space-y-2">
-      {data.recentCrossings.map((cross, idx) => {
-        const isReversal = idx === data.recentCrossings.length - 1;
-        const isBullish = cross.type === 'bullish';
+<p>
+  🚀 RSI14 Breakout Above Swing Low:{' '}
+  <span className={data.rsi14BreakoutAboveSwingLow ? 'text-green-400' : 'text-red-400'}>
+    {data.rsi14BreakoutAboveSwingLow ? 'Yes' : 'No'} 
+  </span>
+</p>
 
-        const label = isReversal
-          ? `🔁 Reversal ${isBullish ? 'Bullish' : 'Bearish'} Cross`
-          : isBullish
-          ? '🟢 Bullish Cross'
-          : '🔴 Bearish Cross';
 
-        const formattedPattern = cross.pattern
-          ? cross.pattern.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-          : 'No Pattern';
+<p>
+  📉 RSI14 Breakdown Below Swing High:{' '}
+  <span className={data.rsi14BreakdownBelowSwingHigh ? 'text-green-400' : 'text-red-400'}>
+    {data.rsi14BreakdownBelowSwingHigh ? 'Yes' : 'No'} 
+  </span>
+</p>
 
-        return (
-          <li
-            key={idx}
-            className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 px-3 py-2 rounded-md ${
-              isBullish ? 'bg-green-800 text-green-100' : 'bg-red-800 text-red-100'
-            }`}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-              <span className="text-sm font-medium">{label}</span>
-              <span className="text-xs italic opacity-80">{formattedPattern}</span>
-            </div>
-            <span className="ml-auto font-mono text-xs">
-              @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
-  </div>
-)}
+
+
+		
+
           
 
-
+{/* 🔄 Recent EMA Crossings */}
+{data.recentCrossings?.length > 0 && (
+  <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
+    <p className="text-sm font-medium text-blue-300 mb-2">
+      🔄 Recent EMA Crossings
+    </p>
+    <ul className="space-y-1">
+      {data.recentCrossings.map((cross, idx) => (
+        <li
+          key={idx}
+          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+            cross.type === 'bullish'
+              ? 'bg-green-800 text-green-200'
+              : 'bg-red-800 text-red-200'
+          }`}
+        >
+          <span className="text-sm">
+            {cross.type === 'bullish' ? '🟢 Bullish Cross' : '🔴 Bearish Cross'}
+          </span>
+          <span className="ml-auto font-mono text-xs">
+            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)} 
 		
           
         {/* Trade Link */}
