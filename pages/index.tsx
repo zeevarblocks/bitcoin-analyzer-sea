@@ -1,3 +1,28 @@
+
+import { useEffect, useState } from 'react';
+
+function useFuturesTicker(symbol: string) {
+  const [price, setPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!symbol) return;
+
+    const ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@ticker`);
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setPrice(parseFloat(data.c)); // 'c' = current price
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [symbol]);
+
+  return price;
+}
+
+
 import React from 'react';
 
 interface SignalData {
