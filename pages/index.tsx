@@ -84,9 +84,9 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 
     const data = await response.json();
 
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid candle data format');
-    }
+   if (!Array.isArray(data) || data.length === 0 || !Array.isArray(data[0])) {
+  throw new Error('Invalid or empty candle array');
+   }
 
     return data.map((d: any[]) => {
       const ts = +d[0];
