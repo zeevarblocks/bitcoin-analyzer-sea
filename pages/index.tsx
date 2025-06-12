@@ -117,7 +117,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
     low: +d[3],
     close: +d[4],
     volume: +d[5],
-  }));
+  }))
     .reverse();
 }
 
