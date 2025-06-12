@@ -968,42 +968,27 @@ const scrollToTop = () => {
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
+  console.log('Fetching pairs...'); // Added log statement
   try {
-    const response = await fetch(
-      'https://fapi.binance.com/fapi/v1/exchangeInfo'
-    ); // Use the correct Futures API endpoint
-
-    if (!response.ok) {
-      throw new Error(
-        `Binance futures exchange info fetch failed: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-    if (!data.symbols) {
-      throw new Error('Invalid exchange info format');
-    }
-
-    const sortedPairs = data.symbols
-      .filter(
-        (item: any) =>
-          item.symbol.endsWith('USDT') && item.contractType === 'PERPETUAL'
-      ) // Filter for perpetual USDT contracts
-      .sort((a: any, b: any) =>
-        parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)
-      )
-      .map((item: any) => item.symbol);
-
+    // ... (Your fetch logic)
+    console.log('Fetched data:', data); // Added log statement
+    const sortedPairs = // ...(your filtering and sorting)
+    console.log('Sorted pairs:', sortedPairs); // Added log statement
     setPairs(sortedPairs);
-
-    // ... (rest of your existing code for handling saved pairs remains the same)
+    console.log('Pairs set:', pairs); // Added log statement //Check pairs after setPairs is called
+    // ...(rest of your logic)
 
   } catch (error) {
-    console.error('Error fetching futures trading pairs:', error);
+    console.error('Error fetching trading pairs:', error);
   } finally {
     setIsLoadingPairs(false);
   }
 }, [signals]);
+
+useEffect(() => {
+  console.log('useEffect running...'); // Added log statement
+  fetchPairs();
+}, [fetchPairs]); // Ensure fetchPairs is in the dependency array
 
 
   useEffect(() => {
@@ -1492,14 +1477,7 @@ return (
   </div>
 )}
 
-          <div>
-        <h2>Available Futures Pairs</h2>
-        <ul>
-          {pairs.map((pair) => (
-            <li key={pair}>{pair}</li>
-          ))}
-        </ul>
-      </div>
+          
 
 
           
