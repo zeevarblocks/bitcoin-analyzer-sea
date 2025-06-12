@@ -622,7 +622,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   }
 }
 
-async function fetchTopPairs(limit = 100): Promise<string[]> {
+async function fetchTopPairs(limit = 1): Promise<string[]> {
   const url = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
   try {
     const response = await fetch(url); 
@@ -653,7 +653,7 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
 
 export async function getServerSideProps() {
     try {
-        const symbols = await fetchTopPairs(100);
+        const symbols = await fetchTopPairs(1);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
@@ -866,8 +866,7 @@ export async function getServerSideProps() {
 
 
 // In the component SignalChecker, just render the two new fields like this:
-import { useState, useEffect, useRef, useCallback } from 'react';
-
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 type FilterType =
   | null
