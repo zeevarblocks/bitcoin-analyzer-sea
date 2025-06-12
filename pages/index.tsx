@@ -592,7 +592,7 @@ function detectBullishContinuationWithEnd(
 // logic in getServerSideProps:
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
-  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const url = `https://fapi.binance.com/fapi/v1/ticker/24hr`;
   try {
     const response = await fetch(url);
     if (!response.ok) {
