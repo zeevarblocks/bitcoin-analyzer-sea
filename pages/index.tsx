@@ -935,8 +935,6 @@ const scrollToTop = () => {
   // Fetch pairs with stable callback reference
   const fetchPairs = useCallback(async () => {
   setIsLoadingPairs(true);
-  const fetchPairs = useCallback(async () => {
-  setIsLoadingPairs(true);
   try {
     const response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
     if (!response.ok) {
@@ -952,7 +950,8 @@ const scrollToTop = () => {
     return; //Important: stop execution if there's an error.
   }
   setIsLoadingPairs(false);
-  };
+}, []);
+
 
 useEffect(() => {
   console.log('useEffect running...'); // Added log statement
