@@ -70,41 +70,6 @@ interface Candle {
   timestamp: number; 
 }
 
-async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
-  const limit = interval === '1d' ? 2 : 500;
-
-  try {
-    const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid candle data format');
-    }
-
-    return data.map((d: any[]) => {
-      const ts = +d[0];
-      return {
-        timestamp: ts,
-        time: ts,
-        open: +d[1],
-        high: +d[2],
-        low: +d[3],
-        close: +d[4],
-        volume: +d[5],
-      };
-    }).reverse();
-  } catch (error) {
-    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
-    return []; // Return empty so main app doesn’t crash
-  }
-}
 
 function calculateEMA(data: number[], period: number): number[] {
   const k = 2 / (period + 1);
@@ -627,25 +592,62 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopPairs(limit = 100): Promise<string[]> {
-    let sorted: any[] = [];
+// Fetch 15m candles from Binance Futures
+async function fetchCandles(symbol: string, interval: string = '15m'): Promise<Candle[]> {
+  const limit = 500;
 
-try {
-  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-  if (!res.ok) throw new Error(`Status ${res.status}`);
-  const data = await res.json();
+  try {
+    const response = await fetch(
+      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    );
 
-  sorted = data
-    .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
-    .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-    .slice(0, 100); // or however many you need
-} catch (err) {
-  console.error("❌ Failed to fetch Binance data on Vercel:", err);
+    if (!response.ok) {
+      throw new Error(`Binance Futures candle fetch failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid candle data format');
+    }
+
+    return data.map((d: any[]) => {
+      const ts = +d[0];
+      return {
+        timestamp: ts,
+        time: ts,
+        open: +d[1],
+        high: +d[2],
+        low: +d[3],
+        close: +d[4],
+        volume: +d[5],
+      };
+    }).reverse();
+  } catch (error) {
+    console.error(`❌ Error fetching 15m candles for ${symbol}:`, error);
+    return [];
+  }
 }
 
-// ✅ This is now safe — sorted is always defined
-return sorted.map((ticker: any) => ticker.symbol);
-                                         }
+// Fetch top Futures perpetual USDT pairs from Binance
+async function fetchTopFuturesPairs(limit = 100): Promise<string[]> {
+  let sorted: any[] = [];
+
+  try {
+    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const data = await res.json();
+
+    sorted = data
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .slice(0, limit);
+  } catch (err) {
+    console.error("❌ Failed to fetch Binance Futures data:", err);
+  }
+
+  return sorted.map((ticker: any) => ticker.symbol);
+}
 
 export async function getServerSideProps() {
     try {
@@ -929,51 +931,54 @@ const scrollToTop = () => {
 };
 
   // Fetch pairs with stable callback reference
-  const fetchPairs = useCallback(async () => {
-    setIsLoadingPairs(true);
-    try {
-      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-      const data = await response.json();
-      console.log('Fetched Binance data:', data);
+  // React useCallback to fetch and set Futures pairs
+const fetchPairs = useCallback(async () => {
+  setIsLoadingPairs(true);
+  try {
+    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const data = await response.json();
+    console.log('Fetched Futures Binance data:', data);
 
-      const sortedPairs = data
-        .filter((item: any) => item.symbol.endsWith('USDT'))
-        .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-        .map((item: any) => item.symbol);
+    const sortedPairs = data
+      .filter((item: any) => item.symbol.endsWith('USDT'))
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .map((item: any) => item.symbol);
 
-      setPairs(sortedPairs);
+    setPairs(sortedPairs);
 
-      const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
-      const validSaved = savedPairs.filter(
-        (pair: string) => signals?.[pair]?.currentPrice !== undefined
-      );
+    const savedPairs = JSON.parse(localStorage.getItem('selectedPairs') || '[]');
+    const validSaved = savedPairs.filter(
+      (pair: string) => signals?.[pair]?.currentPrice !== undefined
+    );
 
-      if (validSaved.length > 0) {
-        setSelectedPairs(validSaved);
-      } else {
-        const topValidPairs = sortedPairs
-          .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 100);
-        setSelectedPairs(topValidPairs);
-      }
-    } catch (error) {
-      console.error('Error fetching trading pairs:', error);
-    } finally {
-      setIsLoadingPairs(false);
+    if (validSaved.length > 0) {
+      setSelectedPairs(validSaved);
+    } else {
+      const topValidPairs = sortedPairs
+        .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
+        .slice(0, 100);
+      setSelectedPairs(topValidPairs);
     }
-  }, [signals]);
+  } catch (error) {
+    console.error('Error fetching Futures trading pairs:', error);
+  } finally {
+    setIsLoadingPairs(false);
+  }
+}, [signals]);
 
-  useEffect(() => {
-    if (Object.keys(signals).length > 0) {
-      fetchPairs();
-    }
-  }, [signals]);
+// Fetch pairs when signals are loaded
+useEffect(() => {
+  if (Object.keys(signals).length > 0) {
+    fetchPairs();
+  }
+}, [signals]);
 
-  const handleRefresh = async () => {
-  setIsRefreshing(true);
-  await Promise.all([fetchPairs()]);
-  setIsRefreshing(false);
-};
+// Store selected pairs in localStorage
+useEffect(() => {
+  if (selectedPairs.length > 0) {
+    localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
+  }
+}, [selectedPairs]);
 
   // Fetch pairs on mount and every 5 minutes
   useEffect(() => {
@@ -982,12 +987,12 @@ const scrollToTop = () => {
     return () => clearInterval(intervalId);
   }, [fetchPairs]);
 
-  // Persist selected pairs in localStorage
-  useEffect(() => {
-    if (selectedPairs.length > 0) {
-      localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
-    }
-  }, [selectedPairs]);
+  const handleRefresh = async () => {
+  setIsRefreshing(true);
+  await Promise.all([fetchPairs()]);
+  setIsRefreshing(false);
+};
+
 
   // Load favorites from localStorage on mount
   useEffect(() => {
