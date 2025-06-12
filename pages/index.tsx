@@ -75,7 +75,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 
   try {
     const response = await fetch(
-      `https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=100`
+      `https://api.binance.com/api/v3/exchangeInfo`
     );
 
     if (!response.ok) {
@@ -629,7 +629,7 @@ function detectBullishContinuationWithEnd(
 // logic in getServerSideProps:
 async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
   try {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo');
     if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 
     const data = await res.json();
@@ -936,7 +936,7 @@ const scrollToTop = () => {
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
     try {
-      const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+      const response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
       const data = await response.json();
       console.log('Fetched Binance data:', data);
 
