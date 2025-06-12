@@ -619,26 +619,23 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   }
 }
 
-async function fetchTopPairs(limit = 1): Promise<string[]> {
-  const url = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
+async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Binance futures exchange info fetch failed (${response.status}): ${errorText} at URL ${url}`);
-    }
-    const data = await response.json();
-    if (!data.symbols) {
-      throw new Error(`Invalid exchange info format from URL ${url}`);
-    }
-    return data.symbols
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT') && ticker.contractType === 'PERPETUAL')
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, limit)
-      .map((ticker: any) => ticker.symbol);
-  } catch (error) {
-    console.error('❌ Error fetching top futures pairs:', error);
-    alert(`Error fetching pairs: ${error.message}`);
+    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+
+    const data = await res.json();
+
+    const sorted = data
+      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // Filter only USDT futures
+      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // Sort by volume
+      .slice(0, limit); // Limit to top N
+
+    console.log('Top Futures Pairs:', sorted.map(t => t.symbol));
+
+    return sorted.map(ticker => ticker.symbol);
+  } catch (err) {
+    console.error('❌ Error fetching Binance Futures data:', err);
     return [];
   }
 }
