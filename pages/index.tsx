@@ -1996,29 +1996,37 @@ return (
   </div>
 </div>
 		
-{data.recentCrossings?.length === 1 && (
+{data.recentCrossings?.length > 0 && (
   <div className="bg-gray-800 p-3 rounded-lg shadow mt-4">
     <p className="text-sm font-medium text-blue-300 mb-2">
-      🔄 Recent EMA Crossing
+      🔄 Recent EMA Crossings
     </p>
     <ul className="space-y-1">
-      {data.recentCrossings.map((cross, idx) => (
-        <li
-          key={idx}
-          className={`flex items-center gap-3 px-2 py-1 rounded-md ${
-            cross.type === 'bullish'
-              ? 'bg-green-800 text-green-200'
-              : 'bg-red-800 text-red-200'
-          }`}
-        >
-          <span className="text-sm font-medium">
-            🔁 Reversal {cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross
-          </span>
-          <span className="ml-auto font-mono text-xs">
-            @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
-          </span>
-        </li>
-      ))}
+      {data.recentCrossings.map((cross, idx) => {
+        const isReversal = idx === data.recentCrossings.length - 1;
+
+        return (
+          <li
+            key={idx}
+            className={`flex items-center gap-3 px-2 py-1 rounded-md ${
+              cross.type === 'bullish'
+                ? 'bg-green-800 text-green-200'
+                : 'bg-red-800 text-red-200'
+            }`}
+          >
+            <span className="text-sm font-medium">
+              {isReversal
+                ? `🔁 Reversal ${cross.type === 'bullish' ? 'Bullish' : 'Bearish'} Cross`
+                : cross.type === 'bullish'
+                ? '🟢 Bullish Cross'
+                : '🔴 Bearish Cross'}
+            </span>
+            <span className="ml-auto font-mono text-xs">
+              @ ${typeof cross.price === 'number' ? cross.price.toFixed(9) : 'N/A'}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   </div>
 )}
