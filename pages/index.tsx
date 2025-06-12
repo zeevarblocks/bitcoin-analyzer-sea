@@ -957,10 +957,13 @@ const scrollToTop = () => {
     }
   }, [signals]);
   
-
-  useEffect(() => {
+useEffect(() => {
     if (Object.keys(signals).length > 0) {
       fetchPairs();
+    }
+  }, [signals]);
+
+  
     }
     let intervalId;
     if (Object.keys(signals).length > 0) {
@@ -973,11 +976,10 @@ const scrollToTop = () => {
 
 //Persist selectedPairs (this remains unchanged)
 useEffect(() => {
-  if (selectedPairs.length > 0) {
-    localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
-  }
-}, [selectedPairs]);
-
+    if (selectedPairs.length > 0) {
+      localStorage.setItem('selectedPairs', JSON.stringify(selectedPairs));
+    }
+  }, [selectedPairs]);
 
   // Load favorites from localStorage on mount
   useEffect(() => {
