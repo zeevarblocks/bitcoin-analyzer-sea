@@ -107,7 +107,9 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   );
   const data = await response.json();
 
-  if (!Array.isArray(data)) throw new Error('Invalid candle data');
+  if (!Array.isArray(data) || !Array.isArray(data[0])) {
+  throw new Error('Invalid Binance candle data');
+}
 
   return data.map((d: any[]) => ({
     time: +d[0],           // 👈 ADD THIS LINE
@@ -1268,10 +1270,10 @@ const descendingResistanceNearEMA70InBearish =
 };  
    
 
-    } catch (err) {
-      console.error(`Error fetching ${symbol}:`, err);
-    }
-    }
+      } catch (err) {
+    console.error(`❌ Error processing ${symbol}:`, err);
+  }
+  }
 
   const defaultSymbol = symbols[0];
 
