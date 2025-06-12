@@ -981,6 +981,7 @@ const symbols = await fetchTopPairs(100);
       const highs = candles.map(c => c.high);
       const lows = candles.map(c => c.low);
       const volumes = candles.map(c => c.volume); // ✅ Valid
+ const opens = candles.map(c => c.open); // Add this before using it
       
       
       const ema14 = calculateEMA(closes, 14);
