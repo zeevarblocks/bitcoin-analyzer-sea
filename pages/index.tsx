@@ -2065,11 +2065,9 @@ return (
                   : '🔴 Bearish Cross'}
               </span>
 
-              {cross.pattern && (
-                <span className="text-xs italic opacity-70 ml-2">
-                  ({cross.pattern.replace('_', ' ')})
-                </span>
-              )}
+              <span className="text-xs italic opacity-70 ml-2">
+                ({cross.pattern?.replace('_', ' ') || 'no pattern'})
+              </span>
             </div>
 
             <span className="ml-auto font-mono text-xs sm:mt-0">
