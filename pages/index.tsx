@@ -594,7 +594,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
   const limit = interval === '1d' ? 2 : 500;
   const url = `https://fapi.binance.com/fapi/v1/ticker/24hr`;
   try {
-    const response = await fetch(url);
+    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
     if (!response.ok) {
       const errorText = await response.text(); // Get the error message from the response
       throw new Error(`Binance futures candle fetch failed (${response.status}): ${errorText} at URL ${url}`); 
@@ -623,7 +623,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 async function fetchTopPairs(limit = 1): Promise<string[]> {
   const url = 'https://fapi.binance.com/fapi/v1/ticker/24hr';
   try {
-    const response = await fetch(url); 
+    const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr'); 
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Binance futures exchange info fetch failed (${response.status}): ${errorText} at URL ${url}`);
