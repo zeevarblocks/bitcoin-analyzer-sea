@@ -70,23 +70,22 @@ interface Candle {
   timestamp: number; 
 }
 
-
 async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
   const limit = interval === '1d' ? 2 : 500;
 
   try {
     const response = await fetch(
-      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
     );
 
     if (!response.ok) {
-      throw new Error(`Binance Futures candle fetch failed: ${response.status} ${response.statusText}`);
+      throw new Error(`Binance candle fetch failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
 
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('Invalid or empty candle array from Binance Futures');
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid candle data format');
     }
 
     return data.map((d: any[]) => {
@@ -100,13 +99,379 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
         close: +d[4],
         volume: +d[5],
       };
-    });
+    }).reverse();
   } catch (error) {
-    console.error('Error fetching Futures candles:', error);
-    return [];
+    console.error(`❌ Error fetching candles for ${symbol} (${interval}):`, error);
+    return []; // Return empty so main app doesn’t crash
   }
 }
-    
+
+function calculateEMA(data: number[], period: number): number[] {
+  const k = 2 / (period + 1);
+  const ema: number[] = [];
+  let previousEma: number | null = null;
+
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      ema.push(NaN);
+      continue;
+    }
+
+    if (i === period - 1) {
+      const sma = data.slice(0, period).reduce((sum, val) => sum + val, 0) / period;
+      previousEma = sma;
+    }
+
+    if (previousEma !== null) {
+      const currentEma = data[i] * k + previousEma * (1 - k);
+      ema.push(currentEma);
+      previousEma = currentEma;
+    }
+  }
+
+  return ema;
+}
+
+function calculateRSI(closes: number[], period = 14): number[] {
+  const rsi: number[] = [];
+  let gains = 0;
+  let losses = 0;
+
+  for (let i = 1; i < closes.length; i++) {
+    const diff = closes[i] - closes[i - 1];
+    if (i <= period) {
+      if (diff > 0) gains += diff;
+      else losses -= diff;
+
+      if (i === period) {
+        const avgGain = gains / period;
+        const avgLoss = losses / period;
+        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+        rsi.push(100 - 100 / (1 + rs));
+      } else {
+        rsi.push(NaN);
+      }
+    } else {
+      const gain = diff > 0 ? diff : 0;
+      const loss = diff < 0 ? -diff : 0;
+      gains = (gains * (period - 1) + gain) / period;
+      losses = (losses * (period - 1) + loss) / period;
+      const rs = losses === 0 ? 100 : gains / losses;
+      rsi.push(100 - 100 / (1 + rs));
+    }
+  }
+
+  rsi.unshift(...Array(closes.length - rsi.length).fill(NaN));
+  return rsi;
+}
+
+function findRelevantLevel(
+  ema14: number[],
+  ema70: number[],
+  closes: number[],
+  highs: number[],
+  lows: number[],
+  trend: 'bullish' | 'bearish'
+): { level: number | null; type: 'support' | 'resistance' | null } {
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    if (trend === 'bullish' && prev14 < prev70 && curr14 > curr70) {
+      return { level: closes[i], type: 'support' };
+    }
+
+    if (trend === 'bearish' && prev14 > prev70 && curr14 < curr70) {
+      return { level: closes[i], type: 'resistance' };
+    }
+  }
+
+  const level = trend === 'bullish' ? Math.max(...highs) : Math.min(...lows);
+  const type = trend === 'bullish' ? 'resistance' : 'support';
+  return { level, type };
+  }
+
+
+function calculateDifferenceVsEMA70(
+  inferredLevel: number,
+  ema70: number
+): { percent: number; direction: 'above' | 'below' | 'equal' } {
+  const raw = ((inferredLevel - ema70) / ema70) * 100;
+  const rounded = parseFloat(raw.toFixed(2));
+
+  let direction: 'above' | 'below' | 'equal' = 'equal';
+  if (rounded > 0) direction = 'above';
+  else if (rounded < 0) direction = 'below';
+
+  return {
+    percent: Math.abs(rounded),
+    direction
+  };
+        }
+
+
+
+
+
+
+
+// === Trendline Helpers ===
+function getLowestLowIndex(lows: number[]): number {
+  let min = lows[0];
+  let index = 0;
+  for (let i = 1; i < lows.length; i++) {
+    if (lows[i] < min) {
+      min = lows[i];
+      index = i;
+    }
+  }
+  return index;
+}
+
+function getHighestHighIndex(highs: number[]): number {
+  let max = highs[0];
+  let index = 0;
+  for (let i = 1; i < highs.length; i++) {
+    if (highs[i] > max) {
+      max = highs[i];
+      index = i;
+    }
+  }
+  return index;
+}
+
+function hasAscendingTrendFromLowestLow(lows: number[], fromIndex: number, minPoints = 2): boolean {
+  const trendPoints: number[] = [];
+  for (let i = fromIndex + 1; i < lows.length - 1; i++) {
+    if (lows[i] < lows[i - 1] && lows[i] < lows[i + 1]) {
+      trendPoints.push(i);
+      if (trendPoints.length >= minPoints) break;
+    }
+  }
+  if (trendPoints.length < minPoints) return false;
+  for (let i = 1; i < trendPoints.length; i++) {
+    if (lows[trendPoints[i]] <= lows[trendPoints[i - 1]]) return false;
+  }
+  return true;
+}
+
+function hasDescendingTrendFromHighestHigh(highs: number[], fromIndex: number, minPoints = 2): boolean {
+  const trendPoints: number[] = [];
+  for (let i = fromIndex + 1; i < highs.length - 1; i++) {
+    if (highs[i] > highs[i - 1] && highs[i] > highs[i + 1]) {
+      trendPoints.push(i);
+      if (trendPoints.length >= minPoints) break;
+    }
+  }
+  if (trendPoints.length < minPoints) return false;
+  for (let i = 1; i < trendPoints.length; i++) {
+    if (highs[trendPoints[i]] >= highs[trendPoints[i - 1]]) return false;
+  }
+  return true;
+}
+
+function isDescending(arr: number[], from: number, length: number): boolean {
+  for (let i = from; i < from + length - 1; i++) {
+    if (arr[i] <= arr[i + 1]) return false;
+  }
+  return true;
+}
+
+function isAscending(arr: number[], from: number, length: number): boolean {
+  for (let i = from; i < from + length - 1; i++) {
+    if (arr[i] >= arr[i + 1]) return false;
+  }
+  return true;
+}
+
+
+function hasBearishContinuationEnded(closes: number[], highs: number[], ema70: number[]): boolean {
+  const len = closes.length;
+  const lastClose = closes[len - 1];
+
+  // EMA70 has flattened or turned upward
+  const emaSlope = ema70[len - 1] - ema70[len - 3];
+  const isFlatOrUp = emaSlope >= 0;
+
+  // Price making higher highs
+  const recentHighs = highs.slice(-3);
+  const makingHigherHighs = recentHighs[2] > recentHighs[1] && recentHighs[1] > recentHighs[0];
+
+  // Price closed above EMA70
+  const closeAboveEMA70 = lastClose > ema70[len - 1];
+
+  return isFlatOrUp || makingHigherHighs || closeAboveEMA70;
+}
+
+function hasBullishContinuationEnded(closes: number[], lows: number[], ema70: number[]): boolean {
+  const len = closes.length;
+  const lastClose = closes[len - 1];
+
+  // EMA70 has flattened or turned downward
+  const emaSlope = ema70[len - 1] - ema70[len - 3];
+  const isFlatOrDown = emaSlope <= 0;
+
+  // Price making lower lows
+  const recentLows = lows.slice(-3);
+  const makingLowerLows = recentLows[2] < recentLows[1] && recentLows[1] < recentLows[0];
+
+  // Price closed below EMA70
+  const closeBelowEMA70 = lastClose < ema70[len - 1];
+
+  return isFlatOrDown || makingLowerLows || closeBelowEMA70;
+}
+
+// Detect if there's a valid bearish trend first
+function isInBearishTrend(closes, ema70, rsi) {
+  let countBelow = 0;
+  for (let i = closes.length - 5; i < closes.length; i++) {
+    if (closes[i] < ema70[i]) countBelow++;
+  }
+
+  const emaSlopeDown = ema70[ema70.length - 1] < ema70[ema70.length - 2];
+  const avgRsi = rsi.slice(-5).reduce((a, b) => a + b, 0) / 5;
+
+  return countBelow >= 3 && emaSlopeDown && avgRsi < 55;
+}
+
+// Fast RSI rejection-based bearish continuation
+function detectRSIBasedBearishContinuation(closes, highs, ema70, rsi, ema14) {
+  for (let i = ema14.length - 2; i >= 1; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    if (prev14 > prev70 && curr14 < curr70) {
+      const rsiAtCross = rsi[i];
+      let lastHigh = highs[i];
+      for (let j = i + 1; j < closes.length; j++) {
+        const price = closes[j];
+        const nearEMA70 = Math.abs(price - ema70[j]) / price < 0.002;
+        const rsiHigher = rsi[j] > rsiAtCross;
+        const lowerHigh = highs[j] < lastHigh;
+        if (nearEMA70 && rsiHigher && lowerHigh) {
+          lastHigh = highs[j];
+        } else if (highs[j] > lastHigh) {
+          return false;
+        }
+        if (j - i >= 2 && lowerHigh) return true;
+      }
+      break;
+    }
+  }
+  return false;
+}
+
+// ABC structure-based bearish continuation + ending check
+function detectBearishContinuationWithEnd(closes, lows, highs, ema70, rsi, ema14) {
+  if (!isInBearishTrend(closes, ema70, rsi)) {
+    return { continuation: false, ended: false, reason: 'No bearish trend detected' };
+  }
+
+  if (detectRSIBasedBearishContinuation(closes, highs, ema70, rsi, ema14)) {
+    return { continuation: true, ended: false };
+  }
+
+  let pointAIndex = -1;
+  let pointBIndex = -1;
+  let pointCIndex = -1;
+  let highestHigh = -Infinity;
+  let foundStructure = false;
+
+  for (let i = ema14.length - 5; i >= 3; i--) {
+    const emaSlopeDown = ema70[i] < ema70[i - 1];
+    if (!emaSlopeDown) continue;
+
+    const nearEma70 = Math.abs(highs[i] - ema70[i]) / ema70[i] < 0.01;
+    if (nearEma70) {
+      pointAIndex = i;
+      highestHigh = highs[i];
+
+      for (let j = i - 1; j >= 2; j--) {
+        const nearEmaB = Math.abs(highs[j] - ema70[j]) / ema70[j] < 0.015;
+        if (highs[j] < highs[pointAIndex] && nearEmaB) {
+          pointBIndex = j;
+
+          for (let k = j - 1; k >= 1; k--) {
+            const nearEmaC = Math.abs(highs[k] - ema70[k]) / ema70[k] < 0.015;
+            if (highs[k] < highs[pointBIndex] && nearEmaC) {
+              pointCIndex = k;
+              foundStructure = true;
+              break;
+            }
+          }
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  if (foundStructure) {
+    const lastHigh = highs[highs.length - 1];
+    if (lastHigh > highestHigh) {
+      return {
+        continuation: false,
+        ended: true,
+        reason: 'Broke highest high from structure',
+      };
+    }
+
+    let lowestLow = Infinity;
+    let lowestLowIndex = -1;
+
+    for (let i = pointCIndex; i < lows.length; i++) {
+      if (lows[i] < lowestLow) {
+        lowestLow = lows[i];
+        lowestLowIndex = i;
+      }
+    }
+
+    if (lowestLowIndex !== -1 && closes[lowestLowIndex] >= ema14[lowestLowIndex]) {
+      return {
+        continuation: false,
+        ended: true,
+        reason: 'No candle closed below EMA14 at the lowest low of the trend',
+      };
+    }
+
+    return {
+      continuation: true,
+      ended: false,
+    };
+  }
+
+  return {
+    continuation: false,
+    ended: false,
+    reason: 'No valid bearish continuation structure or RSI rejection found',
+  };
+                        }
+
+function findRecentCrossings(
+  ema14: number[],
+  ema70: number[],
+  closes: number[]
+): { type: 'bullish' | 'bearish'; price: number; index: number }[] {
+  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
+
+  for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
+    const prev14 = ema14[i - 1];
+    const prev70 = ema70[i - 1];
+    const curr14 = ema14[i];
+    const curr70 = ema70[i];
+
+    // Bullish crossover
+    if (prev14 < prev70 && curr14 >= curr70) {
+      crossings.push({
+        type: 'bullish',
+        price: closes[i],
+        index: i,
+      });
+    }
 
     // Bearish crossover
     if (prev14 > prev70 && curr14 <= curr70) {
@@ -262,39 +627,35 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
-  try {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
-    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+async function fetchTopPairs(limit = 100): Promise<string[]> {
+    let sorted: any[] = [];
 
-    const data = await res.json();
+try {
+  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+  if (!res.ok) throw new Error(`Status ${res.status}`);
+  const data = await res.json();
 
-    const sorted = data
-      .filter((ticker: any) => ticker.symbol.endsWith('USDT')) // Filter only USDT futures
-      .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // Sort by volume
-      .slice(0, limit); // Limit to top N
+  sorted = data
+    .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
+    .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, 100); // or however many you need
+} catch (err) {
+  console.error("❌ Failed to fetch Binance data on Vercel:", err);
+}
 
-    console.log('Top Futures Pairs:', sorted.map(t => t.symbol));
-
-    return sorted.map(ticker => ticker.symbol);
-  } catch (err) {
-    console.error('❌ Error fetching Binance Futures data:', err);
-    return [];
-  }
-
+// ✅ This is now safe — sorted is always defined
+return sorted.map((ticker: any) => ticker.symbol);
+                                         }
 
 export async function getServerSideProps() {
     try {
-        const symbols = await fetchTopFuturesPairs(1);
+        const symbols = await fetchTopPairs(100);
         const signals: Record<string, SignalData> = {};
 
         for (const symbol of symbols) {
             try {
                 const candles = await fetchCandles(symbol, '15m');
-    if (!candles || candles.length === 0) {
-      console.warn(`⚠️ Skipping ${symbol} due to empty candles`);
-      continue;
-    }
+                if (!candles || candles.length === 0) continue;
 
                 const closes = candles.map(c => c.close);
                 const highs = candles.map(c => c.high);
@@ -468,9 +829,9 @@ export async function getServerSideProps() {
                     recentCrossings,
                     url: `https://okx.com/join/96631749`,
                 };
-             } catch (error) {
-        console.error(`❌ Error processing ${symbol}:`, error);
-      }
+            } catch (err) {
+                console.error('❌ Server Error in per-symbol processing:', err);
+            }
         }
 
         const defaultSymbol = symbols.length > 0 ? symbols[0] : null;
@@ -482,11 +843,11 @@ export async function getServerSideProps() {
                 defaultSymbol,
             },
         };
-      } catch (error) {
-    console.error("❌ getServerSideProps failed completely:", error);
+    } catch (err) {
+        console.error('❌ Server Error in getServerSideProps:', err);
         return {
             props: {
-                symbols:[],
+                symbols: [],
                 signals: {},
                 defaultSymbol: null,
             },
@@ -571,7 +932,7 @@ const scrollToTop = () => {
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
     try {
-      const response = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr');
+      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
       const data = await response.json();
       console.log('Fetched Binance data:', data);
 
@@ -592,7 +953,7 @@ const scrollToTop = () => {
       } else {
         const topValidPairs = sortedPairs
           .filter((pair) => signals?.[pair]?.currentPrice !== undefined)
-          .slice(0, 1);
+          .slice(0, 100);
         setSelectedPairs(topValidPairs);
       }
     } catch (error) {
