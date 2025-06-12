@@ -652,13 +652,14 @@ export async function getServerSideProps() {
     const signals: Record<string, SignalData> = {};
 
     for (const symbol of symbols) {
-      signals[symbol] = 
-            try {
-                const candles = await fetchCandles(symbol, '15m');
-                if (!candles || candles.length === 0) {
-          console.warn(`⚠️ Skipping ${symbol} due to empty candles`);
-          continue;
-        }
+  let signal: SignalData | null = null;
+
+  try {
+    const candles = await fetchCandles(symbol, '15m');
+    if (!candles || candles.length === 0) {
+      console.warn(`⚠️ Skipping ${symbol} due to empty candles`);
+      continue;
+    }
 
                 const closes = candles.map(c => c.close);
                 const highs = candles.map(c => c.high);
