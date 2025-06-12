@@ -1116,17 +1116,3 @@ return (
 );
 
         }
-
-
-
-// UI Component to display signal data
-const SignalDisplay: React.FC<{ signal: SignalData }> = ({ signal }) => {
-  return (
-    <div style={{ padding: '1rem', background: '#111', color: '#fff', fontFamily: 'monospace' }}>
-      <h2>Signal Data</h2>
-      <pre>{JSON.stringify(signal, null, 2)}</pre>
-    </div>
-  );
-};
-
-export default SignalDisplay;
