@@ -625,29 +625,53 @@ function detectBullishContinuationWithEnd(
 
 
 // logic in getServerSideProps:
-async function fetchTopPairs(limit = 100): Promise<string[]> {
-  let sorted: string[] = [];
+async function fetchCandles(symbol: string, interval: string): Promise<Candle[]> {
+  const limit = interval === '1d' ? 2 : 500;
+  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   try {
-    const response = await fetch(
-      'https://fapi.binance.com/fapi/v1/exchangeInfo'
-    ); // Use the futures API endpoint
-
+    const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(
-        `Binance futures exchange info fetch failed: ${response.status} ${response.statusText}`
-      );
+      const errorText = await response.text(); // Get the error message from the response
+      throw new Error(`Binance futures candle fetch failed (${response.status}): ${errorText} at URL ${url}`); 
     }
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error(`Invalid candle data format from URL ${url}`);
+    }
+    return data.map((d: any[]) => ({
+      timestamp: +d[0],
+      time: +d[0],
+      open: +d[1],
+      high: +d[2],
+      low: +d[3],
+      close: +d[4],
+      volume: +d[5],
+    })).reverse();
+  } catch (error) {
+    console.error(`❌ Error fetching futures candles for ${symbol} (${interval}):`, error);
+    // Return an empty array to prevent crashes, but also alert the user.
+    alert(`Error fetching data for ${symbol}: ${error.message}`); 
+    return []; 
+  }
+}
 
+async function fetchTopPairs(limit = 100): Promise<string[]> {
+  const url = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
+  try {
+    const response = await fetch(url); 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Binance futures exchange info fetch failed (${response.status}): ${errorText} at URL ${url}`);
+    }
     const data = await response.json();
     if (!data.symbols) {
-      throw new Error('Invalid exchange info format');
+      throw new Error(`Invalid exchange info format from URL ${url}`);
     }
-
-    sorted = data.symbols
+    return data.symbols
       .filter(
         (ticker: any) =>
           ticker.symbol.endsWith('USDT') && ticker.contractType === 'PERPETUAL'
-      ) //Filter for perpetual USDT contracts
+      )
       .sort((a: any, b: any) =>
         parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)
       )
@@ -655,9 +679,9 @@ async function fetchTopPairs(limit = 100): Promise<string[]> {
       .map((ticker: any) => ticker.symbol);
   } catch (error) {
     console.error('❌ Error fetching top futures pairs:', error);
-    return []; //Return empty array on error
+    alert(`Error fetching pairs: ${error.message}`); // Alert user of the error
+    return []; 
   }
-  return sorted;
 }
 
 export async function getServerSideProps() {
