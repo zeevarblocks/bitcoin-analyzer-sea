@@ -75,7 +75,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 
   try {
     const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+      `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
     );
 
     if (!response.ok) {
