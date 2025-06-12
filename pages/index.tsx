@@ -953,7 +953,6 @@ const scrollToTop = () => {
   }
   setIsLoadingPairs(false);
   }
-}, [signals]);
 
 useEffect(() => {
   console.log('useEffect running...'); // Added log statement
