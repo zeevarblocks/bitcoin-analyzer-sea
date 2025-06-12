@@ -75,7 +75,7 @@ async function fetchCandles(symbol: string, interval: string): Promise<Candle[]>
 
   try {
     const response = await fetch(
-      `https://api.binance.com/api/v3/exchangeInfo`
+      `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=500`
     );
 
     if (!response.ok) {
@@ -629,7 +629,7 @@ function detectBullishContinuationWithEnd(
 // logic in getServerSideProps:
 async function fetchTopFuturesPairs(limit = 1): Promise<string[]> {
   try {
-    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+    const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=500');
     if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 
     const data = await res.json();
@@ -936,7 +936,7 @@ const scrollToTop = () => {
   const fetchPairs = useCallback(async () => {
     setIsLoadingPairs(true);
     try {
-      const response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+      const response = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=500');
       const data = await response.json();
       console.log('Fetched Binance data:', data);
 
