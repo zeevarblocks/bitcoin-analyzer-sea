@@ -679,18 +679,8 @@ function findRecentCrossings(
   ema14: number[],
   ema70: number[],
   closes: number[]
-): {
-  type: 'bullish' | 'bearish';
-  price: number;
-  index: number;
-  reversalCross: boolean; // NEW flag
-}[] {
-  const crossings: {
-    type: 'bullish' | 'bearish';
-    price: number;
-    index: number;
-    reversalCross: boolean;
-  }[] = [];
+): { type: 'bullish' | 'bearish'; price: number; index: number; reversalCross?: boolean }[] {
+  const crossings: { type: 'bullish' | 'bearish'; price: number; index: number }[] = [];
 
   for (let i = ema14.length - 2; i >= 1 && crossings.length < 3; i--) {
     const prev14 = ema14[i - 1];
@@ -704,7 +694,6 @@ function findRecentCrossings(
         type: 'bullish',
         price: closes[i],
         index: i,
-        reversalCross: false, // initially false
       });
     }
 
@@ -714,17 +703,21 @@ function findRecentCrossings(
         type: 'bearish',
         price: closes[i],
         index: i,
-        reversalCross: false, // initially false
       });
     }
   }
 
-  // Mark the most recent one as the reversal cross
-  if (crossings.length > 0) {
-    crossings[0].reversalCross = true;
+  const reversed = crossings.reverse(); // order from oldest to newest
+
+  // 🆕 Mark the latest one as "reversalCross"
+  if (reversed.length > 0) {
+    reversed[reversed.length - 1] = {
+      ...reversed[reversed.length - 1],
+      reversalCross: true,
+    };
   }
 
-  return crossings.reverse(); // Return ordered from oldest to newest
+  return reversed;
 }
 
 
@@ -1466,7 +1459,9 @@ const scrollToTop = () => {
       if (activeFilter === 'ema14&70Bounce') return  data.ema70Bounce && data.ema14Bounce;
       if (activeFilter === 'abcSignal&crossSignal') return data.abcSignal && data.crossSignal;
       if (activeFilter === 'touchedEMA70Today&breakout') return data.touchedEMA70Today && data.breakout;
-	if (activeFilter === 'reversalCross') return data.reversalCross;    
+	if (activeFilter === 'reversalCross') {
+  return data.recentCrossings?.some(cross => cross.reversalCross);
+	}
       return true;  
     });
 
