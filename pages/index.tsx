@@ -879,7 +879,12 @@ type FilterType =
   | 'bullishBreakout'
   | 'bearishBreakout';
 
-export default function SignalChecker({ signals, defaultSignals }: { signals: Record<string, SignalData>; defaultSignals: SignalData[] }) {
+export default function SignalChecker({
+  signals,
+  defaultSignals,
+}: {
+  signals: Record<string, SignalData>;
+  defaultSignals: SignalData[]; }) {
   const [pairs, setPairs] = useState<string[]>([]);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
