@@ -1,5 +1,4 @@
 
-import { useEffect, useState } from 'react';
 
 function useFuturesTicker(symbol: string) {
   const [price, setPrice] = useState<number | null>(null);
