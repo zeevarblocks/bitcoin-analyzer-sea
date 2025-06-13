@@ -234,7 +234,7 @@ export default function Home() {
 
           const differenceVsEMA70 = ((level! - lastEMA70) / lastEMA70) * 100;
 
-function detectBullishContinuation(
+const detectBullishContinuation(
   ema14: number[],
   ema70: number[],
   rsi14: number[],
@@ -275,7 +275,7 @@ function detectBullishContinuation(
   return false;
 }
 
-function detectBearishContinuation(
+const detectBearishContinuation(
   ema14: number[],
   ema70: number[],
   rsi14: number[],
