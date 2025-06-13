@@ -146,6 +146,8 @@ export default function Home() {
         }));
 
         const closes = candles.map((c) => c.close);
+        const highs = candles.map(c => c.high);
+          const lows = candles.map(c => c.low);
         const ema14 = calculateEMA(closes, 14);
         const ema70 = calculateEMA(closes, 70);
         const rsi14 = calculateRSI(closes);
