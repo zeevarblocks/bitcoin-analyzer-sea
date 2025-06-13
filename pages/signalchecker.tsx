@@ -234,13 +234,13 @@ export default function Home() {
 
           const differenceVsEMA70 = ((level! - lastEMA70) / lastEMA70) * 100;
 
-const detectBullishContinuation(
+const detectBullishContinuation = (
   ema14: number[],
   ema70: number[],
   rsi14: number[],
   lows: number[],
-    candles: Candle[]
-): boolean {
+  closes: number[]
+): boolean => {
   const len = closes.length;
   if (len < 3) return false;
 
@@ -273,15 +273,15 @@ const detectBullishContinuation(
   }
 
   return false;
-}
+};
 
-const detectBearishContinuation(
+const detectBearishContinuation = (
   ema14: number[],
   ema70: number[],
   rsi14: number[],
   highs: number[],
-    candles: Candle[]
-): boolean {
+  closes: number[]
+): boolean => {
   const len = closes.length;
   if (len < 3) return false;
 
@@ -314,11 +314,11 @@ const detectBearishContinuation(
   }
 
   return false;
-    }
+};
 
-          const bearishContinuation = detectBearishContinuation(ema14, ema70, rsi14, highs, closes);
+// Usage
+const bearishContinuation = detectBearishContinuation(ema14, ema70, rsi14, highs, closes);
 const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows, closes);
-
 
         return {
           symbol,
