@@ -144,11 +144,16 @@ export default function Home() {
           volume: +c[5],
         }));
 
+        
+
         const closes = candles.map((c) => c.close);
+        const highs = candles.map(c => c.high);
+          const lows = candles.map(c => c.low);
         const ema14 = calculateEMA(closes, 14);
         const ema70 = calculateEMA(closes, 70);
         const rsi14 = calculateRSI(closes);
 
+        const lastClose = closes.at(-1)!;
         const lastEMA14 = ema14.at(-1)!;
         const lastEMA70 = ema70.at(-1)!;
         const trend = lastEMA14 > lastEMA70 ? "bullish" : "bearish";
