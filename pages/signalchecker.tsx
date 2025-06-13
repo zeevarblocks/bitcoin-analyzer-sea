@@ -550,7 +550,17 @@ const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows,
 </td>
 
 <td className="p-2">{s.divergenceFromLevelType || "None"}</td>
-<td className="p-2">{s.lastClose.toFixed(9)}</td>
+<td
+  className={`p-2 font-semibold ${
+    s.differenceVsEMA70 > 1
+      ? "bg-green-700 text-white"
+      : s.differenceVsEMA70 < -1
+      ? "bg-red-700 text-white"
+      : "bg-yellow-600 text-black"
+  }`}
+>
+  {s.lastClose.toFixed(9)}
+</td>
                 </tr>
               );
             })}
