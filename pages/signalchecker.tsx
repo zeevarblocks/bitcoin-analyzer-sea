@@ -87,6 +87,7 @@ function findRelevantLevel(
 export default function Home() {
   const [signals, setSignals] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [lastUpdatedMap, setLastUpdatedMap] = useState<{ [symbol: string]: number }>({});
 
   const filteredSignals = signals.filter((s) =>
     s.symbol.toLowerCase().includes(search.toLowerCase())
@@ -144,11 +145,7 @@ export default function Home() {
           volume: +c[5],
         }));
 
-        
-
         const closes = candles.map((c) => c.close);
-        const highs = candles.map(c => c.high);
-          const lows = candles.map(c => c.low);
         const ema14 = calculateEMA(closes, 14);
         const ema70 = calculateEMA(closes, 70);
         const rsi14 = calculateRSI(closes);
@@ -172,7 +169,7 @@ export default function Home() {
         const bearishBreakout = todaysLowestLow !== null && prevSessionLow !== null && todaysLowestLow < prevSessionLow;
         const breakout = bullishBreakout || bearishBreakout;
 
-          // ✅ Updated divergence logic
+    // ✅ Updated divergence logic
           const currentRSI = rsi14.at(-1);
           const prevHighIdx = highs.lastIndexOf(prevSessionHigh!);
           const prevLowIdx = lows.lastIndexOf(prevSessionLow!);
@@ -319,7 +316,7 @@ const detectBearishContinuation = (
 // Usage
 const bearishContinuation = detectBearishContinuation(ema14, ema70, rsi14, highs, closes);
 const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows, closes);
-
+        
         return {
           symbol,
           trend,
@@ -358,7 +355,7 @@ const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows,
 
     const runBatches = async () => {
       await fetchSymbols();
-      fetchBatch(); // first batch
+      fetchBatch();
       const interval = setInterval(fetchBatch, INTERVAL_MS);
       return () => clearInterval(interval);
     };
@@ -375,18 +372,23 @@ const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows,
       if (isMounted) {
         setSignals((prev) => {
           const updated = [...prev];
+          const updatedMap: { [symbol: string]: number } = { ...lastUpdatedMap };
           for (const result of cleanedResults) {
             const index = updated.findIndex((r) => r.symbol === result.symbol);
-            if (index >= 0) updated[index] = result;
-            else updated.push(result);
+            if (index >= 0) {
+              updated[index] = result;
+            } else {
+              updated.push(result);
+            }
+            updatedMap[result.symbol] = Date.now();
           }
+          setLastUpdatedMap(updatedMap);
           return updated;
         });
       }
     };
 
     const stop = runBatches();
-
     return () => {
       isMounted = false;
       stop.then((clear) => clear && clear());
@@ -418,7 +420,7 @@ const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows,
               <th className="p-2">Breakout</th>
               <th className="p-2">Bullish Break</th>
               <th className="p-2">Bearish Break</th>
-                <th className="p-2">Divergence</th>
+                   <th className="p-2">Divergence</th>
           <th className="p-2">Diverge Type</th>
           <th className="p-2">EMA14 Bounce</th>
           <th className="p-2">EMA70 Bounce</th>
@@ -436,28 +438,37 @@ const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows,
             </tr>
           </thead>
           <tbody>
-            {filteredSignals.map((s) => (
-              <tr key={s.symbol} className="border-b border-gray-700">
-                <td className="p-2 font-bold bg-gray-900 sticky left-0 z-10">{s.symbol}</td>
-                <td className={`p-2 font-semibold ${
-                  s.trend === "bullish"
-                    ? "text-green-400"
-                    : s.trend === "bearish"
-                    ? "text-red-400"
-                    : "text-gray-400"
-                }`}>
-                  {s.trend}
-                </td>
-                <td className={`p-2 ${s.breakout ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
-                  {s.breakout ? "Yes" : "No"}
-                </td>
-                <td className={`p-2 ${s.bullishBreakout ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
-                  {s.bullishBreakout ? "Yes" : "No"}
-                </td>
-                <td className={`p-2 ${s.bearishBreakout ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
-                  {s.bearishBreakout ? "Yes" : "No"}
-                </td>
-                  <td className={`p-2 ${s.divergence ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
+            {filteredSignals.map((s) => {
+              const updatedRecently = Date.now() - (lastUpdatedMap[s.symbol] || 0) < 5000;
+              return (
+                <tr
+                  key={s.symbol}
+                  className={`border-b border-gray-700 transition-all duration-300 ${
+                    updatedRecently ? "bg-yellow-900/30" : ""
+                  }`}
+                >
+                  <td className="p-2 font-bold bg-gray-900 sticky left-0 z-10">{s.symbol}</td>
+                  <td
+                    className={`p-2 font-semibold ${
+                      s.trend === "bullish"
+                        ? "text-green-400"
+                        : s.trend === "bearish"
+                        ? "text-red-400"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    {s.trend}
+                  </td>
+                  <td className={`p-2 ${s.breakout ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
+                    {s.breakout ? "Yes" : "No"}
+                  </td>
+                  <td className={`p-2 ${s.bullishBreakout ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
+                    {s.bullishBreakout ? "Yes" : "No"}
+                  </td>
+                  <td className={`p-2 ${s.bearishBreakout ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
+                    {s.bearishBreakout ? "Yes" : "No"}
+                  </td>
+                     <td className={`p-2 ${s.divergence ? "bg-gray-700" : "bg-gray-800 text-gray-500"}`}>
               {s.divergence ? "Yes" : "No"}
             </td>
             <td className="p-2">{s.divergenceType || "None"}</td>
@@ -490,8 +501,9 @@ const bullishContinuation = detectBullishContinuation(ema14, ema70, rsi14, lows,
             </td>
             <td className="p-2">{s.divergenceFromLevelType || "None"}</td>
             <td className="p-2">{s.lastClose.toFixed(9)}</td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
