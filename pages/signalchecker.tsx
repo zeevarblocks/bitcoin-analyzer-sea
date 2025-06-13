@@ -239,7 +239,7 @@ const detectBullishContinuation(
   ema70: number[],
   rsi14: number[],
   lows: number[],
-  closes: number[]
+    candles: Candle[]
 ): boolean {
   const len = closes.length;
   if (len < 3) return false;
@@ -280,7 +280,7 @@ const detectBearishContinuation(
   ema70: number[],
   rsi14: number[],
   highs: number[],
-  closes: number[]
+    candles: Candle[]
 ): boolean {
   const len = closes.length;
   if (len < 3) return false;
